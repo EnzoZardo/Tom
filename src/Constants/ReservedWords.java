@@ -1,0 +1,27 @@
+package Constants;
+
+import Lexer.Types.Enums.TokenType;
+import Lexer.Types.Token;
+
+import java.util.HashMap;
+import java.util.Map;
+
+public record ReservedWords()
+{
+    private final static Map<String, TokenType> relations = new HashMap<>()
+    {{
+        put(ReservedKeys.Variable, TokenType.DECLARE);
+        put(ReservedKeys.Constant, TokenType.CONSTANT);
+        put(ReservedKeys.Return, TokenType.RETURN);
+    }};
+
+    public static boolean isReserved(String value)
+    {
+        return relations.containsKey(value);
+    }
+
+    public static Token token(String value)
+    {
+        return Token.create(relations.get(value), value);
+    }
+}

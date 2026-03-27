@@ -1,0 +1,38 @@
+package Runtime;
+
+import Ast.Statements.*;
+import Ast.Types.Enums.NodeType;
+import Ast.Types.Statement;
+import Exceptions.AlreadyDeclaredVariableException;
+import Runtime.Evaluate.Expressions;
+import Runtime.Evaluate.Statements;
+import Runtime.Types.RuntimeValue;
+import Runtime.Values.NumberValue;
+
+public class Interpreter
+{
+    private Interpreter()
+    {
+    }
+
+    public static Interpreter create()
+    {
+        return new Interpreter();
+    }
+
+    public static RuntimeValue evaluate(Statement node, Environment env) throws AlreadyDeclaredVariableException
+    {
+        return switch (node.type)
+        {
+            case NodeType.NumericLiteral -> NumberValue.create(((NumericLiteral) node).number);
+            case NodeType.Identifier -> Expressions.evaluateIdentifier((Identifier) node, env);
+            case NodeType.ObjectLiteral -> Expressions.evaluateObjectExpression((ObjectLiteral) node, env);
+            case NodeType.AssignmentExpression -> Expressions.evaluateVariableAssignment((AssignmentExpr) node, env);
+            case NodeType.BinaryExpr -> Expressions.evaluateBinaryExpr((BinaryExpr) node, env);
+            case NodeType.Program -> Statements.evaluateProgram((Program) node, env);
+            case NodeType.VariableDeclaration ->
+                    Statements.evaluateVariableDeclaration((VariableDeclaration) node, env);
+            default -> throw new RuntimeException("This AST Node was not recognized yet.");
+        };
+    }
+}
