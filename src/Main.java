@@ -9,25 +9,25 @@ import Runtime.Interpreter;
 
 void main(String[] args) throws AlreadyParsedException, IOException, InvalidTokenException, InvalidArgumentException, AlreadyDeclaredVariableException
 {
-    if (args.length < 1)
-    {
-        throw new IllegalArgumentException("The file argument was not informed.");
-    }
+    //if (args.length < 1)
+    //{
+    //    throw new IllegalArgumentException("The file argument was not informed.");
+    //}
 
-    File file = new File(args[0]);
-    char[] content;
+    //File file = new File(args[0]);
+    //char[] content;
 
-    if (!file.canRead())
-    {
-        throw new IllegalArgumentException("The given file does not allow reading.");
-    }
+    //if (!file.canRead())
+    //{
+    //    throw new IllegalArgumentException("The given file does not allow reading.");
+    //}
 
-    {
-        FileReader reader = new FileReader(file);
-        content = reader.readAllAsString()
-                .toCharArray();
-        reader.close();
-    }
+    //{
+    //    FileReader reader = new FileReader(file);
+    //    content = reader.readAllAsString()
+    //            .toCharArray();
+    //    reader.close();
+    //}
 
     BufferedReader bf = new BufferedReader(new InputStreamReader(System.in));
 
