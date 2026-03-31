@@ -1,12 +1,10 @@
 package Parser;
 
 import Ast.Statements.*;
+import Ast.Types.Enums.NodeType;
 import Ast.Types.Statement;
 import Constants.ReservedKeys;
-import Exceptions.AlreadyParsedException;
-import Exceptions.InvalidArgumentException;
-import Exceptions.InvalidTokenException;
-import Exceptions.NullConstantException;
+import Exceptions.*;
 import Lexer.Lexer;
 import Lexer.Types.Enums.TokenType;
 import Lexer.Types.Token;
@@ -147,16 +145,97 @@ public class Parser
         return left;
     }
 
+    public Expr _parseCallMemberExpr() throws InvalidTokenException, InvalidArgumentException
+    {
+        Expr member = _parseMemberExpr();
+
+        if (_peekIs(TokenType.OPEN_PARENTHESIS)) {
+            _parseCallExpr(member);
+        }
+
+        return member;
+    }
+
+    public Expr _parseMemberExpr() throws InvalidTokenException, InvalidArgumentException
+    {
+        Expr object = _parsePrimaryExpr();
+
+        while (_notEof() && (_peekIs(TokenType.COLON) || _peekIs(TokenType.CLOSE_BRACKETS)) )
+        {
+            boolean computed;
+            Expr property = _parsePrimaryExpr();
+
+
+            if (_peekIs(TokenType.DOT)) {
+                computed = false;
+                property = _parsePrimaryExpr();
+
+                if (property.type != NodeType.Identifier)
+                {
+                    throw new InvalidNodeException("Expected an identifier after dot on member expression.");
+                }
+            }
+            else
+            {
+                computed = true;
+                property = _parsePrimaryExpr();
+                _expect(TokenType.CLOSE_BRACKETS, "Expecting close brackets after computed member expression");
+            }
+
+            object = MemberExpr.create(object, property, computed);
+        }
+
+        return object;
+    }
+
+    public Expr _parseCallExpr(Expr caller) throws InvalidTokenException, InvalidArgumentException
+    {
+        return CallExpr.create(
+            caller,
+            _parseArgs()
+        );
+    }
+
+    public ArrayList<Expr> _parseArgumentsList() throws InvalidTokenException, InvalidArgumentException
+    {
+        ArrayList<Expr> args = new ArrayList<>();
+        args.add(_parseAssignmentExpr());
+
+        while (_notEof() && _peekIs(TokenType.COMMA))
+        {
+            args.add(_parseAssignmentExpr());
+            _consume();
+        }
+
+        return args;
+    }
+
+    public ArrayList<Expr> _parseArgs() throws InvalidTokenException, InvalidArgumentException
+    {
+        _expect(TokenType.OPEN_PARENTHESIS, "Expected open parenthesis");
+
+        if (_peekIs(TokenType.CLOSE_PARENTHESIS))
+        {
+            return new ArrayList<>();
+        }
+
+        ArrayList<Expr> args = _parseArgumentsList();
+
+        _expect(TokenType.CLOSE_PARENTHESIS, "Missing close parenthesis in arguments list");
+
+        return args;
+    }
+
     private Expr _parseMultiplicativeExpr() throws InvalidArgumentException, InvalidTokenException
     {
-        Expr left = _parsePrimaryExpr();
+        Expr left = _parseCallMemberExpr();
 
         while (ReservedKeys.Multiplication == _peek().Char()
                 || ReservedKeys.Division == _peek().Char()
                 || ReservedKeys.Mod == _peek().Char())
         {
             String operator = _consume().value;
-            Expr right = _parsePrimaryExpr();
+            Expr right = _parseCallMemberExpr();
             left = BinaryExpr.create(left, right, operator);
         }
 
@@ -182,6 +261,15 @@ public class Parser
         return expr;
     }
 
+    /// {@summary}
+    /// Faz o parse das expressões primárias na precedência:
+    /// - Assignment
+    /// - Object
+    /// - Additive
+    /// - Multiplicative
+    /// - Call
+    /// - Member
+    /// - Primary
     private Expr _parsePrimaryExpr() throws InvalidArgumentException, InvalidTokenException
     {
         return switch (_peek().type)

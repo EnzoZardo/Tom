@@ -9,6 +9,8 @@ public enum NodeType
 
     // These are expressions
     AssignmentExpression,
+    MemberExpression,
+    CallExpression,
 
     // These are literals
     Property,

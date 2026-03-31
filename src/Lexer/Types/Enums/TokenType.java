@@ -18,5 +18,6 @@ public enum TokenType
     CLOSE_BRACE,
     COLON,
     COMMA,
+    DOT,
     EOF
 }

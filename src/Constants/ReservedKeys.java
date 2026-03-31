@@ -11,6 +11,7 @@ public record ReservedKeys()
     public static final char CloseBrace = '}';
     public static final char Colon = ':';
     public static final char Comma = ',';
+    public static final char Dot = '.';
     public static final char Plus = '+';
     public static final char Minus = '-';
     public static final char Division = '/';

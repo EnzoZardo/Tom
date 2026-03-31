@@ -54,4 +54,9 @@ public class PonctuationToken extends Token
     {
         return ReservedKeys.Comma == c;
     }
+
+    public static boolean isDot(char c)
+    {
+        return ReservedKeys.Dot == c;
+    }
 }

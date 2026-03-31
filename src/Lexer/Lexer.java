@@ -61,6 +61,10 @@ public class Lexer
             {
                 _consumeAndAdd(TokenType.CLOSE_BRACKETS, current);
             }
+            else if (PonctuationToken.isDot(current))
+            {
+                _consumeAndAdd(TokenType.DOT, current);
+            }
             else if (Token.isBinaryOperator(current))
             {
                 _consumeAndAdd(TokenType.BINARY_OPERATOR, current);
