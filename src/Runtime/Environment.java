@@ -4,10 +4,11 @@ import Constants.ReservedKeys;
 import Exceptions.AlreadyDeclaredVariableException;
 import Exceptions.ConstantAssignmentException;
 import Exceptions.InvalidVariableException;
+import Runtime.NativeFunctions.Print;
 import Runtime.Types.RuntimeValue;
 import Runtime.Values.BooleanValue;
+import Runtime.Values.NativeFunctionValue;
 import Runtime.Values.NullValue;
-
 import java.util.HashMap;
 
 public class Environment
@@ -109,5 +110,6 @@ public class Environment
         declareConstant(ReservedKeys.Null, NullValue.create());
         declareConstant(ReservedKeys.True, BooleanValue.create(true));
         declareConstant(ReservedKeys.False, BooleanValue.create(false));
+        declareConstant(ReservedKeys.Print, NativeFunctionValue.create(Print::call));
     }
 }

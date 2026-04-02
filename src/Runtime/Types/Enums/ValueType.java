@@ -6,4 +6,5 @@ public enum ValueType
     Object,
     Number,
     Boolean,
+    NativeFunction,
 }

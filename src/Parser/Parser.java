@@ -150,7 +150,7 @@ public class Parser
         Expr member = _parseMemberExpr();
 
         if (_peekIs(TokenType.OPEN_PARENTHESIS)) {
-            _parseCallExpr(member);
+            return _parseCallExpr(member);
         }
 
         return member;
@@ -163,8 +163,7 @@ public class Parser
         while (_notEof() && (_peekIs(TokenType.COLON) || _peekIs(TokenType.CLOSE_BRACKETS)) )
         {
             boolean computed;
-            Expr property = _parsePrimaryExpr();
-
+            Expr property;
 
             if (_peekIs(TokenType.DOT)) {
                 computed = false;
@@ -190,10 +189,14 @@ public class Parser
 
     public Expr _parseCallExpr(Expr caller) throws InvalidTokenException, InvalidArgumentException
     {
-        return CallExpr.create(
-            caller,
-            _parseArgs()
-        );
+        Expr call = CallExpr.create(caller, _parseArgs());
+
+        if (_peekIs(TokenType.OPEN_PARENTHESIS))
+        {
+            call = _parseCallExpr(call);
+        }
+
+        return call;
     }
 
     public ArrayList<Expr> _parseArgumentsList() throws InvalidTokenException, InvalidArgumentException

@@ -27,6 +27,7 @@ public class Interpreter
             case NodeType.NumericLiteral -> NumberValue.create(((NumericLiteral) node).number);
             case NodeType.Identifier -> Expressions.evaluateIdentifier((Identifier) node, env);
             case NodeType.ObjectLiteral -> Expressions.evaluateObjectExpression((ObjectLiteral) node, env);
+            case NodeType.CallExpression -> Expressions.evaluateCallExpression((CallExpr) node, env);
             case NodeType.AssignmentExpression -> Expressions.evaluateVariableAssignment((AssignmentExpr) node, env);
             case NodeType.BinaryExpr -> Expressions.evaluateBinaryExpr((BinaryExpr) node, env);
             case NodeType.Program -> Statements.evaluateProgram((Program) node, env);

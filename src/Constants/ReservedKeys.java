@@ -24,5 +24,7 @@ public record ReservedKeys()
     public static final String Null = "nulo";
     public static final String True = "verdadeiro";
     public static final String False = "falso";
+    // Functions
+    public static final String Print = "escreva";
 }
 

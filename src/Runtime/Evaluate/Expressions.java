@@ -4,14 +4,19 @@ import Ast.Statements.*;
 import Ast.Types.Enums.NodeType;
 import Constants.ReservedKeys;
 import Exceptions.AlreadyDeclaredVariableException;
+import Exceptions.InvalidCallException;
 import Exceptions.InvalidNodeException;
 import Runtime.Environment;
 import Runtime.Interpreter;
 import Runtime.Types.Enums.ValueType;
 import Runtime.Types.RuntimeValue;
+import Runtime.Values.NativeFunctionValue;
 import Runtime.Values.NullValue;
 import Runtime.Values.NumberValue;
 import Runtime.Values.ObjectValue;
+import Types.Pair;
+
+import java.util.ArrayList;
 
 public class Expressions
 {
@@ -90,5 +95,23 @@ public class Expressions
         }
 
         return value;
+    }
+
+    public static RuntimeValue evaluateCallExpression(
+            CallExpr call, Environment env) throws AlreadyDeclaredVariableException
+    {
+        ArrayList<RuntimeValue> args = new ArrayList<>();
+
+        for (Expr expr : call.args) {
+            args.add(Interpreter.evaluate(expr, env));
+        }
+
+        RuntimeValue caller = Interpreter.evaluate(call.caller, env);
+
+        if (!(caller instanceof NativeFunctionValue)) {
+            throw new InvalidCallException("Cannot call a value that's not a NativeFunctionValue");
+        }
+
+        return ((NativeFunctionValue) caller).call.apply(Pair.create(args, env));
     }
 }

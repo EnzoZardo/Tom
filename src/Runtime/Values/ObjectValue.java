@@ -28,20 +28,20 @@ public class ObjectValue extends RuntimeValue
 
     private String printProps(int level)
     {
+        final int next = level + 1;
         StringBuilder ret = new StringBuilder("\n")
-                .append("\t".repeat(level))
+                .repeat("\t", level)
                 .append("[\n");
         for (Map.Entry<String, RuntimeValue> entry : properties.entrySet())
         {
-            ret.append("\t".repeat(level + 1))
+            ret.repeat("\t", next)
                     .append(entry.getKey())
                     .append(": ")
-                    .append(entry.getValue()
-                            .print(level + 1))
+                    .append(entry.getValue().print(next))
                     .append(',');
         }
         return ret.append("\n")
-                .append("\t".repeat(level))
+                .repeat("\t", level)
                 .append("]")
                 .toString();
     }
@@ -49,9 +49,23 @@ public class ObjectValue extends RuntimeValue
     @Override
     public String print(int level)
     {
+        final int next = level + 1;
         return "\n" + "\t".repeat(level) + "{\n" +
-                "\t".repeat(level + 1) + "node: " + type.toString() + ",\n" +
-                "\t".repeat(level + 1) + "properties: " + printProps(level + 1) + ",\n" +
+                "\t".repeat(next) + "node: " + type.toString() + ",\n" +
+                "\t".repeat(next) + "properties: " + printProps(next) + ",\n" +
                 "\t".repeat(level) + "}";
+    }
+
+    @Override
+    public String toString()
+    {
+        StringBuilder ret = new StringBuilder("{ ");
+
+        for (Map.Entry<String, RuntimeValue> entry : properties.entrySet())
+        {
+            ret.append(entry.getKey()).append(": ").append(entry.getValue()).append(',');
+        }
+
+        return ret.append(" }").toString();
     }
 }

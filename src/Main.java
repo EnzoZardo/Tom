@@ -21,7 +21,5 @@ void main(String[] args) throws AlreadyParsedException, IOException, InvalidToke
         Program program = parser.build();
         //IO.println(program);
         IO.println(Interpreter.evaluate(program, env));
-
-        IO.println("-------------\n\n");
     }
 }
