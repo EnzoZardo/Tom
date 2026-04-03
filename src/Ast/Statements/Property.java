@@ -23,4 +23,15 @@ public class Property extends Expr
     {
         return new Property(key, null);
     }
+
+    @Override
+    public String print(int level)
+    {
+        final int next = level + 1;
+        return "\n" + "\t".repeat(level) + "{\n" +
+                "\t".repeat(next) + "node: " + type.toString() + ",\n" +
+                "\t".repeat(next) + "key: " + key + ",\n" +
+                "\t".repeat(next) + "value: " + value.print(next) + ",\n" +
+                "\t".repeat(level) + "}";
+    }
 }

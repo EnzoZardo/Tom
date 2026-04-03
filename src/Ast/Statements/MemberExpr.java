@@ -30,11 +30,12 @@ public class MemberExpr extends Expr
     @Override
     public String print(int level)
     {
+        final int next = level + 1;
         return "\n" + "\t".repeat(level) + "{\n" +
-                "\t".repeat(level + 1) + "node: " + type.toString() + ",\n" +
-                "\t".repeat(level + 1) + "object: " + object.print(level + 1) + ",\n" +
-                "\t".repeat(level + 1) + "property: " + property.print(level + 1) + ",\n" +
-                "\t".repeat(level + 1) + "computed: " + computed + ",\n" +
+                "\t".repeat(next) + "node: " + type.toString() + ",\n" +
+                "\t".repeat(next) + "object: " + object.print(next) + ",\n" +
+                "\t".repeat(next) + "property: " + property.print(next) + ",\n" +
+                "\t".repeat(next) + "computed: " + computed + ",\n" +
                 "\t".repeat(level) + "}";
     }
 }

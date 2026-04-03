@@ -37,6 +37,11 @@ public class Environment
         return new Environment();
     }
 
+    public static Environment create(Environment parentEnv) throws AlreadyDeclaredVariableException
+    {
+        return new Environment(parentEnv);
+    }
+
     public RuntimeValue declareVariable(String name, RuntimeValue value, boolean constant) throws AlreadyDeclaredVariableException
     {
         if (variables.containsKey(name) || constants.containsKey(name))
@@ -54,7 +59,7 @@ public class Environment
         return value;
     }
 
-    public void declareConstant(String name, RuntimeValue value) throws AlreadyDeclaredVariableException
+    public RuntimeValue declareConstant(String name, RuntimeValue value) throws AlreadyDeclaredVariableException
     {
         if (variables.containsKey(name) || constants.containsKey(name))
         {
@@ -62,6 +67,7 @@ public class Environment
         }
 
         constants.put(name, value);
+        return value;
     }
 
     public RuntimeValue assignVariable(String name, RuntimeValue value)

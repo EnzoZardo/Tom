@@ -2,6 +2,7 @@ package Runtime.Evaluate;
 
 import Ast.Statements.*;
 import Ast.Types.Enums.NodeType;
+import Ast.Types.Statement;
 import Constants.ReservedKeys;
 import Exceptions.AlreadyDeclaredVariableException;
 import Exceptions.InvalidCallException;
@@ -10,10 +11,7 @@ import Runtime.Environment;
 import Runtime.Interpreter;
 import Runtime.Types.Enums.ValueType;
 import Runtime.Types.RuntimeValue;
-import Runtime.Values.NativeFunctionValue;
-import Runtime.Values.NullValue;
-import Runtime.Values.NumberValue;
-import Runtime.Values.ObjectValue;
+import Runtime.Values.*;
 import Types.Pair;
 
 import java.util.ArrayList;
@@ -97,6 +95,25 @@ public class Expressions
         return value;
     }
 
+    public static RuntimeValue evaluateMemberExpression(
+            MemberExpr memberExpr, Environment env) throws AlreadyDeclaredVariableException
+    {
+        RuntimeValue object = Interpreter.evaluate(memberExpr.object, env);
+
+        if (object instanceof ObjectValue value)
+        {
+            /* TODO: this probably does not support computed properties, but we don't even have strings, so i will concern with this after */
+            if (memberExpr.property instanceof Identifier id && value.properties.containsKey(id.get())) {
+                return value.properties.get(id.get());
+            }
+
+            return NullValue.create();
+        }
+
+        // TODO: change this exception
+        throw new InvalidNodeException("Incorrect object node");
+    }
+
     public static RuntimeValue evaluateCallExpression(
             CallExpr call, Environment env) throws AlreadyDeclaredVariableException
     {
@@ -108,10 +125,28 @@ public class Expressions
 
         RuntimeValue caller = Interpreter.evaluate(call.caller, env);
 
-        if (!(caller instanceof NativeFunctionValue)) {
-            throw new InvalidCallException("Cannot call a value that's not a NativeFunctionValue");
+        if (caller instanceof FunctionValue function) {
+            Environment scope = Environment.create(function.declarationEnv);
+
+            for (int i = 0; i < function.parameters.size(); i++)
+            {
+                String name = function.parameters.get(i);
+                scope.declareVariable(name, args.get(i), false);
+            }
+
+            RuntimeValue result = NullValue.create();
+            for (Statement statement : function.body)
+            {
+                result = Interpreter.evaluate(statement, scope);
+            }
+
+            return result;
         }
 
-        return ((NativeFunctionValue) caller).call.apply(Pair.create(args, env));
+        if (caller instanceof NativeFunctionValue) {
+            return ((NativeFunctionValue) caller).call.apply(Pair.create(args, env));
+        }
+
+        throw new InvalidCallException("Cannot call a value that's not a NativeFunctionValue");
     }
 }

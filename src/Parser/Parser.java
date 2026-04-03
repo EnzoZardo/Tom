@@ -34,6 +34,7 @@ public class Parser
         while (_notEof())
         {
             program.addStatement(_parseStatement());
+//            IO.println(program.body.getLast().print(0));
         }
 
         return program;
@@ -50,7 +51,7 @@ public class Parser
         };
     }
 
-    private Expr _parseVariableDeclaration() throws InvalidTokenException, InvalidArgumentException
+    private Statement _parseVariableDeclaration() throws InvalidTokenException, InvalidArgumentException
     {
         boolean isConstant = _consume().type == TokenType.CONSTANT;
         Token identifierToken = _expect(TokenType.IDENTIFIER, "Expecting identifier name following let/const.");
@@ -66,19 +67,35 @@ public class Parser
         return VariableDeclaration.create(_parseExpr(), identifier, isConstant);
     }
 
-    private Expr _parseFunctionDeclaration() throws InvalidTokenException, InvalidArgumentException
+    private Statement _parseFunctionDeclaration() throws InvalidTokenException, InvalidArgumentException
     {
         _consume();
         Token identifierToken = _expect(TokenType.IDENTIFIER, "Expecting identifier name following function.");
-        String identifier = identifierToken.value;
+        String name = identifierToken.value;
 
-        if (_peekIs(TokenType.SEMICOLON))
+        ArrayList<Expr> parametersIdentifiers = _parseArgs();
+        ArrayList<String> parameters = new ArrayList<>();
+
+        for (Expr identifier : parametersIdentifiers)
         {
-            _consume();
-            return VariableDeclaration.notInstanced(identifier);
+            if (identifier.type != NodeType.Identifier)
+            {
+                throw new InvalidNodeException("Expected parameter identifier in parameters list.");
+            }
+
+            parameters.add(((Identifier) identifier).get());
         }
-        _expect(TokenType.EQUALS, "Expecting equals token to declare a variable.");
-        return null;
+
+        _expect(TokenType.OPEN_BRACE, "Expecting '{' after function arguments declaration.");
+        ArrayList<Statement> body = new ArrayList<>();
+
+        while (_notEof() && !_peekIs(TokenType.CLOSE_BRACE)) {
+            body.add(_parseStatement());
+        }
+
+        _expect(TokenType.CLOSE_BRACE, "Expecting '}' after function body declaration.");
+
+        return FunctionDeclaration.create(name, parameters, body);
     }
 
     private Expr _parseObjectExpr() throws InvalidTokenException, InvalidArgumentException
@@ -176,12 +193,13 @@ public class Parser
     {
         Expr object = _parsePrimaryExpr();
 
-        while (_notEof() && (_peekIs(TokenType.COLON) || _peekIs(TokenType.CLOSE_BRACKETS)) )
+        while (_peekIs(TokenType.DOT) || _peekIs(TokenType.OPEN_BRACKETS))
         {
+            Token operator = _consume();
             boolean computed;
             Expr property;
 
-            if (_peekIs(TokenType.DOT)) {
+            if (operator.type == TokenType.DOT) {
                 computed = false;
                 property = _parsePrimaryExpr();
 
@@ -222,8 +240,8 @@ public class Parser
 
         while (_notEof() && _peekIs(TokenType.COMMA))
         {
-            args.add(_parseAssignmentExpr());
             _consume();
+            args.add(_parseAssignmentExpr());
         }
 
         return args;
@@ -240,7 +258,7 @@ public class Parser
 
         ArrayList<Expr> args = _parseArgumentsList();
 
-        _expect(TokenType.CLOSE_PARENTHESIS, "Missing close parenthesis in arguments list");
+        _expect(TokenType.CLOSE_PARENTHESIS, "Missing close parenthesis in arguments list.");
 
         return args;
     }
@@ -267,6 +285,7 @@ public class Parser
         if (prev.type != token)
         {
             System.err.println(error);
+            System.err.println(prev);
             System.exit(1);
         }
         return prev;
@@ -296,7 +315,7 @@ public class Parser
             case TokenType.IDENTIFIER -> Identifier.create(_consume());
             case TokenType.NUMERIC -> NumericLiteral.create(_consume());
             case TokenType.OPEN_PARENTHESIS -> _parseParenthesisExpr();
-            default -> throw new InvalidTokenException(String.format("Unexpected Token %s.", _peek().value));
+            default -> throw new InvalidTokenException(String.format("Unexpected Token '%s'.", _peek().value));
         };
     }
 

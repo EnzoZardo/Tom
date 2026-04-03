@@ -1,5 +1,6 @@
 package Runtime.Evaluate;
 
+import Ast.Statements.FunctionDeclaration;
 import Ast.Statements.Program;
 import Ast.Statements.VariableDeclaration;
 import Ast.Types.Statement;
@@ -7,6 +8,7 @@ import Exceptions.AlreadyDeclaredVariableException;
 import Runtime.Environment;
 import Runtime.Interpreter;
 import Runtime.Types.RuntimeValue;
+import Runtime.Values.FunctionValue;
 import Runtime.Values.NullValue;
 
 public class Statements
@@ -31,5 +33,12 @@ public class Statements
                 : Interpreter.evaluate(declaration.value, env);
 
         return env.declareVariable(declaration.identifier, value, declaration.constant);
+    }
+
+    public static RuntimeValue evaluateFunctionDeclaration(
+            FunctionDeclaration declaration, Environment env) throws AlreadyDeclaredVariableException
+    {
+        FunctionValue value = FunctionValue.createFromStatement(declaration, env);
+        return env.declareConstant(value.name, value);
     }
 }

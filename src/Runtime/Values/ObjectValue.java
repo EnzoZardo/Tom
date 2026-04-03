@@ -38,7 +38,8 @@ public class ObjectValue extends RuntimeValue
                     .append(entry.getKey())
                     .append(": ")
                     .append(entry.getValue().print(next))
-                    .append(',');
+                    .append(',')
+                    .append('\n');
         }
         return ret.append("\n")
                 .repeat("\t", level)
@@ -63,9 +64,9 @@ public class ObjectValue extends RuntimeValue
 
         for (Map.Entry<String, RuntimeValue> entry : properties.entrySet())
         {
-            ret.append(entry.getKey()).append(": ").append(entry.getValue()).append(',');
+            ret.append(entry.getKey()).append(": ").append(entry.getValue()).append(", ");
         }
 
-        return ret.append(" }").toString();
+        return ret.append("}").toString();
     }
 }

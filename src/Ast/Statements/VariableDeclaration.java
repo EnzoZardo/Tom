@@ -1,8 +1,9 @@
 package Ast.Statements;
 
 import Ast.Types.Enums.NodeType;
+import Ast.Types.Statement;
 
-public class VariableDeclaration extends Expr
+public class VariableDeclaration extends Statement
 {
     public Expr value;
     public boolean constant;
@@ -39,9 +40,9 @@ public class VariableDeclaration extends Expr
         final int next = level + 1;
         return "\n" + "\t".repeat(level) + "{\n" +
                 "\t".repeat(next) + "node: " + type.toString() + ",\n" +
-                "\t".repeat(next) + "value: " + value.print(next) + ",\n" +
                 "\t".repeat(next) + "constant: " + constant + ",\n" +
                 "\t".repeat(next) + "identifier: " + identifier + ",\n" +
+                "\t".repeat(next) + "value: " + value.print(next) + ",\n" +
                 "\t".repeat(level) + "}";
     }
 }

@@ -1,45 +1,63 @@
 package Ast.Statements;
 
 import Ast.Types.Enums.NodeType;
+import Ast.Types.Statement;
 
 import java.util.ArrayList;
 
 public class FunctionDeclaration extends Expr
 {
     public String identifier;
-    public ArrayList<Expr> arguments;
+    public ArrayList<String> parameters;
+    public ArrayList<Statement> body;
 
     protected FunctionDeclaration(
         String identifier,
-        ArrayList<Expr> arguments)
+        ArrayList<String> parameters,
+        ArrayList<Statement> body)
     {
         super(NodeType.FunctionDeclaration);
         this.identifier = identifier;
-        this.arguments = arguments;
+        this.parameters = parameters;
+        this.body = body;
     }
 
     public static FunctionDeclaration create(
         String identifier,
-        ArrayList<Expr> arguments)
+        ArrayList<String> parameters,
+        ArrayList<Statement> body)
     {
-        return new FunctionDeclaration(identifier, arguments);
+        return new FunctionDeclaration(identifier, parameters, body);
     }
 
-    public static FunctionDeclaration create(
-            String identifier)
-    {
-        return new FunctionDeclaration(identifier, new ArrayList<>());
-    }
 
-    private String printArgs(int level)
+    // TODO: refactor these two functions below
+    private String printParams(int level)
     {
         final int next = level + 1;
         StringBuilder ret = new StringBuilder("\n").repeat("\t", level)
                 .append("[\n");
-        for (Expr entry : arguments)
+        for (String parameter : parameters)
         {
             ret.repeat("\t", next)
-                    .append(entry.print(next))
+                    .append(parameter)
+                    .append(',')
+                    .append('\n');
+        }
+        return ret.repeat("\t", level)
+                .append("]")
+                .toString();
+    }
+
+    private String printBody(int level)
+    {
+        final int next = level + 1;
+        StringBuilder ret = new StringBuilder("\n").repeat("\t", level)
+                .append("[");
+        for (Statement statement : body)
+        {
+            ret.repeat("\t", next)
+                    .append(statement.print(next))
                     .append(',');
         }
         return ret.append("\n")
@@ -55,7 +73,8 @@ public class FunctionDeclaration extends Expr
         return "\n" + "\t".repeat(level) + "{\n" +
                 "\t".repeat(next) + "node: " + type.toString() + ",\n" +
                 "\t".repeat(next) + "identifier: " + identifier + ",\n" +
-                "\t".repeat(next) + "arguments: " + printArgs(next) + ",\n" +
+                "\t".repeat(next) + "parameters: " + printParams(next) + ",\n" +
+                "\t".repeat(next) + "body: " + printBody(next) + ",\n" +
                 "\t".repeat(level) + "}";
     }
 }

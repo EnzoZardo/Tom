@@ -28,7 +28,7 @@ public class ObjectLiteral extends Expr
     {
         final int next = level + 1;
         StringBuilder ret = new StringBuilder("\n").repeat("\t", level)
-                .append("[\n");
+                .append("[");
         for (Expr entry : properties)
         {
             ret.repeat("\t", next)

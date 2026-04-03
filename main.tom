@@ -1,2 +1,11 @@
-declare a = 1;
-retorne a;
+fun add(x, y)
+{
+    escreva(x + y)
+}
+
+var paraSomar = {
+    a: 1,
+    b: 2
+}
+
+add(paraSomar.a, paraSomar.b)
