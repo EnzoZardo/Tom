@@ -23,4 +23,31 @@ public class ObjectLiteral extends Expr
     {
         return new ObjectLiteral(new ArrayList<>());
     }
+
+    private String printProps(int level)
+    {
+        final int next = level + 1;
+        StringBuilder ret = new StringBuilder("\n").repeat("\t", level)
+                .append("[\n");
+        for (Expr entry : properties)
+        {
+            ret.repeat("\t", next)
+                    .append(entry.print(next))
+                    .append(',');
+        }
+        return ret.append("\n")
+                .repeat("\t", level)
+                .append("]")
+                .toString();
+    }
+
+    @Override
+    public String print(int level)
+    {
+        final int next = level + 1;
+        return "\n" + "\t".repeat(level) + "{\n" +
+                "\t".repeat(next) + "node: " + type.toString() + ",\n" +
+                "\t".repeat(next) + "properties: " + printProps(next) + ",\n" +
+                "\t".repeat(level) + "}";
+    }
 }

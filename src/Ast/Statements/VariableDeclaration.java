@@ -36,11 +36,12 @@ public class VariableDeclaration extends Expr
     @Override
     public String print(int level)
     {
+        final int next = level + 1;
         return "\n" + "\t".repeat(level) + "{\n" +
-                "\t".repeat(level + 1) + "node: " + type.toString() + ",\n" +
-                "\t".repeat(level + 1) + "value: " + value.print(level + 1) + ",\n" +
-                "\t".repeat(level + 1) + "constant: " + constant + ",\n" +
-                "\t".repeat(level + 1) + "identifier: " + identifier + ",\n" +
+                "\t".repeat(next) + "node: " + type.toString() + ",\n" +
+                "\t".repeat(next) + "value: " + value.print(next) + ",\n" +
+                "\t".repeat(next) + "constant: " + constant + ",\n" +
+                "\t".repeat(next) + "identifier: " + identifier + ",\n" +
                 "\t".repeat(level) + "}";
     }
 }

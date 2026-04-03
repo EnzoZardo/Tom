@@ -45,6 +45,7 @@ public class Parser
         {
             case TokenType.DECLARE,
                  TokenType.CONSTANT -> _parseVariableDeclaration();
+            case TokenType.FUNCTION -> _parseFunctionDeclaration();
             default -> _parseExpr();
         };
     }
@@ -63,6 +64,21 @@ public class Parser
         }
         _expect(TokenType.EQUALS, "Expecting equals token to declare a variable.");
         return VariableDeclaration.create(_parseExpr(), identifier, isConstant);
+    }
+
+    private Expr _parseFunctionDeclaration() throws InvalidTokenException, InvalidArgumentException
+    {
+        _consume();
+        Token identifierToken = _expect(TokenType.IDENTIFIER, "Expecting identifier name following function.");
+        String identifier = identifierToken.value;
+
+        if (_peekIs(TokenType.SEMICOLON))
+        {
+            _consume();
+            return VariableDeclaration.notInstanced(identifier);
+        }
+        _expect(TokenType.EQUALS, "Expecting equals token to declare a variable.");
+        return null;
     }
 
     private Expr _parseObjectExpr() throws InvalidTokenException, InvalidArgumentException

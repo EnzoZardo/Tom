@@ -102,7 +102,7 @@ public class Expressions
     {
         ArrayList<RuntimeValue> args = new ArrayList<>();
 
-        for (Expr expr : call.args) {
+        for (Expr expr : call.arguments) {
             args.add(Interpreter.evaluate(expr, env));
         }
 

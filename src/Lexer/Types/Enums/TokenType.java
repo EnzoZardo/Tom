@@ -6,6 +6,7 @@ public enum TokenType
     SEMICOLON,
     DECLARE,
     CONSTANT,
+    FUNCTION,
     IDENTIFIER,
     EQUALS,
     NUMERIC,

@@ -12,6 +12,7 @@ public record ReservedWords()
     {{
         put(ReservedKeys.Variable, TokenType.DECLARE);
         put(ReservedKeys.Constant, TokenType.CONSTANT);
+        put(ReservedKeys.Function, TokenType.FUNCTION);
         put(ReservedKeys.Return, TokenType.RETURN);
     }};
 

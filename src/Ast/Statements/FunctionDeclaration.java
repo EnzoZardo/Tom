@@ -1,27 +1,34 @@
 package Ast.Statements;
 
 import Ast.Types.Enums.NodeType;
+
 import java.util.ArrayList;
 
-public class CallExpr extends Expr
+public class FunctionDeclaration extends Expr
 {
-    public final Expr caller;
+    public String identifier;
     public ArrayList<Expr> arguments;
 
-    protected CallExpr(
-            Expr caller,
-            ArrayList<Expr> arguments)
+    protected FunctionDeclaration(
+        String identifier,
+        ArrayList<Expr> arguments)
     {
-        super(NodeType.CallExpression);
+        super(NodeType.FunctionDeclaration);
+        this.identifier = identifier;
         this.arguments = arguments;
-        this.caller = caller;
     }
 
-    public static CallExpr create(
-            Expr caller,
-            ArrayList<Expr> arguments)
+    public static FunctionDeclaration create(
+        String identifier,
+        ArrayList<Expr> arguments)
     {
-        return new CallExpr(caller, arguments);
+        return new FunctionDeclaration(identifier, arguments);
+    }
+
+    public static FunctionDeclaration create(
+            String identifier)
+    {
+        return new FunctionDeclaration(identifier, new ArrayList<>());
     }
 
     private String printArgs(int level)
@@ -47,8 +54,8 @@ public class CallExpr extends Expr
         final int next = level + 1;
         return "\n" + "\t".repeat(level) + "{\n" +
                 "\t".repeat(next) + "node: " + type.toString() + ",\n" +
-                "\t".repeat(next) + "caller: " + caller.print(next) + ",\n" +
-                "\t".repeat(next) + "args: " + printArgs(next) + ",\n" +
+                "\t".repeat(next) + "identifier: " + identifier + ",\n" +
+                "\t".repeat(next) + "arguments: " + printArgs(next) + ",\n" +
                 "\t".repeat(level) + "}";
     }
 }

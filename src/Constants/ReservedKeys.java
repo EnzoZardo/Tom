@@ -19,12 +19,13 @@ public record ReservedKeys()
     public static final char Multiplication = '*';
     public static final char Equals = '=';
     public static final String Return = "retorne";
+    public static final String Function = "fun";
     public static final String Variable = "var";
     public static final String Constant = "const";
     public static final String Null = "nulo";
     public static final String True = "verdadeiro";
     public static final String False = "falso";
-    // Functions
+    // Native Functions
     public static final String Print = "escreva";
 }
 
