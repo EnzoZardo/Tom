@@ -313,7 +313,8 @@ public class Parser
         return switch (_peek().type)
         {
             case TokenType.IDENTIFIER -> Identifier.create(_consume());
-            case TokenType.NUMERIC -> NumericLiteral.create(_consume());
+            case TokenType.INTEGER -> IntegerLiteral.create(_consume());
+            case TokenType.FLOAT -> FloatLiteral.create(_consume());
             case TokenType.OPEN_PARENTHESIS -> _parseParenthesisExpr();
             default -> throw new InvalidTokenException(String.format("Unexpected Token '%s'.", _peek().value));
         };

@@ -15,7 +15,8 @@ public enum NodeType
     // These are literals
     Property,
     ObjectLiteral,
-    NumericLiteral,
+    IntegerValue,
+    FloatValue,
     Identifier,
     BinaryExpr,
 }

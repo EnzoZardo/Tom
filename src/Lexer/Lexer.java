@@ -138,11 +138,23 @@ public class Lexer
     private void _numeric(char c)
     {
         StringBuilder token = new StringBuilder(Character.toString(c));
-        while (_peek() != null && Character.isDigit(_peek()))
+        TokenType type = TokenType.INTEGER;
+
+        while (_peek() != null && (Character.isDigit(_peek()) || PonctuationToken.isDot(_peek())))
         {
+            if (PonctuationToken.isDot(_peek()) && type != TokenType.FLOAT)
+            {
+                type = TokenType.FLOAT;
+            }
+            else if (PonctuationToken.isDot(_peek()))
+            {
+                break;
+            }
+
             token.append(_consume());
         }
-        tokens.add(Token.create(TokenType.NUMERIC, token.toString()));
+
+        tokens.add(Token.create(type, token.toString()));
     }
 
     private void _consumeAndAdd(TokenType type, String value)
