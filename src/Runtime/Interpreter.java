@@ -7,7 +7,8 @@ import Exceptions.AlreadyDeclaredVariableException;
 import Runtime.Evaluate.Expressions;
 import Runtime.Evaluate.Statements;
 import Runtime.Types.RuntimeValue;
-import Runtime.Values.NumberValue;
+import Runtime.Values.NumericValue;
+import Runtime.Values.StringValue;
 
 public class Interpreter
 {
@@ -24,7 +25,9 @@ public class Interpreter
     {
         return switch (node.type)
         {
-            case NodeType.NumericLiteral -> NumberValue.create(((NumericLiteral) node).number);
+            case NodeType.IntegerValue -> NumericValue.create(((IntegerLiteral) node).number, true);
+            case NodeType.FloatValue -> NumericValue.create(((FloatLiteral) node).number, false);
+            case NodeType.StringValue -> StringValue.create(((StringLiteral) node).text);
             case NodeType.Identifier -> Expressions.evaluateIdentifier((Identifier) node, env);
             case NodeType.ObjectLiteral -> Expressions.evaluateObjectExpression((ObjectLiteral) node, env);
             case NodeType.CallExpression -> Expressions.evaluateCallExpression((CallExpr) node, env);

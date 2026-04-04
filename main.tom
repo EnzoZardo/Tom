@@ -1,11 +1,1 @@
-fun add(x, y)
-{
-    escreva(x + y)
-}
-
-var paraSomar = {
-    a: 1,
-    b: 2
-}
-
-add(paraSomar.a, paraSomar.b)
+escreva("Bom dia!" + 1)

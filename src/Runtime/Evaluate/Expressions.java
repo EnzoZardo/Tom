@@ -29,7 +29,7 @@ public class Expressions
         return env.lookupVariable(identifier.get());
     }
 
-    public static RuntimeValue evaluateNumericBinaryExpr(NumberValue left, NumberValue right, String operator)
+    public static RuntimeValue evaluateNumericBinaryExpr(NumericValue left, NumericValue right, String operator)
     {
         float result = 0.0F;
         if (operator.length() == 1)
@@ -37,13 +37,14 @@ public class Expressions
             result = switch (operator.toCharArray()[0])
             {
                 case ReservedKeys.Division -> evaluateDivision(left.number, right.number);
-                case ReservedKeys.Multiplication -> left.number.floatValue() * right.number.floatValue();
-                case ReservedKeys.Plus -> left.number.floatValue() + right.number.floatValue();
-                case ReservedKeys.Minus -> left.number.floatValue() - right.number.floatValue();
-                default -> left.number.floatValue() % right.number.floatValue();
+                case ReservedKeys.Multiplication -> left.number * right.number;
+                case ReservedKeys.Plus -> left.number + right.number;
+                case ReservedKeys.Minus -> left.number - right.number;
+                default -> left.number % right.number;
             };
         }
-        return NumberValue.create(result);
+
+        return NumericValue.create(result, left.isInteger && right.isInteger &&  operator.toCharArray()[0] != ReservedKeys.Division);
     }
 
     public static RuntimeValue evaluateBinaryExpr(BinaryExpr expr, Environment env) throws AlreadyDeclaredVariableException
@@ -51,12 +52,11 @@ public class Expressions
         RuntimeValue leftHandSide = Interpreter.evaluate(expr.left, env);
         RuntimeValue rightHandSide = Interpreter.evaluate(expr.right, env);
 
-        if (leftHandSide.type == ValueType.Number
-                && rightHandSide.type == ValueType.Number)
+        if (leftHandSide.type == ValueType.Numeric && rightHandSide.type == ValueType.Numeric)
         {
             return evaluateNumericBinaryExpr(
-                    (NumberValue) leftHandSide,
-                    (NumberValue) rightHandSide,
+                    (NumericValue) leftHandSide,
+                    (NumericValue) rightHandSide,
                     expr.operator);
         }
 
@@ -100,6 +100,7 @@ public class Expressions
     {
         RuntimeValue object = Interpreter.evaluate(memberExpr.object, env);
 
+        //TODO: verify, maybe check types unless instanceof
         if (object instanceof ObjectValue value)
         {
             /* TODO: this probably does not support computed properties, but we don't even have strings, so i will concern with this after */
