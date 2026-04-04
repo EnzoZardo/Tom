@@ -59,4 +59,9 @@ public class PonctuationToken extends Token
     {
         return ReservedKeys.Dot == c;
     }
+
+    public static boolean isQuotationMark(char c)
+    {
+        return ReservedKeys.Quote == c;
+    }
 }

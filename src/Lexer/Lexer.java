@@ -85,6 +85,10 @@ public class Lexer
             {
                 _consumeAndAdd(TokenType.COMMA, current);
             }
+            else if (PonctuationToken.isQuotationMark(current))
+            {
+                _string();
+            }
             else
             {
                 if (Token.isAlphabetic(current))
@@ -117,6 +121,19 @@ public class Lexer
         tokens.add(Token.create(TokenType.EOF, ""));
     }
 
+    private void _string()
+    {
+        _consume();
+        StringBuilder token = new StringBuilder();
+        while (_peek() != null && !PonctuationToken.isQuotationMark(_peek()))
+        {
+            //TODO: add support for escapes
+            token.append(_consume());
+        }
+        _consume();
+        tokens.add(Token.create(TokenType.STRING_LITERAL, token.toString()));
+    }
+
     private void _alphabetic(char c)
     {
         StringBuilder token = new StringBuilder(Character.toString(c));
@@ -138,13 +155,13 @@ public class Lexer
     private void _numeric(char c)
     {
         StringBuilder token = new StringBuilder(Character.toString(c));
-        TokenType type = TokenType.INTEGER;
+        TokenType type = TokenType.INTEGER_LITERAL;
 
         while (_peek() != null && (Character.isDigit(_peek()) || PonctuationToken.isDot(_peek())))
         {
-            if (PonctuationToken.isDot(_peek()) && type != TokenType.FLOAT)
+            if (PonctuationToken.isDot(_peek()) && type != TokenType.FLOAT_LITERAL)
             {
-                type = TokenType.FLOAT;
+                type = TokenType.FLOAT_LITERAL;
             }
             else if (PonctuationToken.isDot(_peek()))
             {

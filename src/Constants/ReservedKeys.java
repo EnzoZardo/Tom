@@ -15,6 +15,7 @@ public record ReservedKeys()
     public static final char Plus = '+';
     public static final char Minus = '-';
     public static final char Division = '/';
+    public static final char Quote = '"';
     public static final char Mod = '%';
     public static final char Multiplication = '*';
     public static final char Equals = '=';

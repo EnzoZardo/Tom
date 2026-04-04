@@ -17,6 +17,7 @@ public enum NodeType
     ObjectLiteral,
     IntegerValue,
     FloatValue,
+    StringValue,
     Identifier,
     BinaryExpr,
 }
