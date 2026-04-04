@@ -34,9 +34,10 @@ public class Expressions
         float result = 0.0F;
         if (operator.length() == 1)
         {
-            result = switch (operator.toCharArray()[0])
+            result = switch (operator)
             {
                 case ReservedKeys.Division -> evaluateDivision(left.number, right.number);
+                case ReservedKeys.IntegerDivision -> (int) evaluateDivision(left.number, right.number);
                 case ReservedKeys.Multiplication -> left.number * right.number;
                 case ReservedKeys.Plus -> left.number + right.number;
                 case ReservedKeys.Minus -> left.number - right.number;
@@ -44,7 +45,8 @@ public class Expressions
             };
         }
 
-        return NumericValue.create(result, left.isInteger && right.isInteger &&  operator.toCharArray()[0] != ReservedKeys.Division);
+        boolean isFloat = operator.equals(ReservedKeys.Division) && !operator.equals(ReservedKeys.IntegerDivision);
+        return NumericValue.create(result, left.isInteger && right.isInteger && !isFloat);
     }
 
     public static RuntimeValue evaluateBinaryExpr(BinaryExpr expr, Environment env) throws AlreadyDeclaredVariableException

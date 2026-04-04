@@ -29,18 +29,14 @@ public class Token
         return Character.isAlphabetic(c);
     }
 
-    public static boolean isBinaryOperator(char c)
+    public static boolean isAlphabeticBinaryOperator(char c)
     {
-        return ReservedKeys.Plus == c
-                || ReservedKeys.Minus == c
-                || ReservedKeys.Division == c
-                || ReservedKeys.Multiplication == c
-                || ReservedKeys.Mod == c;
+        return ReservedKeys.And.charAt(0) == c || ReservedKeys.Or.charAt(0) == c;
     }
 
     public static boolean isEquals(char c)
     {
-        return ReservedKeys.Equals == c;
+        return ReservedKeys.Equals.equals(Character.toString(c));
     }
 
     public static boolean isIgnorable(char c)

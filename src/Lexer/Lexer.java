@@ -1,5 +1,6 @@
 package Lexer;
 
+import Constants.ReservedBinaryOperators;
 import Constants.ReservedWords;
 import Exceptions.AlreadyParsedException;
 import Exceptions.InvalidTokenException;
@@ -65,9 +66,13 @@ public class Lexer
             {
                 _consumeAndAdd(TokenType.DOT, current);
             }
-            else if (Token.isBinaryOperator(current))
+            else if (PonctuationToken.isQuotationMark(current))
             {
-                _consumeAndAdd(TokenType.BINARY_OPERATOR, current);
+                _string();
+            }
+            else if (ReservedBinaryOperators.isReserved(Character.toString(current)) || Token.isAlphabeticBinaryOperator(current))
+            {
+                _binaryOperator(_consume());
             }
             else if (Token.isEquals(current))
             {
@@ -84,10 +89,6 @@ public class Lexer
             else if (PonctuationToken.isComma(current))
             {
                 _consumeAndAdd(TokenType.COMMA, current);
-            }
-            else if (PonctuationToken.isQuotationMark(current))
-            {
-                _string();
             }
             else
             {
@@ -121,17 +122,71 @@ public class Lexer
         tokens.add(Token.create(TokenType.EOF, ""));
     }
 
+    private void _binaryOperator(char c)
+    {
+        StringBuilder token = new StringBuilder(Character.toString(c));
+
+        if (Character.isAlphabetic(c))
+        {
+            while (_peek() != null && Character.isAlphabetic(_peek()))
+            {
+                token.append(_consume());
+            }
+
+            String tk = token.toString();
+            if (ReservedWords.isReserved(tk))
+            {
+                tokens.add(ReservedWords.token(tk));
+                return;
+            }
+
+            tokens.add(Token.create(TokenType.IDENTIFIER, token.toString()));
+            return;
+        }
+
+        while (_peek() != null
+            && ReservedBinaryOperators.isReserved(token.toString())
+            && ReservedBinaryOperators.isReserved(Character.toString(_peek())))
+        {
+            token.append(_consume());
+        }
+
+        tokens.add(ReservedBinaryOperators.token(token.toString()));
+    }
+
     private void _string()
     {
         _consume();
         StringBuilder token = new StringBuilder();
         while (_peek() != null && !PonctuationToken.isQuotationMark(_peek()))
         {
-            //TODO: add support for escapes
+            if (PonctuationToken.isBackslash(_peek()))
+            {
+                token.append(_stringEscape());
+                continue;
+            }
             token.append(_consume());
         }
         _consume();
         tokens.add(Token.create(TokenType.STRING_LITERAL, token.toString()));
+    }
+
+    private String _stringEscape()
+    {
+        String backslash = Character.toString(_consume());
+
+        return switch (_consume())
+        {
+            case 'n' -> "\n";
+            case 't' -> "\t";
+            case 'r' -> "\r";
+            case 'b' -> "\b";
+            case 'f' -> "\f";
+            case '\\' -> "\\";
+            case '\'' -> "'";
+            case '\"' -> "\"";
+            default -> backslash + _peek();
+        };
     }
 
     private void _alphabetic(char c)

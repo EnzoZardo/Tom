@@ -14,6 +14,8 @@ public record ReservedWords()
         put(ReservedKeys.Constant, TokenType.CONSTANT);
         put(ReservedKeys.Function, TokenType.FUNCTION);
         put(ReservedKeys.Return, TokenType.RETURN);
+        put(ReservedKeys.Or, TokenType.BINARY_OPERATOR);
+        put(ReservedKeys.And, TokenType.BINARY_OPERATOR);
     }};
 
     public static boolean isReserved(String value)

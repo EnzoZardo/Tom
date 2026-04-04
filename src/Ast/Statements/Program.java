@@ -41,7 +41,7 @@ public class Program extends Statement
         StringBuilder stmts = new StringBuilder();
         for (int i = 0; i < body.size(); i++)
         {
-            stmts.append(body.get(i).print(1));
+            stmts.append(body.get(i).print(2));
             if (i < body.size() - 1)
             {
                 stmts.append(',');

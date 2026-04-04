@@ -1,13 +1,10 @@
 import Ast.Statements.Program;
-import Exceptions.AlreadyDeclaredVariableException;
 import Exceptions.AlreadyParsedException;
 import Exceptions.InvalidArgumentException;
 import Exceptions.InvalidTokenException;
 import Parser.Parser;
-import Runtime.Environment;
-import Runtime.Interpreter;
 
-void main(String[] args) throws AlreadyParsedException, IOException, InvalidTokenException, InvalidArgumentException, AlreadyDeclaredVariableException
+void main(String[] args) throws AlreadyParsedException, IOException, InvalidTokenException, InvalidArgumentException
 {
 //    BufferedReader bf = new BufferedReader(new InputStreamReader(System.in));
     IO.println("Tom v1.0");
@@ -29,7 +26,8 @@ void main(String[] args) throws AlreadyParsedException, IOException, InvalidToke
 
     Parser parser = Parser.create(content.toCharArray());
     Program program = parser.build();
-    Interpreter.evaluate(program, Environment.create());
+    IO.println(program);
+//    Interpreter.evaluate(program, Environment.create());
 
 //    while (true)
 //    {

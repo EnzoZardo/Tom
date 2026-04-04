@@ -64,4 +64,9 @@ public class PonctuationToken extends Token
     {
         return ReservedKeys.Quote == c;
     }
+
+    public static boolean isBackslash(char c)
+    {
+        return ReservedKeys.Backslash == c;
+    }
 }
