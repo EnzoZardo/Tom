@@ -1,6 +1,6 @@
 package Lexer;
 
-import Constants.ReservedBinaryOperators;
+import Constants.ReservedOperators;
 import Constants.ReservedWords;
 import Exceptions.AlreadyParsedException;
 import Exceptions.InvalidTokenException;
@@ -70,9 +70,9 @@ public class Lexer
             {
                 _string();
             }
-            else if (ReservedBinaryOperators.isReserved(Character.toString(current)) || Token.isAlphabeticBinaryOperator(current))
+            else if (ReservedOperators.isReserved(Character.toString(current)) || Token.isAlphabeticOperator(current))
             {
-                _binaryOperator(_consume());
+                _operator(_consume());
             }
             else if (Token.isEquals(current))
             {
@@ -122,7 +122,7 @@ public class Lexer
         tokens.add(Token.create(TokenType.EOF, ""));
     }
 
-    private void _binaryOperator(char c)
+    private void _operator(char c)
     {
         StringBuilder token = new StringBuilder(Character.toString(c));
 
@@ -145,13 +145,13 @@ public class Lexer
         }
 
         while (_peek() != null
-            && ReservedBinaryOperators.isReserved(token.toString())
-            && ReservedBinaryOperators.isReserved(Character.toString(_peek())))
+            && ReservedOperators.isReserved(token.toString())
+            && ReservedOperators.isReserved(Character.toString(_peek())))
         {
             token.append(_consume());
         }
 
-        tokens.add(ReservedBinaryOperators.token(token.toString()));
+        tokens.add(ReservedOperators.token(token.toString()));
     }
 
     private void _string()

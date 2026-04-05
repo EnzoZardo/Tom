@@ -98,6 +98,26 @@ public class Parser
         return FunctionDeclaration.create(name, parameters, body);
     }
 
+    private Expr _parseUnaryExpr() throws InvalidTokenException, InvalidArgumentException
+    {
+        Expr unaryExpr = null;
+
+        while (ReservedKeys.Not.equals(_peek().value)
+            || ReservedKeys.Minus.equals(_peek().value)
+            || ReservedKeys.Plus.equals(_peek().value))
+        {
+            String operator = _consume().value;
+            Expr right = _parseBooleanExpr();
+            unaryExpr = UnaryExpr.create(right, operator);
+        }
+
+        if (unaryExpr == null) {
+            return _parseBooleanExpr();
+        }
+
+        return unaryExpr;
+    }
+
     private Expr _parseBooleanExpr() throws InvalidTokenException, InvalidArgumentException
     {
         Expr left = _parseCallMemberExpr();
@@ -284,14 +304,14 @@ public class Parser
 
     private Expr _parseMultiplicativeExpr() throws InvalidArgumentException, InvalidTokenException
     {
-        Expr left = _parseBooleanExpr();
+        Expr left = _parseUnaryExpr();
 
         while (ReservedKeys.Multiplication.equals(_peek().value)
             || ReservedKeys.Division.equals(_peek().value)
             || ReservedKeys.Mod.equals(_peek().value))
         {
             String operator = _consume().value;
-            Expr right = _parseBooleanExpr();
+            Expr right = _parseUnaryExpr();
             left = BinaryExpr.create(left, right, operator);
         }
 

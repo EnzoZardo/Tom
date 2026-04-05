@@ -45,5 +45,6 @@ public record ReservedKeys()
     public static final String Equality = "==";
     public static final String And = "e";
     public static final String Or = "ou";
+    public static final String Not = "negar";
 }
 

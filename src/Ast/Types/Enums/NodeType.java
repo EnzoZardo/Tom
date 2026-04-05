@@ -11,6 +11,8 @@ public enum NodeType
     AssignmentExpression,
     MemberExpression,
     CallExpression,
+    BinaryExpr,
+    UnaryExpr,
 
     // These are literals
     Property,
@@ -19,5 +21,4 @@ public enum NodeType
     FloatValue,
     StringValue,
     Identifier,
-    BinaryExpr,
 }

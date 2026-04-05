@@ -5,9 +5,10 @@ import Lexer.Types.Token;
 
 import java.util.Set;
 
-public record ReservedBinaryOperators()
+public record ReservedOperators()
 {
     private final static Set<String> relations = Set.of(
+        ReservedKeys.Not,
         ReservedKeys.Mod,
         ReservedKeys.Plus,
         ReservedKeys.Minus,

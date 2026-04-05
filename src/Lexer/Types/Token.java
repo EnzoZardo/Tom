@@ -29,7 +29,7 @@ public class Token
         return Character.isAlphabetic(c);
     }
 
-    public static boolean isAlphabeticBinaryOperator(char c)
+    public static boolean isAlphabeticOperator(char c)
     {
         return ReservedKeys.And.charAt(0) == c || ReservedKeys.Or.charAt(0) == c;
     }
