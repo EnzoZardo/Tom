@@ -28,6 +28,27 @@ public record ReservedOperators()
         return relations.contains(value);
     }
 
+    public static boolean isUnary(String operator)
+    {
+        return ReservedKeys.Not.equals(operator) || ReservedKeys.Minus.equals(operator) || ReservedKeys.Plus.equals(operator);
+    }
+
+    public static boolean isBooleanOperator(String operator)
+    {
+        return ReservedKeys.GreaterOrEqual.equals(operator)
+                || ReservedKeys.MinorOrEqual.equals(operator)
+                || ReservedKeys.Equality.equals(operator)
+                || ReservedKeys.Greater.equals(operator)
+                || ReservedKeys.And.equals(operator)
+                || ReservedKeys.Minor.equals(operator)
+                || ReservedKeys.Or.equals(operator);
+    }
+
+    public static boolean isAdditiveOperator(String operator)
+    {
+        return ReservedKeys.Plus.equals(operator) || ReservedKeys.Minus.equals(operator);
+    }
+
     public static Token token(String value)
     {
         if (ReservedKeys.Equals.equals(value)) {

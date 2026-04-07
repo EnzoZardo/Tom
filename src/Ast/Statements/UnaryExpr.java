@@ -1,6 +1,11 @@
 package Ast.Statements;
 
 import Ast.Types.Enums.NodeType;
+import Constants.ReservedKeys;
+import Constants.ReservedOperators;
+import Exceptions.InvalidArgumentException;
+import Exceptions.InvalidTokenException;
+import Parser.Parser;
 
 public class UnaryExpr extends Expr
 {
@@ -14,6 +19,18 @@ public class UnaryExpr extends Expr
         super(NodeType.UnaryExpr);
         this.right = right;
         this.operator = operator;
+    }
+
+    public static Expr parse(Parser parser) throws InvalidTokenException, InvalidArgumentException
+    {
+        if (ReservedOperators.isUnary(parser.peekValue()))
+        {
+            String operator = parser.consume().value;
+            Expr right = UnaryExpr.parse(parser);
+            return UnaryExpr.create(right, operator);
+        }
+
+        return BinaryExpr.parseBoolean(parser);
     }
 
     public static UnaryExpr create(

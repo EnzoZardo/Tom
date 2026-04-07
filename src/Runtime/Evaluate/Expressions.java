@@ -18,6 +18,7 @@ import java.util.ArrayList;
 
 public class Expressions
 {
+    //TODO: if something is not expected, throw exception, don't just return nullvalue
     public static float evaluateDivision(Number left, Number right)
     {
         //TODO: checks, like zero division
@@ -31,22 +32,53 @@ public class Expressions
 
     public static RuntimeValue evaluateNumericBinaryExpr(NumericValue left, NumericValue right, String operator)
     {
-        float result = 0.0F;
-        if (operator.length() == 1)
+        float result = switch (operator)
         {
-            result = switch (operator)
-            {
-                case ReservedKeys.Division -> evaluateDivision(left.number, right.number);
-                case ReservedKeys.IntegerDivision -> (int) evaluateDivision(left.number, right.number);
-                case ReservedKeys.Multiplication -> left.number * right.number;
-                case ReservedKeys.Plus -> left.number + right.number;
-                case ReservedKeys.Minus -> left.number - right.number;
-                default -> left.number % right.number;
+            case ReservedKeys.Division -> evaluateDivision(left.number, right.number);
+            case ReservedKeys.IntegerDivision -> (int) evaluateDivision(left.number, right.number);
+            case ReservedKeys.Multiplication -> left.number * right.number;
+            case ReservedKeys.Plus -> left.number + right.number;
+            case ReservedKeys.Minus -> left.number - right.number;
+            case ReservedKeys.Mod -> left.number % right.number;
+            default -> 0;
+        };
+
+        boolean isFloat = !operator.equals(ReservedKeys.IntegerDivision);
+        return NumericValue.create(result, left.isInteger && right.isInteger && !isFloat);
+    }
+
+    public static RuntimeValue evaluateUnaryExpr(UnaryExpr expr, Environment env) throws AlreadyDeclaredVariableException
+    {
+        RuntimeValue rightHandSide = Interpreter.evaluate(expr.right, env);
+
+        if (ReservedKeys.Not.equals(expr.operator))
+        {
+            return switch (rightHandSide.type) {
+                case ValueType.Numeric -> BooleanValue.create(((NumericValue) rightHandSide).number == 0);
+                case ValueType.Boolean -> BooleanValue.create(!((BooleanValue) rightHandSide).value);
+                case ValueType.String -> BooleanValue.create(((StringValue) rightHandSide).text.isEmpty());
+                case ValueType.Object -> BooleanValue.create(
+                    ((ObjectValue) rightHandSide).properties.isEmpty()
+                    || ((ObjectValue) rightHandSide).properties.values().stream().allMatch(x -> x.type == ValueType.Null));
+                case ValueType.Null -> BooleanValue.create(true);
+                //TODO: throw
+                default -> NullValue.create();
             };
         }
 
-        boolean isFloat = operator.equals(ReservedKeys.Division) && !operator.equals(ReservedKeys.IntegerDivision);
-        return NumericValue.create(result, left.isInteger && right.isInteger && !isFloat);
+        if (ReservedKeys.Minus.equals(expr.operator)
+            || ReservedKeys.Plus.equals(expr.operator)
+            && rightHandSide.type == ValueType.Numeric)
+        {
+            NumericValue val = (NumericValue) rightHandSide;
+            if (ReservedKeys.Minus.equals(expr.operator)) {
+                return val.oposite();
+            }
+            return val;
+        }
+
+        //TODO: throw
+        return NullValue.create();
     }
 
     public static RuntimeValue evaluateBinaryExpr(BinaryExpr expr, Environment env) throws AlreadyDeclaredVariableException
@@ -62,6 +94,7 @@ public class Expressions
                     expr.operator);
         }
 
+        //TODO: throw
         return NullValue.create();
     }
 

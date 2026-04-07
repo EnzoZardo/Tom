@@ -33,6 +33,7 @@ public class Interpreter
             case NodeType.CallExpression -> Expressions.evaluateCallExpression((CallExpr) node, env);
             case NodeType.MemberExpression -> Expressions.evaluateMemberExpression((MemberExpr) node, env);
             case NodeType.AssignmentExpression -> Expressions.evaluateVariableAssignment((AssignmentExpr) node, env);
+            case NodeType.UnaryExpr -> Expressions.evaluateUnaryExpr((UnaryExpr) node, env);
             case NodeType.BinaryExpr -> Expressions.evaluateBinaryExpr((BinaryExpr) node, env);
             case NodeType.Program -> Statements.evaluateProgram((Program) node, env);
             case NodeType.VariableDeclaration ->

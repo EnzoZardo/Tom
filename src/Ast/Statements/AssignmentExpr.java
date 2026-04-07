@@ -1,6 +1,10 @@
 package Ast.Statements;
 
 import Ast.Types.Enums.NodeType;
+import Exceptions.InvalidArgumentException;
+import Exceptions.InvalidTokenException;
+import Lexer.Types.Enums.TokenType;
+import Parser.Parser;
 
 public class AssignmentExpr extends Expr
 {
@@ -14,6 +18,20 @@ public class AssignmentExpr extends Expr
         super(NodeType.AssignmentExpression);
         this.assigned = assigned;
         this.value = right;
+    }
+
+    public static Expr parse(Parser parser) throws InvalidTokenException, InvalidArgumentException
+    {
+        Expr left = ObjectLiteral.parse(parser);
+
+        if (parser.peekIs(TokenType.EQUALS))
+        {
+            parser.consume();
+            Expr value = AssignmentExpr.parse(parser);
+            return AssignmentExpr.create(left, value);
+        }
+
+        return left;
     }
 
     public static AssignmentExpr create(

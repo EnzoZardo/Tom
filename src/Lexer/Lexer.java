@@ -145,9 +145,15 @@ public class Lexer
         }
 
         while (_peek() != null
-            && ReservedOperators.isReserved(token.toString())
-            && ReservedOperators.isReserved(Character.toString(_peek())))
+                && ReservedOperators.isReserved(token.toString())
+                && ReservedOperators.isReserved(Character.toString(_peek())))
         {
+            if (!ReservedOperators.isReserved(token + Character.toString(_peek())))
+            {
+                tokens.add(ReservedOperators.token(token.toString()));
+                token = new StringBuilder(Character.toString(_consume()));
+                continue;
+            }
             token.append(_consume());
         }
 

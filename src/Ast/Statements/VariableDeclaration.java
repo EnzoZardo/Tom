@@ -2,6 +2,12 @@ package Ast.Statements;
 
 import Ast.Types.Enums.NodeType;
 import Ast.Types.Statement;
+import Exceptions.InvalidArgumentException;
+import Exceptions.InvalidTokenException;
+import Exceptions.NullConstantException;
+import Lexer.Types.Enums.TokenType;
+import Lexer.Types.Token;
+import Parser.Parser;
 
 public class VariableDeclaration extends Statement
 {
@@ -18,6 +24,22 @@ public class VariableDeclaration extends Statement
         this.value = value;
         this.identifier = identifier;
         this.constant = constant;
+    }
+
+    public static VariableDeclaration parse(Parser parser) throws InvalidTokenException, InvalidArgumentException
+    {
+        boolean isConstant = parser.consume().type == TokenType.CONSTANT;
+        Token identifierToken = parser.expect(TokenType.IDENTIFIER, "Expecting identifier name following let/const.");
+        String identifier = identifierToken.value;
+
+        if (parser.peekIs(TokenType.SEMICOLON))
+        {
+            parser.consume();
+            NullConstantException.ThrowIf(isConstant);
+            return VariableDeclaration.notInstanced(identifier);
+        }
+        parser.expect(TokenType.EQUALS, "Expecting equals token to declare a variable.");
+        return VariableDeclaration.create(Expr.parse(parser), identifier, isConstant);
     }
 
     public static VariableDeclaration create(

@@ -2,10 +2,16 @@ package Ast.Statements;
 
 import Ast.Types.Enums.NodeType;
 import Ast.Types.Statement;
+import Exceptions.InvalidArgumentException;
+import Exceptions.InvalidNodeException;
+import Exceptions.InvalidTokenException;
+import Lexer.Types.Enums.TokenType;
+import Lexer.Types.Token;
+import Parser.Parser;
 
 import java.util.ArrayList;
 
-public class FunctionDeclaration extends Expr
+public class FunctionDeclaration extends Statement
 {
     public String identifier;
     public ArrayList<String> parameters;
@@ -20,6 +26,37 @@ public class FunctionDeclaration extends Expr
         this.identifier = identifier;
         this.parameters = parameters;
         this.body = body;
+    }
+
+    public static Statement parse(Parser parser) throws InvalidTokenException, InvalidArgumentException
+    {
+        parser.consume();
+        Token identifierToken = parser.expect(TokenType.IDENTIFIER, "Expecting identifier name following function.");
+        String name = identifierToken.value;
+
+        ArrayList<Expr> parametersIdentifiers = CallExpr.parseArgs(parser);
+        ArrayList<String> parameters = new ArrayList<>();
+
+        for (Expr identifier : parametersIdentifiers)
+        {
+            if (identifier.type != NodeType.Identifier)
+            {
+                throw new InvalidNodeException("Expected parameter identifier in parameters list.");
+            }
+
+            parameters.add(((Identifier) identifier).get());
+        }
+
+        parser.expect(TokenType.OPEN_BRACE, "Expecting '{' after function arguments declaration.");
+        ArrayList<Statement> body = new ArrayList<>();
+
+        while (parser.notEof() && !parser.peekIs(TokenType.CLOSE_BRACE)) {
+            body.add(Statement.parse(parser));
+        }
+
+        parser.expect(TokenType.CLOSE_BRACE, "Expecting '}' after function body declaration.");
+
+        return FunctionDeclaration.create(name, parameters, body);
     }
 
     public static FunctionDeclaration create(

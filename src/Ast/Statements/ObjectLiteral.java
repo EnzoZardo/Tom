@@ -1,6 +1,11 @@
 package Ast.Statements;
 
 import Ast.Types.Enums.NodeType;
+import Exceptions.InvalidArgumentException;
+import Exceptions.InvalidTokenException;
+import Lexer.Types.Enums.TokenType;
+import Lexer.Types.Token;
+import Parser.Parser;
 
 import java.util.ArrayList;
 
@@ -17,6 +22,52 @@ public class ObjectLiteral extends Expr
     public static ObjectLiteral create(ArrayList<Property> properties)
     {
         return new ObjectLiteral(properties);
+    }
+
+    public static Expr parse(Parser parser) throws InvalidTokenException, InvalidArgumentException
+    {
+        if (!parser.peekIs(TokenType.OPEN_BRACE))
+        {
+            return BinaryExpr.parseAdditive(parser);
+        }
+        parser.consume();
+
+        ArrayList<Property> properties = new ArrayList<>();
+        while (parser.notEof() && !parser.peekIs(TokenType.CLOSE_BRACE))
+        {
+            Token key = parser.expect(TokenType.IDENTIFIER, "Expecting identifier as object key.");
+
+            if (parser.peekIs(TokenType.COMMA))
+            {
+                parser.consume();
+                properties.add(Property.create(key.value));
+                continue;
+            }
+
+            if (parser.peekIs(TokenType.CLOSE_BRACE))
+            {
+                properties.add(Property.create(key.value));
+                continue;
+            }
+
+            parser.expect(TokenType.COLON, "Expecting colon after object key.");
+            Expr value = Expr.parse(parser);
+
+            if (!parser.peekIs(TokenType.CLOSE_BRACE))
+            {
+                parser.expect(TokenType.COMMA, "Invalid token found parsing object. Expected comma or close brace.");
+            }
+
+            if (parser.peekIs(TokenType.COMMA))
+            {
+                parser.consume();
+            }
+
+            properties.add(Property.create(key.value, value));
+        }
+
+        parser.expect(TokenType.CLOSE_BRACE, "Expecting a close brace after last object value.");
+        return ObjectLiteral.create(properties);
     }
 
     public static ObjectLiteral create()
