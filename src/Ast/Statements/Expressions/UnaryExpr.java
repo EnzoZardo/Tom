@@ -1,7 +1,6 @@
-package Ast.Statements;
+package Ast.Statements.Expressions;
 
-import Ast.Types.Enums.NodeType;
-import Constants.ReservedKeys;
+import Ast.Enums.NodeType;
 import Constants.ReservedOperators;
 import Exceptions.InvalidArgumentException;
 import Exceptions.InvalidTokenException;

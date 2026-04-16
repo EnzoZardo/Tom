@@ -3,6 +3,7 @@ package Lexer.Types.Enums;
 public enum TokenType
 {
     RETURN,
+    TYPE,
     SEMICOLON,
     DECLARE,
     CONSTANT,

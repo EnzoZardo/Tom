@@ -1,15 +1,14 @@
 package Runtime.Evaluate;
 
-import Ast.Statements.FunctionDeclaration;
-import Ast.Statements.Program;
-import Ast.Statements.VariableDeclaration;
-import Ast.Types.Statement;
+import Ast.Statements.*;
 import Exceptions.AlreadyDeclaredVariableException;
+import Exceptions.ExpectedTypeNotMatch;
 import Runtime.Environment;
 import Runtime.Interpreter;
 import Runtime.Types.RuntimeValue;
 import Runtime.Values.FunctionValue;
 import Runtime.Values.NullValue;
+import Runtime.TypeChecker;
 
 public class Statements
 {
@@ -32,7 +31,19 @@ public class Statements
                 ? NullValue.create()
                 : Interpreter.evaluate(declaration.value, env);
 
+        if (!TypeChecker.check(env, value, declaration.expectedType) && declaration.value != null)
+        {
+            throw new ExpectedTypeNotMatch(String.format("Wrong type informed for variable %s", declaration.identifier));
+        }
+
         return env.declareVariable(declaration.identifier, value, declaration.constant);
+    }
+
+    public static RuntimeValue evaluateTypeDeclaration(
+            TypeDeclaration declaration, Environment env) throws AlreadyDeclaredVariableException
+    {
+        env.declareType(declaration.identifier, declaration.value);
+        return NullValue.create();
     }
 
     public static RuntimeValue evaluateFunctionDeclaration(

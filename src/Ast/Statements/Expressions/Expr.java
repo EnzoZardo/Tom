@@ -1,12 +1,12 @@
-package Ast.Statements;
+package Ast.Statements.Expressions;
 
-import Ast.Types.Enums.NodeType;
-import Ast.Types.Statement;
+import Ast.Enums.NodeType;
+import Ast.Statements.Statement;
 import Exceptions.InvalidArgumentException;
 import Exceptions.InvalidTokenException;
 import Parser.Parser;
 
-public class Expr extends Statement
+public abstract class Expr extends Statement
 {
     public Expr(NodeType type)
     {

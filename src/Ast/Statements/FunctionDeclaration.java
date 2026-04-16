@@ -1,30 +1,38 @@
 package Ast.Statements;
 
-import Ast.Types.Enums.NodeType;
-import Ast.Types.Statement;
+import Ast.Statements.Expressions.CallExpr;
+import Ast.Statements.Expressions.Expr;
+import Ast.Statements.Expressions.Identifier;
+import Ast.Enums.NodeType;
+import Ast.Statements.Types.Type;
 import Exceptions.InvalidArgumentException;
 import Exceptions.InvalidNodeException;
 import Exceptions.InvalidTokenException;
 import Lexer.Types.Enums.TokenType;
 import Lexer.Types.Token;
 import Parser.Parser;
+import Types.ArgumentMetadata;
+import Types.ExprMetadata;
 
 import java.util.ArrayList;
 
 public class FunctionDeclaration extends Statement
 {
     public String identifier;
-    public ArrayList<String> parameters;
+    public Type returnType;
+    public ArrayList<ArgumentMetadata> parameters;
     public ArrayList<Statement> body;
 
     protected FunctionDeclaration(
         String identifier,
-        ArrayList<String> parameters,
-        ArrayList<Statement> body)
+        ArrayList<ArgumentMetadata> parameters,
+        ArrayList<Statement> body,
+        Type returnType)
     {
         super(NodeType.FunctionDeclaration);
         this.identifier = identifier;
         this.parameters = parameters;
+        this.returnType = returnType;
         this.body = body;
     }
 
@@ -34,20 +42,24 @@ public class FunctionDeclaration extends Statement
         Token identifierToken = parser.expect(TokenType.IDENTIFIER, "Expecting identifier name following function.");
         String name = identifierToken.value;
 
-        ArrayList<Expr> parametersIdentifiers = CallExpr.parseArgs(parser);
-        ArrayList<String> parameters = new ArrayList<>();
+        ArrayList<ExprMetadata> parametersMetadata = CallExpr.parseArgsDeclaration(parser);
+        ArrayList<ArgumentMetadata> parameters = new ArrayList<>();
 
-        for (Expr identifier : parametersIdentifiers)
+        for (ExprMetadata metadata : parametersMetadata)
         {
-            if (identifier.type != NodeType.Identifier)
+            Expr id = metadata.getExpr();
+            if (id.type != NodeType.Identifier)
             {
                 throw new InvalidNodeException("Expected parameter identifier in parameters list.");
             }
 
-            parameters.add(((Identifier) identifier).get());
+            parameters.add(ArgumentMetadata.create(metadata.getType(), ((Identifier) id).get()));
         }
 
-        parser.expect(TokenType.OPEN_BRACE, "Expecting '{' after function arguments declaration.");
+        parser.expect(TokenType.COLON, "Expecting ':' after function arguments declaration.");
+        Type type = Type.parse(parser);
+
+        parser.expect(TokenType.OPEN_BRACE, "Expecting '{' after function type declaration.");
         ArrayList<Statement> body = new ArrayList<>();
 
         while (parser.notEof() && !parser.peekIs(TokenType.CLOSE_BRACE)) {
@@ -56,15 +68,16 @@ public class FunctionDeclaration extends Statement
 
         parser.expect(TokenType.CLOSE_BRACE, "Expecting '}' after function body declaration.");
 
-        return FunctionDeclaration.create(name, parameters, body);
+        return FunctionDeclaration.create(name, parameters, body, type);
     }
 
     public static FunctionDeclaration create(
         String identifier,
-        ArrayList<String> parameters,
-        ArrayList<Statement> body)
+        ArrayList<ArgumentMetadata> parameters,
+        ArrayList<Statement> body,
+        Type returnType)
     {
-        return new FunctionDeclaration(identifier, parameters, body);
+        return new FunctionDeclaration(identifier, parameters, body, returnType);
     }
 
 
@@ -74,11 +87,16 @@ public class FunctionDeclaration extends Statement
         final int next = level + 1;
         StringBuilder ret = new StringBuilder("\n").repeat("\t", level)
                 .append("[\n");
-        for (String parameter : parameters)
+        for (ArgumentMetadata parameter : parameters)
         {
             ret.repeat("\t", next)
-                    .append(parameter)
+                    .append("name: ")
+                    .append(parameter.getName())
                     .append(',')
+                    .append('\n')
+                    .repeat("\t", next)
+                    .append("type: ")
+                    .append(parameter.getType().print(next))
                     .append('\n');
         }
         return ret.repeat("\t", level)
@@ -108,6 +126,7 @@ public class FunctionDeclaration extends Statement
     {
         final int next = level + 1;
         return "\n" + "\t".repeat(level) + "{\n" +
+                "\t".repeat(next) + "type: " + type.toString() + ",\n" +
                 "\t".repeat(next) + "node: " + type.toString() + ",\n" +
                 "\t".repeat(next) + "identifier: " + identifier + ",\n" +
                 "\t".repeat(next) + "parameters: " + printParams(next) + ",\n" +

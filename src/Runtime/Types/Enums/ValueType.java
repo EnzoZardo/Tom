@@ -6,6 +6,7 @@ public enum ValueType
     Object,
     Numeric,
     String,
+    Type,
     Boolean,
     NativeFunction,
     Function,

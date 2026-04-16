@@ -1,7 +1,7 @@
 package Parser;
 
 import Ast.Statements.*;
-import Ast.Types.Statement;
+import Ast.Statements.Statement;
 import Exceptions.*;
 import Lexer.Lexer;
 import Lexer.Types.Enums.TokenType;

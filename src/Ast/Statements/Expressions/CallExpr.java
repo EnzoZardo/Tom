@@ -1,10 +1,12 @@
-package Ast.Statements;
+package Ast.Statements.Expressions;
 
-import Ast.Types.Enums.NodeType;
+import Ast.Enums.NodeType;
+import Ast.Statements.Types.Type;
 import Exceptions.InvalidArgumentException;
 import Exceptions.InvalidTokenException;
 import Lexer.Types.Enums.TokenType;
 import Parser.Parser;
+import Types.ExprMetadata;
 
 import java.util.ArrayList;
 
@@ -55,16 +57,54 @@ public class CallExpr extends Expr
         return args;
     }
 
+    public static ArrayList<ExprMetadata> parseArgumentsDeclarationList(Parser parser) throws InvalidTokenException, InvalidArgumentException
+    {
+        ArrayList<ExprMetadata> args = new ArrayList<>();
+        Expr assignmentExpr = AssignmentExpr.parse(parser);
+        parser.expect(TokenType.COLON, "Expected ':' on function declaration");
+        Type type = Type.parse(parser);
+        args.add(ExprMetadata.create(type, assignmentExpr));
+
+        while (parser.notEof() && parser.peekIs(TokenType.COMMA))
+        {
+            parser.consume();
+            assignmentExpr = AssignmentExpr.parse(parser);
+            parser.expect(TokenType.COLON, "Expected ':' on function declaration");
+            type = Type.parse(parser);
+            args.add(ExprMetadata.create(type, assignmentExpr));
+        }
+
+        return args;
+    }
+
     public static ArrayList<Expr> parseArgs(Parser parser) throws InvalidTokenException, InvalidArgumentException
     {
         parser.expect(TokenType.OPEN_PARENTHESIS, "Expected open parenthesis");
 
         if (parser.peekIs(TokenType.CLOSE_PARENTHESIS))
         {
+            parser.consume();
             return new ArrayList<>();
         }
 
         ArrayList<Expr> args = CallExpr.parseArgumentsList(parser);
+
+        parser.expect(TokenType.CLOSE_PARENTHESIS, "Missing close parenthesis in arguments list.");
+
+        return args;
+    }
+
+    public static ArrayList<ExprMetadata> parseArgsDeclaration(Parser parser) throws InvalidTokenException, InvalidArgumentException
+    {
+        parser.expect(TokenType.OPEN_PARENTHESIS, "Expected open parenthesis");
+
+        if (parser.peekIs(TokenType.CLOSE_PARENTHESIS))
+        {
+            parser.consume();
+            return new ArrayList<>();
+        }
+
+        ArrayList<ExprMetadata> args = CallExpr.parseArgumentsDeclarationList(parser);
 
         parser.expect(TokenType.CLOSE_PARENTHESIS, "Missing close parenthesis in arguments list.");
 

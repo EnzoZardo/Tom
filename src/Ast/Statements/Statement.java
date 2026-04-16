@@ -1,9 +1,7 @@
-package Ast.Types;
+package Ast.Statements;
 
-import Ast.Statements.Expr;
-import Ast.Statements.FunctionDeclaration;
-import Ast.Statements.VariableDeclaration;
-import Ast.Types.Enums.NodeType;
+import Ast.Statements.Expressions.Expr;
+import Ast.Enums.NodeType;
 import Exceptions.InvalidArgumentException;
 import Exceptions.InvalidTokenException;
 import Lexer.Types.Enums.TokenType;
@@ -23,6 +21,7 @@ public abstract class Statement
         return switch (parser.peekType())
         {
             case TokenType.DECLARE, TokenType.CONSTANT -> VariableDeclaration.parse(parser);
+            case TokenType.TYPE ->  TypeDeclaration.parse(parser);
             case TokenType.FUNCTION -> FunctionDeclaration.parse(parser);
             default -> Expr.parse(parser);
         };

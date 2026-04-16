@@ -1,4 +1,4 @@
-package Ast.Types.Enums;
+package Ast.Enums;
 
 public enum NodeType
 {
@@ -6,6 +6,7 @@ public enum NodeType
     Program,
     VariableDeclaration,
     FunctionDeclaration,
+    TypeDeclaration,
 
     // These are expressions
     AssignmentExpression,

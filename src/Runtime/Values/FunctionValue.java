@@ -1,47 +1,52 @@
 package Runtime.Values;
 
 import Ast.Statements.FunctionDeclaration;
-import Ast.Types.Statement;
+import Ast.Statements.Statement;
+import Ast.Statements.Types.Type;
 import Runtime.Types.Enums.ValueType;
 import Runtime.Types.RuntimeValue;
-import Types.Pair;
 
 import java.util.ArrayList;
-import java.util.function.Function;
+
 import Runtime.Environment;
+import Types.ArgumentMetadata;
 
 public class FunctionValue extends RuntimeValue
 {
     public String name;
     public ArrayList<Statement> body;
-    public ArrayList<String> parameters;
+    public ArrayList<ArgumentMetadata> parameters;
+    public Type returnType;
     public Environment declarationEnv;
 
     protected FunctionValue(
         String name,
         ArrayList<Statement> body,
-        ArrayList<String> parameters,
+        ArrayList<ArgumentMetadata> parameters,
+        Type returnType,
         Environment declarationEnv)
     {
         super(ValueType.Function);
         this.name = name;
         this.body = body;
         this.parameters = parameters;
+        this.returnType = returnType;
         this.declarationEnv = declarationEnv;
     }
 
     public static FunctionValue create(
             String name,
             ArrayList<Statement> body,
-            ArrayList<String> parameters,
+            ArrayList<ArgumentMetadata> parameters,
+            Type returnType,
             Environment declarationEnv)
     {
-        return new FunctionValue(name, body, parameters, declarationEnv);
+        return new FunctionValue(name, body, parameters, returnType, declarationEnv);
     }
 
     public static FunctionValue createFromStatement(FunctionDeclaration statement, Environment env)
     {
-        return new FunctionValue(statement.identifier, statement.body, statement.parameters, env);
+        return new FunctionValue(statement.identifier, statement.body, statement.parameters, statement.returnType, env);
     }
 
     @Override

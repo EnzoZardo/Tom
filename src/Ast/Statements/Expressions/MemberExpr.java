@@ -1,6 +1,6 @@
-package Ast.Statements;
+package Ast.Statements.Expressions;
 
-import Ast.Types.Enums.NodeType;
+import Ast.Enums.NodeType;
 import Exceptions.InvalidArgumentException;
 import Exceptions.InvalidNodeException;
 import Exceptions.InvalidTokenException;
@@ -35,7 +35,8 @@ public class MemberExpr extends Expr
             boolean computed;
             Expr property;
 
-            if (operator.type == TokenType.DOT) {
+            if (operator.type == TokenType.DOT)
+            {
                 computed = false;
                 property = PrimaryExpr.parse(parser);
 

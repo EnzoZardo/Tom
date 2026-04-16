@@ -1,6 +1,6 @@
-package Ast.Statements;
+package Ast.Statements.Expressions;
 
-import Ast.Types.Enums.NodeType;
+import Ast.Enums.NodeType;
 
 public class Property extends Expr
 {

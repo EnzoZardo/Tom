@@ -21,9 +21,9 @@ public record ReservedKeys()
     // Reserved Keys
     public static final String Return = "retorne";
     public static final String Function = "fun";
-    public static final String Variable = "var";
+    public static final String Variable = "dec";
     public static final String Constant = "const";
-    public static final String Null = "nulo";
+    public static final String Type = "tipo";
     public static final String True = "verdadeiro";
     public static final String False = "falso";
 
@@ -46,5 +46,15 @@ public record ReservedKeys()
     public static final String And = "e";
     public static final String Or = "ou";
     public static final String Not = "nao";
+
+    // Primitive Types
+    public static final String Float = "real";
+    public static final String String = "texto";
+    public static final String Object = "objeto";
+    public static final String Boolean = "logico";
+    public static final String Char = "caractere";
+    public static final String Integer = "inteiro";
+    public static final String Null = "nulo";
+
 }
 

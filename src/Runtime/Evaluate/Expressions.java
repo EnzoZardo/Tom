@@ -1,8 +1,8 @@
 package Runtime.Evaluate;
 
-import Ast.Statements.*;
-import Ast.Types.Enums.NodeType;
-import Ast.Types.Statement;
+import Ast.Statements.Expressions.*;
+import Ast.Enums.NodeType;
+import Ast.Statements.Statement;
 import Constants.ReservedKeys;
 import Exceptions.AlreadyDeclaredVariableException;
 import Exceptions.InvalidCallException;
@@ -72,7 +72,7 @@ public class Expressions
         {
             NumericValue val = (NumericValue) rightHandSide;
             if (ReservedKeys.Minus.equals(expr.operator)) {
-                return val.oposite();
+                return val.opposite();
             }
             return val;
         }
@@ -166,7 +166,7 @@ public class Expressions
 
             for (int i = 0; i < function.parameters.size(); i++)
             {
-                String name = function.parameters.get(i);
+                String name = function.parameters.get(i).getName();
                 scope.declareVariable(name, args.get(i), false);
             }
 

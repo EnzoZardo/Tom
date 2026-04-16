@@ -20,11 +20,14 @@ public class NumericValue extends RuntimeValue
         return new NumericValue(number, isInteger);
     }
 
-    public NumericValue oposite()
+    public NumericValue opposite()
     {
         this.number = -this.number;
         return this;
     }
+
+//
+
 
     @Override
     public String print(int level) {

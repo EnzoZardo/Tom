@@ -1,1 +1,7 @@
-escreva(nao nao nao nao nao verdadeiro)
+fun teste(a: inteiro): nulo {
+    a
+}
+
+dec wrap: (texto): nulo = teste
+
+escreva(wrap("a"))

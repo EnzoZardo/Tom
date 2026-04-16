@@ -1,7 +1,10 @@
 package Ast.Statements;
 
-import Ast.Types.Enums.NodeType;
-import Ast.Types.Statement;
+import Ast.Statements.Expressions.Expr;
+import Ast.Enums.NodeType;
+import Ast.Statements.Types.Type;
+import Constants.ReservedKeys;
+import Constants.ReservedOperators;
 import Exceptions.InvalidArgumentException;
 import Exceptions.InvalidTokenException;
 import Exceptions.NullConstantException;
@@ -11,49 +14,56 @@ import Parser.Parser;
 
 public class VariableDeclaration extends Statement
 {
+    public Type expectedType;
     public Expr value;
     public boolean constant;
     public String identifier;
 
     protected VariableDeclaration(
             Expr value,
+            Type expectedType,
             String identifier,
             boolean constant)
     {
         super(NodeType.VariableDeclaration);
+        this.expectedType = expectedType;
         this.value = value;
-        this.identifier = identifier;
         this.constant = constant;
+        this.identifier = identifier;
     }
 
     public static VariableDeclaration parse(Parser parser) throws InvalidTokenException, InvalidArgumentException
     {
         boolean isConstant = parser.consume().type == TokenType.CONSTANT;
-        Token identifierToken = parser.expect(TokenType.IDENTIFIER, "Expecting identifier name following let/const.");
+        Token identifierToken = parser.expect(TokenType.IDENTIFIER, "Expecting identifier name following var/const.");
         String identifier = identifierToken.value;
+
+        parser.expect(TokenType.COLON, "Expecting ':' on after variable declaration");
+        Type type = Type.parse(parser);
 
         if (parser.peekIs(TokenType.SEMICOLON))
         {
             parser.consume();
             NullConstantException.ThrowIf(isConstant);
-            return VariableDeclaration.notInstanced(identifier);
+            return VariableDeclaration.notInstanced(identifier, type);
         }
         parser.expect(TokenType.EQUALS, "Expecting equals token to declare a variable.");
-        return VariableDeclaration.create(Expr.parse(parser), identifier, isConstant);
+        return VariableDeclaration.create(Expr.parse(parser), type, identifier, isConstant);
     }
 
     public static VariableDeclaration create(
             Expr value,
+            Type type,
             String identifier,
             boolean constant)
     {
-        return new VariableDeclaration(value, identifier, constant);
+        return new VariableDeclaration(value, type, identifier, constant);
     }
 
     public static VariableDeclaration notInstanced(
-            String identifier)
+            String identifier, Type type)
     {
-        return new VariableDeclaration(null, identifier, false);
+        return new VariableDeclaration(null, type, identifier, false);
     }
 
     @Override
@@ -61,10 +71,11 @@ public class VariableDeclaration extends Statement
     {
         final int next = level + 1;
         return "\n" + "\t".repeat(level) + "{\n" +
-                "\t".repeat(next) + "node: " + type.toString() + ",\n" +
+                "\t".repeat(next) + "type: " + type.toString() + ",\n" +
+                "\t".repeat(next) + "value: " + (value == null ?  ReservedKeys.Null : value.print(next)) + ",\n" +
                 "\t".repeat(next) + "constant: " + constant + ",\n" +
                 "\t".repeat(next) + "identifier: " + identifier + ",\n" +
-                "\t".repeat(next) + "value: " + value.print(next) + ",\n" +
+                "\t".repeat(next) + "expectedType: " + expectedType.print(next) + ",\n" +
                 "\t".repeat(level) + "}";
     }
 }

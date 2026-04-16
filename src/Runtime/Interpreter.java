@@ -1,8 +1,10 @@
 package Runtime;
 
 import Ast.Statements.*;
-import Ast.Types.Enums.NodeType;
-import Ast.Types.Statement;
+import Ast.Statements.Expressions.*;
+import Ast.Enums.NodeType;
+import Ast.Statements.Statement;
+import Ast.Statements.Types.Type;
 import Exceptions.AlreadyDeclaredVariableException;
 import Runtime.Evaluate.Expressions;
 import Runtime.Evaluate.Statements;
@@ -40,6 +42,8 @@ public class Interpreter
                     Statements.evaluateVariableDeclaration((VariableDeclaration) node, env);
             case NodeType.FunctionDeclaration ->
                     Statements.evaluateFunctionDeclaration((FunctionDeclaration) node, env);
+            case NodeType.TypeDeclaration ->
+                    Statements.evaluateTypeDeclaration((TypeDeclaration) node, env);
             default -> throw new RuntimeException("This AST Node was not recognized yet." + node.print(0));
         };
     }

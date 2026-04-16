@@ -1,4 +1,4 @@
-package Ast.Statements;
+package Ast.Statements.Expressions;
 
 import Exceptions.InvalidArgumentException;
 import Exceptions.InvalidTokenException;
