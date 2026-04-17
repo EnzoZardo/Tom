@@ -1,13 +1,12 @@
 
-tipo WrapInteiro = { a: inteiro }
-tipo WrapDuploInteiro = WrapInteiro
-tipo WrapTriploInteiro = WrapDuploInteiro
-tipo WrapQuadruploInteiro = WrapTriploInteiro
-
-fun teste(a: WrapQuadruploInteiro): nulo {
-    a
+fun bomdia(a: (texto): texto, b: texto): texto
+{
+    a(b)
 }
 
-dec wrap: ({ a: inteiro }): nulo = teste
+fun c(oi: texto): texto
+{
+    oi
+}
 
-escreva(wrap(1))
+escreva(bomdia(c, "fala"))

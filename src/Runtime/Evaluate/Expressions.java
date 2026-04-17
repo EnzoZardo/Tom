@@ -12,6 +12,8 @@ import Runtime.Interpreter;
 import Runtime.Types.Enums.ValueType;
 import Runtime.Types.RuntimeValue;
 import Runtime.Values.*;
+import Runtime.TypeChecker;
+import Types.ArgumentMetadata;
 import Types.Pair;
 
 import java.util.ArrayList;
@@ -166,7 +168,13 @@ public class Expressions
 
             for (int i = 0; i < function.parameters.size(); i++)
             {
-                String name = function.parameters.get(i).getName();
+                ArgumentMetadata param = function.parameters.get(i);
+                String name = param.getName();
+
+                if (!TypeChecker.check(env, args.get(i), param.getType())) {
+                    throw new RuntimeException("Invalid Argument type");
+                }
+
                 scope.declareVariable(name, args.get(i), false);
             }
 
@@ -174,6 +182,10 @@ public class Expressions
             for (Statement statement : function.body)
             {
                 result = Interpreter.evaluate(statement, scope);
+            }
+
+            if (!TypeChecker.check(env, result, function.returnType)) {
+                throw new RuntimeException("Invalid return type");
             }
 
             return result;
