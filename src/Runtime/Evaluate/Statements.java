@@ -1,6 +1,7 @@
 package Runtime.Evaluate;
 
 import Ast.Statements.*;
+import Ast.Statements.Types.Type;
 import Exceptions.AlreadyDeclaredVariableException;
 import Exceptions.ExpectedTypeNotMatch;
 import Runtime.Environment;
@@ -42,7 +43,7 @@ public class Statements
     public static RuntimeValue evaluateTypeDeclaration(
             TypeDeclaration declaration, Environment env) throws AlreadyDeclaredVariableException
     {
-        env.declareType(declaration.identifier, declaration.value);
+        env.declareType(declaration.identifier, Type.reduce(env, declaration.value));
         return NullValue.create();
     }
 

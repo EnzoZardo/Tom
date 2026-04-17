@@ -21,19 +21,25 @@ public class TypeChecker
 
     public static boolean check(Environment env, RuntimeValue value, Type expected)
     {
-        switch (expected.type) {
-            case TypeKind.SymbolType:
+        return switch (expected.type)
+        {
+            case TypeKind.SymbolType ->
+            {
                 SymbolType symbol = (SymbolType) expected;
-                return checkSymbol(env, symbol, value);
-            case TypeKind.ObjectType:
+                yield checkSymbol(env, symbol, value);
+            }
+            case TypeKind.ObjectType ->
+            {
                 ObjectType object = (ObjectType) expected;
-                return checkObject(env, object, value);
-            case TypeKind.FunctionType:
+                yield checkObject(env, object, value);
+            }
+            case TypeKind.FunctionType ->
+            {
                 FunctionType function = (FunctionType) expected;
-                return checkFunction(env, function, value);
-            case TypeKind.ArrayType:
-            default: return false;
-        }
+                yield checkFunction(env, function, value);
+            }
+            default -> false;
+        };
     }
 
     private static boolean checkSymbol(Environment env, SymbolType symbol, RuntimeValue value)
@@ -54,8 +60,8 @@ public class TypeChecker
         {
             case ReservedKeys.Integer -> value.type == ValueType.Numeric && ((NumericValue) value).isInteger;
             case ReservedKeys.Float -> value.type == ValueType.Numeric && !((NumericValue) value).isInteger;
-            case ReservedKeys.String -> value.type == ValueType.String;
             case ReservedKeys.Boolean -> value.type == ValueType.Boolean;
+            case ReservedKeys.String -> value.type == ValueType.String;
             case ReservedKeys.Object -> value.type == ValueType.Object;
             case ReservedKeys.Null -> value.type == ValueType.Null;
             default -> false;
@@ -80,10 +86,19 @@ public class TypeChecker
             return false;
         }
 
+        Type currentReturn = Type.reduce(env, function.returnType);
+        Type expectedReturn = Type.reduce(env, type.returnType);
+
+        if (!Type.equals(currentReturn, expectedReturn))
+        {
+            return false;
+        }
+
         for (int i = 0; i < type.parameters.size(); i++)
         {
-            //TODO: here, we have to create an equals method for every type
-            if (function.parameters.get(i).getType().type == type.parameters.get(i).type)
+            Type currentType = Type.reduce(env, function.parameters.get(i).getType());
+            Type expectedType = Type.reduce(env,type.parameters.get(i));
+            if (Type.equals(currentType, expectedType))
             {
                 continue;
             }

@@ -104,7 +104,7 @@ public class Environment
         return variableEnvironment.constants.get(name).getValue();
     }
 
-    public Type declareType(String name, Type type)
+    public void declareType(String name, Type type)
     {
         if (types.containsKey(name))
         {
@@ -112,7 +112,6 @@ public class Environment
         }
 
         types.put(name, type);
-        return type;
     }
 
     public Type lookupType(String name)

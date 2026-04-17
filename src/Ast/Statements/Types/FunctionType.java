@@ -3,6 +3,7 @@ package Ast.Statements.Types;
 import Ast.Enums.TypeKind;
 import Lexer.Types.Enums.TokenType;
 import Parser.Parser;
+import Runtime.Environment;
 
 import java.util.ArrayList;
 
@@ -21,6 +22,53 @@ public class FunctionType extends Type
     public static FunctionType create(ArrayList<Type> arguments, Type returnType)
     {
         return new FunctionType(arguments, returnType);
+    }
+
+    public static boolean equals(Type type1, Type type2)
+    {
+        if (type1.type != TypeKind.FunctionType) {
+            return ObjectType.equals(type1, type2);
+        }
+
+        FunctionType function1 = (FunctionType) type1;
+        FunctionType function2 = (FunctionType) type2;
+
+        if (function1.parameters.size() != function2.parameters.size())
+        {
+            return false;
+        }
+
+        if (!Type.equals(function1.returnType, function2.returnType))
+        {
+            return false;
+        }
+
+        for (int i = 0; i < function1.parameters.size(); i++)
+        {
+            if (!Type.equals(function1.parameters.get(i), function2.parameters.get(i))) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public static Type reduce(Environment env, Type type)
+    {
+        if (type.type != TypeKind.FunctionType)
+        {
+            return ObjectType.reduce(env, type);
+        }
+
+        FunctionType functionType = (FunctionType) type;
+        ArrayList<Type> params = new ArrayList<>();
+
+        for (Type param : functionType.parameters)
+        {
+            params.add(Type.reduce(env, param));
+        }
+
+        return FunctionType.create(params, Type.reduce(env, functionType.returnType));
     }
 
     public static Type parse(Parser parser)

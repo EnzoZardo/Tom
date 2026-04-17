@@ -3,6 +3,7 @@ package Ast.Statements.Types;
 import Ast.Enums.TypeKind;
 import Lexer.Types.Enums.TokenType;
 import Parser.Parser;
+import Runtime.Environment;
 
 public class ArrayType extends Type
 {
@@ -19,6 +20,17 @@ public class ArrayType extends Type
         return new ArrayType(underlying);
     }
 
+    public static Type reduce(Environment env, Type type)
+    {
+        if (type.type != TypeKind.ArrayType)
+        {
+            return SymbolType.reduce(env, type);
+        }
+
+        Type underlying = ((ArrayType) type).underlying;
+        return ArrayType.create(Type.reduce(env, underlying));
+    }
+
     public static Type parse(Parser parser)
     {
         if (!parser.peekIs(TokenType.OPEN_BRACKETS))
@@ -29,6 +41,18 @@ public class ArrayType extends Type
         parser.expect(TokenType.CLOSE_BRACKETS, "Expecting ']' after open brackets on array type parsing.");
 
         return ArrayType.create(Type.parse(parser));
+    }
+
+    public static boolean equals(Type type1, Type type2)
+    {
+        if (type1.type != TypeKind.ArrayType) {
+            return SymbolType.equals(type1, type2);
+        }
+
+        ArrayType array1 = (ArrayType) type1;
+        ArrayType array2 = (ArrayType) type2;
+
+        return Type.equals(array1.underlying, array2.underlying);
     }
 
     @Override

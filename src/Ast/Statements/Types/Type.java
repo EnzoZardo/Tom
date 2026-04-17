@@ -4,6 +4,7 @@ import Ast.Enums.NodeType;
 import Ast.Enums.TypeKind;
 import Ast.Statements.Statement;
 import Parser.Parser;
+import Runtime.Environment;
 
 public abstract class Type extends Statement
 {
@@ -18,6 +19,21 @@ public abstract class Type extends Statement
     public static Type parse(Parser parser)
     {
         return FunctionType.parse(parser);
+    }
+
+    public static Type reduce(Environment env, Type type)
+    {
+        return FunctionType.reduce(env, type);
+    }
+
+    public static boolean equals(Type type1, Type type2)
+    {
+        if (type1.type != type2.type)
+        {
+            return false;
+        }
+
+        return FunctionType.equals(type1, type2);
     }
 
     public abstract String print(int level);

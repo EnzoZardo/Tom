@@ -4,8 +4,11 @@ import Ast.Enums.TypeKind;
 import Lexer.Types.Enums.TokenType;
 import Lexer.Types.Token;
 import Parser.Parser;
+import Runtime.Environment;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 
 public class ObjectType extends Type
 {
@@ -20,6 +23,54 @@ public class ObjectType extends Type
     public static ObjectType create(ArrayList<ObjectTypeProperty> properties)
     {
         return new ObjectType(properties);
+    }
+
+    public static boolean equals(Type type1, Type type2)
+    {
+        if (type1.type != TypeKind.ObjectType) {
+            return ArrayType.equals(type1, type2);
+        }
+
+        ObjectType object1 = (ObjectType) type1;
+        ObjectType object2 = (ObjectType) type2;
+
+        if (object1.properties.size() != object2.properties.size())
+        {
+            return false;
+        }
+
+        for (int i = 0; i < object1.properties.size(); i++)
+        {
+            ObjectTypeProperty prop1 = object1.properties.get(i);
+            ObjectTypeProperty prop2 = object2.properties.get(i);
+            if (!prop1.key.equals(prop2.key)) {
+                return false;
+            }
+
+            if (!Type.equals(prop1.type, prop2.type)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public static Type reduce(Environment env, Type type)
+    {
+        if (type.type != TypeKind.ObjectType)
+        {
+            return ArrayType.reduce(env, type);
+        }
+
+        ObjectType objectType = (ObjectType) type;
+        ArrayList<ObjectTypeProperty> props = new ArrayList<>();
+
+        for (ObjectTypeProperty prop : objectType.properties)
+        {
+            props.add(ObjectTypeProperty.create(prop.key, Type.reduce(env, prop.type)));
+        }
+
+        return ObjectType.create(props);
     }
 
     public static Type parse(Parser parser)
@@ -49,10 +100,13 @@ public class ObjectType extends Type
                 parser.consume();
             }
 
+            //todo: check if already exists key and throw
+
             properties.add(ObjectTypeProperty.create(key.value, value));
         }
 
         parser.expect(TokenType.CLOSE_BRACE, "Expecting a close brace after last object value.");
+        properties.sort(Comparator.comparing(p -> p.key));
         return ObjectType.create(properties);
     }
 

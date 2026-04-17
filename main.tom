@@ -1,7 +1,13 @@
-fun teste(a: inteiro): nulo {
+
+tipo WrapInteiro = { a: inteiro }
+tipo WrapDuploInteiro = WrapInteiro
+tipo WrapTriploInteiro = WrapDuploInteiro
+tipo WrapQuadruploInteiro = WrapTriploInteiro
+
+fun teste(a: WrapQuadruploInteiro): nulo {
     a
 }
 
-dec wrap: (texto): nulo = teste
+dec wrap: ({ a: inteiro }): nulo = teste
 
-escreva(wrap("a"))
+escreva(wrap(1))
