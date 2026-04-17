@@ -1,0 +1,27 @@
+package Entities.Enums.Lexer;
+
+public enum TokenType
+{
+    RETURN,
+    TYPE,
+    SEMICOLON,
+    DECLARE,
+    CONSTANT,
+    FUNCTION,
+    IDENTIFIER,
+    EQUALS,
+    INTEGER_LITERAL,
+    FLOAT_LITERAL,
+    STRING_LITERAL,
+    BINARY_OPERATOR,
+    OPEN_PARENTHESIS,
+    CLOSE_PARENTHESIS,
+    OPEN_BRACKETS,
+    CLOSE_BRACKETS,
+    OPEN_BRACE,
+    CLOSE_BRACE,
+    COLON,
+    COMMA,
+    DOT,
+    EOF
+}

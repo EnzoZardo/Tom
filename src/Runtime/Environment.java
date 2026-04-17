@@ -1,19 +1,18 @@
 package Runtime;
 
-import Ast.Statements.Types.Primitive.*;
-import Ast.Statements.Types.SymbolType;
-import Ast.Statements.Types.Type;
-import Constants.ReservedKeys;
-import Exceptions.AlreadyDeclaredVariableException;
-import Exceptions.ConstantAssignmentException;
-import Exceptions.InvalidVariableException;
-import Exceptions.TypeReassignmentException;
+import Ast.Types.Primitive.*;
+import Entities.Abstractions.Type;
+import Entities.Constants.ReservedKeys;
+import Entities.Exceptions.AlreadyDeclaredVariableException;
+import Entities.Exceptions.ConstantAssignmentException;
+import Entities.Exceptions.InvalidVariableException;
+import Entities.Exceptions.TypeReassignmentException;
 import Runtime.NativeFunctions.Print;
-import Runtime.Types.RuntimeValue;
+import Entities.Abstractions.Runtime.RuntimeValue;
 import Runtime.Values.BooleanValue;
 import Runtime.Values.NativeFunctionValue;
 import Runtime.Values.NullValue;
-import Types.ValueMetadata;
+import Entities.Metadata.ValueMetadata;
 
 import java.util.HashMap;
 

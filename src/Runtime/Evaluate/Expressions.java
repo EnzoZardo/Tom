@@ -1,20 +1,22 @@
 package Runtime.Evaluate;
 
-import Ast.Statements.Expressions.*;
-import Ast.Enums.NodeType;
-import Ast.Statements.Statement;
-import Constants.ReservedKeys;
-import Exceptions.AlreadyDeclaredVariableException;
-import Exceptions.InvalidCallException;
-import Exceptions.InvalidNodeException;
+import Ast.Expressions.*;
+import Entities.Constants.ReservedKeys;
+import Entities.Enums.Ast.NodeType;
+import Ast.Expressions.Literals.ObjectLiteral;
+import Entities.Abstractions.Ast.Expr;
+import Entities.Abstractions.Ast.Statement;
+import Entities.Exceptions.AlreadyDeclaredVariableException;
+import Entities.Exceptions.InvalidCallException;
+import Entities.Exceptions.InvalidNodeException;
+import Entities.Metadata.ParameterMetadata;
 import Runtime.Environment;
 import Runtime.Interpreter;
-import Runtime.Types.Enums.ValueType;
-import Runtime.Types.RuntimeValue;
+import Entities.Enums.Runtime.ValueType;
+import Entities.Abstractions.Runtime.RuntimeValue;
 import Runtime.Values.*;
 import Runtime.TypeChecker;
-import Types.ArgumentMetadata;
-import Types.Pair;
+import Entities.Metadata.ArgumentMetadata;
 
 import java.util.ArrayList;
 
@@ -191,8 +193,8 @@ public class Expressions
             return result;
         }
 
-        if (caller instanceof NativeFunctionValue) {
-            return ((NativeFunctionValue) caller).call.apply(Pair.create(args, env));
+        if (caller.type == ValueType.NativeFunction) {
+            return ((NativeFunctionValue) caller).call.apply(ParameterMetadata.create(args, env));
         }
 
         throw new InvalidCallException("Cannot call a value that's not a NativeFunctionValue");

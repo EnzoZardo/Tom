@@ -1,8 +1,8 @@
 import Ast.Statements.Program;
-import Exceptions.AlreadyDeclaredVariableException;
-import Exceptions.AlreadyParsedException;
-import Exceptions.InvalidArgumentException;
-import Exceptions.InvalidTokenException;
+import Entities.Exceptions.AlreadyDeclaredVariableException;
+import Entities.Exceptions.AlreadyParsedException;
+import Entities.Exceptions.InvalidArgumentException;
+import Entities.Exceptions.InvalidTokenException;
 import Parser.Parser;
 import Runtime.*;
 

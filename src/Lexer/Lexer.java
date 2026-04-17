@@ -1,12 +1,12 @@
 package Lexer;
 
-import Constants.ReservedOperators;
-import Constants.ReservedWords;
-import Exceptions.AlreadyParsedException;
-import Exceptions.InvalidTokenException;
-import Lexer.Types.Enums.TokenType;
-import Lexer.Types.PonctuationToken;
-import Lexer.Types.Token;
+import Entities.Constants.ReservedOperators;
+import Entities.Constants.ReservedWords;
+import Entities.Exceptions.AlreadyParsedException;
+import Entities.Exceptions.InvalidTokenException;
+import Entities.Enums.Lexer.TokenType;
+import Lexer.Tokens.PonctuationToken;
+import Lexer.Tokens.Token;
 
 import java.util.ArrayList;
 

@@ -1,12 +1,12 @@
 package Ast.Statements;
 
-import Ast.Enums.NodeType;
-import Ast.Statements.Types.Type;
-import Exceptions.InvalidArgumentException;
-import Exceptions.InvalidTokenException;
-import Exceptions.NullConstantException;
-import Lexer.Types.Enums.TokenType;
-import Lexer.Types.Token;
+import Entities.Enums.Ast.NodeType;
+import Entities.Abstractions.Type;
+import Entities.Abstractions.Ast.Statement;
+import Entities.Exceptions.InvalidArgumentException;
+import Entities.Exceptions.InvalidTokenException;
+import Entities.Enums.Lexer.TokenType;
+import Lexer.Tokens.Token;
 import Parser.Parser;
 
 public class TypeDeclaration extends Statement

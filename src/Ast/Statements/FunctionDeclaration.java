@@ -1,18 +1,19 @@
 package Ast.Statements;
 
-import Ast.Statements.Expressions.CallExpr;
-import Ast.Statements.Expressions.Expr;
-import Ast.Statements.Expressions.Identifier;
-import Ast.Enums.NodeType;
-import Ast.Statements.Types.Type;
-import Exceptions.InvalidArgumentException;
-import Exceptions.InvalidNodeException;
-import Exceptions.InvalidTokenException;
-import Lexer.Types.Enums.TokenType;
-import Lexer.Types.Token;
+import Ast.Expressions.CallExpr;
+import Entities.Abstractions.Ast.Expr;
+import Ast.Expressions.Identifier;
+import Entities.Enums.Ast.NodeType;
+import Entities.Abstractions.Type;
+import Entities.Abstractions.Ast.Statement;
+import Entities.Exceptions.InvalidArgumentException;
+import Entities.Exceptions.InvalidNodeException;
+import Entities.Exceptions.InvalidTokenException;
+import Entities.Enums.Lexer.TokenType;
+import Lexer.Tokens.Token;
 import Parser.Parser;
-import Types.ArgumentMetadata;
-import Types.ExprMetadata;
+import Entities.Metadata.ArgumentMetadata;
+import Entities.Metadata.ExprMetadata;
 
 import java.util.ArrayList;
 

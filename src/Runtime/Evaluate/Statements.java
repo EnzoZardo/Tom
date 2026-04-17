@@ -1,12 +1,13 @@
 package Runtime.Evaluate;
 
 import Ast.Statements.*;
-import Ast.Statements.Types.Type;
-import Exceptions.AlreadyDeclaredVariableException;
-import Exceptions.ExpectedTypeNotMatch;
+import Entities.Abstractions.Type;
+import Entities.Abstractions.Ast.Statement;
+import Entities.Exceptions.AlreadyDeclaredVariableException;
+import Entities.Exceptions.ExpectedTypeNotMatch;
 import Runtime.Environment;
 import Runtime.Interpreter;
-import Runtime.Types.RuntimeValue;
+import Entities.Abstractions.Runtime.RuntimeValue;
 import Runtime.Values.FunctionValue;
 import Runtime.Values.NullValue;
 import Runtime.TypeChecker;

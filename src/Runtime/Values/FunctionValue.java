@@ -1,15 +1,15 @@
 package Runtime.Values;
 
 import Ast.Statements.FunctionDeclaration;
-import Ast.Statements.Statement;
-import Ast.Statements.Types.Type;
-import Runtime.Types.Enums.ValueType;
-import Runtime.Types.RuntimeValue;
+import Entities.Abstractions.Ast.Statement;
+import Entities.Abstractions.Type;
+import Entities.Enums.Runtime.ValueType;
+import Entities.Abstractions.Runtime.RuntimeValue;
 
 import java.util.ArrayList;
 
 import Runtime.Environment;
-import Types.ArgumentMetadata;
+import Entities.Metadata.ArgumentMetadata;
 
 public class FunctionValue extends RuntimeValue
 {

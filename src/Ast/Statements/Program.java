@@ -1,6 +1,7 @@
 package Ast.Statements;
 
-import Ast.Enums.NodeType;
+import Entities.Enums.Ast.NodeType;
+import Entities.Abstractions.Ast.Statement;
 
 import java.util.ArrayList;
 

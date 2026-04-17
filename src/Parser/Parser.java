@@ -1,11 +1,11 @@
 package Parser;
 
 import Ast.Statements.*;
-import Ast.Statements.Statement;
-import Exceptions.*;
+import Entities.Abstractions.Ast.Statement;
+import Entities.Exceptions.*;
 import Lexer.Lexer;
-import Lexer.Types.Enums.TokenType;
-import Lexer.Types.Token;
+import Entities.Enums.Lexer.TokenType;
+import Lexer.Tokens.Token;
 
 import java.util.ArrayList;
 
@@ -40,7 +40,14 @@ public class Parser
         Token prev = consume();
         if (prev.type != token)
         {
-            System.err.println(error);
+            if (error.contains("%s"))
+            {
+                System.err.printf((error) + "%n", prev.value);
+            } else
+            {
+                System.err.println(error);
+            }
+
             System.err.println(prev);
             System.exit(1);
         }

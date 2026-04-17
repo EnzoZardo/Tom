@@ -1,7 +1,7 @@
 package Runtime.Values;
 
-import Runtime.Types.Enums.ValueType;
-import Runtime.Types.RuntimeValue;
+import Entities.Enums.Runtime.ValueType;
+import Entities.Abstractions.Runtime.RuntimeValue;
 
 import java.util.HashMap;
 import java.util.Map;

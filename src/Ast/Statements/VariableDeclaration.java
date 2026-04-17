@@ -1,15 +1,15 @@
 package Ast.Statements;
 
-import Ast.Statements.Expressions.Expr;
-import Ast.Enums.NodeType;
-import Ast.Statements.Types.Type;
-import Constants.ReservedKeys;
-import Constants.ReservedOperators;
-import Exceptions.InvalidArgumentException;
-import Exceptions.InvalidTokenException;
-import Exceptions.NullConstantException;
-import Lexer.Types.Enums.TokenType;
-import Lexer.Types.Token;
+import Entities.Abstractions.Ast.Expr;
+import Entities.Constants.ReservedKeys;
+import Entities.Enums.Ast.NodeType;
+import Entities.Abstractions.Type;
+import Entities.Abstractions.Ast.Statement;
+import Entities.Exceptions.InvalidArgumentException;
+import Entities.Exceptions.InvalidTokenException;
+import Entities.Exceptions.NullConstantException;
+import Entities.Enums.Lexer.TokenType;
+import Lexer.Tokens.Token;
 import Parser.Parser;
 
 public class VariableDeclaration extends Statement

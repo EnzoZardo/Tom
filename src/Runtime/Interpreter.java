@@ -1,14 +1,17 @@
 package Runtime;
 
+import Ast.Expressions.Literals.FloatLiteral;
+import Ast.Expressions.Literals.IntegerLiteral;
+import Ast.Expressions.Literals.ObjectLiteral;
+import Ast.Expressions.Literals.StringLiteral;
 import Ast.Statements.*;
-import Ast.Statements.Expressions.*;
-import Ast.Enums.NodeType;
-import Ast.Statements.Statement;
-import Ast.Statements.Types.Type;
-import Exceptions.AlreadyDeclaredVariableException;
+import Ast.Expressions.*;
+import Entities.Enums.Ast.NodeType;
+import Entities.Abstractions.Ast.Statement;
+import Entities.Exceptions.AlreadyDeclaredVariableException;
 import Runtime.Evaluate.Expressions;
 import Runtime.Evaluate.Statements;
-import Runtime.Types.RuntimeValue;
+import Entities.Abstractions.Runtime.RuntimeValue;
 import Runtime.Values.NumericValue;
 import Runtime.Values.StringValue;
 
@@ -27,9 +30,9 @@ public class Interpreter
     {
         return switch (node.type)
         {
-            case NodeType.IntegerValue -> NumericValue.create(((IntegerLiteral) node).number, true);
-            case NodeType.FloatValue -> NumericValue.create(((FloatLiteral) node).number, false);
-            case NodeType.StringValue -> StringValue.create(((StringLiteral) node).text);
+            case NodeType.IntegerValue -> NumericValue.create(((IntegerLiteral) node).value, true);
+            case NodeType.FloatValue -> NumericValue.create(((FloatLiteral) node).value, false);
+            case NodeType.StringValue -> StringValue.create(((StringLiteral) node).value);
             case NodeType.Identifier -> Expressions.evaluateIdentifier((Identifier) node, env);
             case NodeType.ObjectLiteral -> Expressions.evaluateObjectExpression((ObjectLiteral) node, env);
             case NodeType.CallExpression -> Expressions.evaluateCallExpression((CallExpr) node, env);

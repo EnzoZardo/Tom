@@ -1,16 +1,13 @@
 package Runtime.NativeFunctions;
 
-import Runtime.Types.RuntimeValue;
+import Entities.Metadata.ParameterMetadata;
+import Entities.Abstractions.Runtime.RuntimeValue;
 import Runtime.Values.NullValue;
-import Types.Pair;
-import Runtime.Environment;
-
-import java.util.ArrayList;
 
 public class Print
 {
-    public static NullValue call(Pair<ArrayList<RuntimeValue>, Environment>  args) {
-        for (RuntimeValue arg : args.get0())
+    public static NullValue call(ParameterMetadata args) {
+        for (RuntimeValue arg : args.getValues())
         {
             IO.print(arg.toString() + ' ');
         }

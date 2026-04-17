@@ -1,8 +1,8 @@
 package Runtime.Values;
 
-import Constants.ReservedKeys;
-import Runtime.Types.Enums.ValueType;
-import Runtime.Types.RuntimeValue;
+import Entities.Constants.ReservedKeys;
+import Entities.Enums.Runtime.ValueType;
+import Entities.Abstractions.Runtime.RuntimeValue;
 
 public class BooleanValue extends RuntimeValue
 {

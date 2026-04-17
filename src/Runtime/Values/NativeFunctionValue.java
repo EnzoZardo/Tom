@@ -1,25 +1,22 @@
 package Runtime.Values;
 
-import Runtime.Types.Enums.ValueType;
-import Runtime.Types.RuntimeValue;
-
-import java.util.ArrayList;
-import Runtime.Environment;
-import Types.Pair;
+import Entities.Metadata.ParameterMetadata;
+import Entities.Enums.Runtime.ValueType;
+import Entities.Abstractions.Runtime.RuntimeValue;
 
 import java.util.function.Function;
 
 public class NativeFunctionValue extends RuntimeValue
 {
-    public Function<Pair<ArrayList<RuntimeValue>, Environment>, RuntimeValue> call;
+    public Function<ParameterMetadata, RuntimeValue> call;
 
-    protected NativeFunctionValue(Function<Pair<ArrayList<RuntimeValue>, Environment>, RuntimeValue> call)
+    protected NativeFunctionValue(Function<ParameterMetadata, RuntimeValue> call)
     {
         super(ValueType.NativeFunction);
         this.call = call;
     }
 
-    public static NativeFunctionValue create(Function<Pair<ArrayList<RuntimeValue>, Environment>, RuntimeValue> call)
+    public static NativeFunctionValue create(Function<ParameterMetadata, RuntimeValue> call)
     {
         return new NativeFunctionValue(call);
     }

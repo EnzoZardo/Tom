@@ -1,11 +1,12 @@
 package Runtime;
 
-import Ast.Enums.TypeKind;
-import Ast.Statements.Types.*;
-import Constants.ReservedKeys;
-import Constants.ReservedPrimitiveTypes;
-import Runtime.Types.Enums.ValueType;
-import Runtime.Types.RuntimeValue;
+import Entities.Constants.ReservedKeys;
+import Entities.Constants.ReservedPrimitiveTypes;
+import Entities.Enums.TypeKind;
+import Ast.Types.*;
+import Entities.Abstractions.Type;
+import Entities.Enums.Runtime.ValueType;
+import Entities.Abstractions.Runtime.RuntimeValue;
 import Runtime.Values.FunctionValue;
 import Runtime.Values.NumericValue;
 import Runtime.Values.ObjectValue;
