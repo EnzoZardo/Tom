@@ -7,8 +7,7 @@ import Entities.Enums.Ast.NodeType;
 import Entities.Abstractions.Type;
 import Entities.Abstractions.Ast.Statement;
 import Entities.Exceptions.InvalidArgumentException;
-import Entities.Exceptions.InvalidNodeException;
-import Entities.Exceptions.InvalidTokenException;
+import Entities.Exceptions.Parser.InvalidNodeException;
 import Entities.Enums.Lexer.TokenType;
 import Lexer.Tokens.Token;
 import Parser.Parser;
@@ -37,41 +36,6 @@ public class FunctionDeclaration extends Statement
         this.body = body;
     }
 
-    public static Statement parse(Parser parser) throws InvalidTokenException, InvalidArgumentException
-    {
-        parser.consume();
-        Token identifierToken = parser.expect(TokenType.IDENTIFIER, "Expecting identifier name following function.");
-        String name = identifierToken.value;
-
-        ArrayList<ExprMetadata> parametersMetadata = CallExpr.parseArgsDeclaration(parser);
-        ArrayList<ArgumentMetadata> parameters = new ArrayList<>();
-
-        for (ExprMetadata metadata : parametersMetadata)
-        {
-            Expr id = metadata.getExpr();
-            if (id.type != NodeType.Identifier)
-            {
-                throw new InvalidNodeException("Expected parameter identifier in parameters list.");
-            }
-
-            parameters.add(ArgumentMetadata.create(metadata.getType(), ((Identifier) id).get()));
-        }
-
-        parser.expect(TokenType.COLON, "Expecting ':' after function arguments declaration.");
-        Type type = Type.parse(parser);
-
-        parser.expect(TokenType.OPEN_BRACE, "Expecting '{' after function type declaration.");
-        ArrayList<Statement> body = new ArrayList<>();
-
-        while (parser.notEof() && !parser.peekIs(TokenType.CLOSE_BRACE)) {
-            body.add(Statement.parse(parser));
-        }
-
-        parser.expect(TokenType.CLOSE_BRACE, "Expecting '}' after function body declaration.");
-
-        return FunctionDeclaration.create(name, parameters, body, type);
-    }
-
     public static FunctionDeclaration create(
         String identifier,
         ArrayList<ArgumentMetadata> parameters,
@@ -81,24 +45,59 @@ public class FunctionDeclaration extends Statement
         return new FunctionDeclaration(identifier, parameters, body, returnType);
     }
 
+    public static Statement parse(Parser parser) throws InvalidArgumentException
+    {
+        parser.consume();
+        Token identifierToken = parser.expect(TokenType.IDENTIFIER, "Esperávamos receber o nome da função.");
+        String name = identifierToken.value;
 
-    // TODO: refactor these two functions below
+        ArrayList<ExprMetadata> parametersMetadata = CallExpr.parseArgsDeclaration(parser);
+        ArrayList<ArgumentMetadata> parameters = new ArrayList<>();
+
+        for (ExprMetadata metadata : parametersMetadata)
+        {
+            Expr identifier = metadata.getExpr();
+            if (identifier.type != NodeType.Identifier)
+            {
+                throw new InvalidNodeException("Esperávamos o nome do argumento da função.");
+            }
+
+            parameters.add(ArgumentMetadata.create(metadata.getType(), ((Identifier) identifier).value));
+        }
+
+        parser.expect(TokenType.COLON, "Esperávamos ':' para declararmos o tipo de " +
+                "retorno de uma função função.");
+
+        Type type = Type.parse(parser);
+
+        parser.expect(TokenType.OPEN_BRACE, "Esperávamos '{' para analisarmos o corpo da função.");
+        ArrayList<Statement> body = new ArrayList<>();
+
+        while (parser.notEof() && !parser.peekIs(TokenType.CLOSE_BRACE)) {
+            body.add(Statement.parse(parser));
+        }
+
+        parser.expect(TokenType.CLOSE_BRACE, "Esperávamos '}' para fecharmos o corpo dee uma função.");
+        return FunctionDeclaration.create(name, parameters, body, type);
+    }
+
     private String printParams(int level)
     {
         final int next = level + 1;
-        StringBuilder ret = new StringBuilder("\n").repeat("\t", level)
-                .append("[\n");
+        StringBuilder ret = new StringBuilder("\n")
+            .repeat("\t", level)
+            .append("[\n");
+
         for (ArgumentMetadata parameter : parameters)
         {
             ret.repeat("\t", next)
-                    .append("name: ")
-                    .append(parameter.getName())
-                    .append(',')
-                    .append('\n')
-                    .repeat("\t", next)
-                    .append("type: ")
-                    .append(parameter.getType().print(next))
-                    .append('\n');
+                .append("name: ")
+                .append(parameter.getName())
+                .append(",\n")
+                .repeat("\t", next)
+                .append("type: ")
+                .append(parameter.getType().print(next))
+                .append('\n');
         }
         return ret.repeat("\t", level)
                 .append("]")
@@ -108,30 +107,33 @@ public class FunctionDeclaration extends Statement
     private String printBody(int level)
     {
         final int next = level + 1;
-        StringBuilder ret = new StringBuilder("\n").repeat("\t", level)
-                .append("[");
+        StringBuilder ret = new StringBuilder("\n")
+            .repeat("\t", level)
+            .append("[");
+
         for (Statement statement : body)
         {
             ret.repeat("\t", next)
-                    .append(statement.print(next))
-                    .append(',');
+                .append(statement.print(next))
+                .append(',');
         }
         return ret.append("\n")
-                .repeat("\t", level)
-                .append("]")
-                .toString();
+            .repeat("\t", level)
+            .append("]")
+            .toString();
     }
 
     @Override
     public String print(int level)
     {
         final int next = level + 1;
-        return "\n" + "\t".repeat(level) + "{\n" +
-                "\t".repeat(next) + "type: " + type.toString() + ",\n" +
-                "\t".repeat(next) + "node: " + type.toString() + ",\n" +
-                "\t".repeat(next) + "identifier: " + identifier + ",\n" +
-                "\t".repeat(next) + "parameters: " + printParams(next) + ",\n" +
-                "\t".repeat(next) + "body: " + printBody(next) + ",\n" +
-                "\t".repeat(level) + "}";
+        return "\n" +
+            "\t".repeat(level) + "{\n" +
+            "\t".repeat(next) + "type: " + type.toString() + ",\n" +
+            "\t".repeat(next) + "node: " + type.toString() + ",\n" +
+            "\t".repeat(next) + "identifier: " + identifier + ",\n" +
+            "\t".repeat(next) + "parameters: " + printParams(next) + ",\n" +
+            "\t".repeat(next) + "body: " + printBody(next) + ",\n" +
+            "\t".repeat(level) + "}";
     }
 }

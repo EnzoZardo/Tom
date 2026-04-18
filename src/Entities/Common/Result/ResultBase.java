@@ -16,11 +16,11 @@ public class ResultBase
         this.success = true;
     }
 
-    protected boolean isSuccess() {
+    public boolean isSuccess() {
         return success;
     }
 
-    protected boolean isFailure() {
+    public boolean isFailure() {
         return !success;
     }
 }

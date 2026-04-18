@@ -5,7 +5,6 @@ import Ast.Statements.FunctionDeclaration;
 import Ast.Statements.TypeDeclaration;
 import Ast.Statements.VariableDeclaration;
 import Entities.Exceptions.InvalidArgumentException;
-import Entities.Exceptions.InvalidTokenException;
 import Entities.Enums.Lexer.TokenType;
 import Parser.Parser;
 
@@ -18,7 +17,7 @@ public abstract class Statement
         this.type = type;
     }
 
-    public static Statement parse(Parser parser) throws InvalidArgumentException, InvalidTokenException
+    public static Statement parse(Parser parser) throws InvalidArgumentException
     {
         return switch (parser.peekType())
         {

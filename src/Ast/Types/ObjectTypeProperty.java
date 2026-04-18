@@ -24,10 +24,11 @@ public class ObjectTypeProperty extends Type
     public String print(int level)
     {
         final int next = level + 1;
-        return "\n" + "\t".repeat(level) + "{\n" +
-                "\t".repeat(next) + "node: " + type.print(next) + ",\n" +
-                "\t".repeat(next) + "key: " + key + ",\n" +
-                "\t".repeat(next) + "value: " + type.print(next) + ",\n" +
-                "\t".repeat(level) + "}";
+        return "\n" +
+            "\t".repeat(level) + "{\n" +
+            "\t".repeat(next) + "node: " + type.print(next) + ",\n" +
+            "\t".repeat(next) + "key: " + key + ",\n" +
+            "\t".repeat(next) + "value: " + type.print(next) + ",\n" +
+            "\t".repeat(level) + "}";
     }
 }

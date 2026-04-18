@@ -4,22 +4,20 @@ public enum NodeType
 {
     // These are statements
     Program,
+    TypeDeclaration,
     VariableDeclaration,
     FunctionDeclaration,
-    TypeDeclaration,
-
     // These are expressions
-    AssignmentExpression,
-    MemberExpression,
-    CallExpression,
-    BinaryExpr,
     UnaryExpr,
-
+    BinaryExpr,
+    CallExpression,
+    MemberExpression,
+    AssignmentExpression,
     // These are literals
     Property,
-    ObjectLiteral,
-    IntegerValue,
     FloatValue,
-    StringValue,
     Identifier,
+    StringValue,
+    IntegerValue,
+    ObjectLiteral,
 }

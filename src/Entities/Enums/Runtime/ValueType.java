@@ -2,12 +2,12 @@ package Entities.Enums.Runtime;
 
 public enum ValueType
 {
+    Type,
     Null,
     Object,
-    Numeric,
     String,
-    Type,
+    Numeric,
     Boolean,
-    NativeFunction,
     Function,
+    NativeFunction,
 }

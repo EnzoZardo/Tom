@@ -8,11 +8,11 @@ import Lexer.Tokens.Token;
 
 public class Identifier extends Expr
 {
-    protected final String symbol;
+    public String value;
 
-    protected Identifier(String symbol)
+    protected Identifier(String value)
     {
-        this.symbol = symbol;
+        this.value = value;
         super(NodeType.Identifier);
     }
 
@@ -20,14 +20,10 @@ public class Identifier extends Expr
     {
         if (token.type != TokenType.IDENTIFIER)
         {
-            throw new InvalidArgumentException("Invalid Identifier token was given.");
+            throw new InvalidArgumentException("Um símbolo inesperado foi dado como identificador.");
         }
-        return new Identifier(token.value);
-    }
 
-    public String get()
-    {
-        return symbol;
+        return new Identifier(token.value);
     }
 
     @Override
@@ -35,7 +31,7 @@ public class Identifier extends Expr
     {
         return "\n" + "\t".repeat(level) + "{\n" +
                 "\t".repeat(level + 1) + "node: " + type.toString() + ",\n" +
-                "\t".repeat(level + 1) + "symbol: " + symbol + ",\n" +
+                "\t".repeat(level + 1) + "value: " + value + ",\n" +
                 "\t".repeat(level) + "}";
     }
 }

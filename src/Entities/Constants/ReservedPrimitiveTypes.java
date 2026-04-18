@@ -8,7 +8,6 @@ public record ReservedPrimitiveTypes()
 {
     private final static HashMap<String, ValueType> relations = new HashMap<>()
     {{
-        //TODO: add new types
         put(ReservedKeys.Char, null);
         put(ReservedKeys.Null, ValueType.Null);
         put(ReservedKeys.Float, ValueType.Numeric);

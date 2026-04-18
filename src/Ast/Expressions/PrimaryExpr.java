@@ -5,22 +5,22 @@ import Ast.Expressions.Literals.IntegerLiteral;
 import Ast.Expressions.Literals.StringLiteral;
 import Entities.Abstractions.Ast.Expr;
 import Entities.Exceptions.InvalidArgumentException;
-import Entities.Exceptions.InvalidTokenException;
+import Entities.Exceptions.Parser.InvalidTokenException;
 import Entities.Enums.Lexer.TokenType;
 import Parser.Parser;
 
 public class PrimaryExpr
 {
-    public static Expr parse(Parser parser) throws InvalidArgumentException, InvalidTokenException
+    public static Expr parse(Parser parser) throws InvalidArgumentException
     {
         return switch (parser.peekType())
         {
             case TokenType.IDENTIFIER -> Identifier.create(parser.consume());
-            case TokenType.INTEGER_LITERAL -> IntegerLiteral.create(parser.consume());
             case TokenType.FLOAT_LITERAL -> FloatLiteral.create(parser.consume());
-            case TokenType.STRING_LITERAL -> StringLiteral.create(parser.consume());
             case TokenType.OPEN_PARENTHESIS -> PrimaryExpr.parseParenthesis(parser);
-            default -> throw new InvalidTokenException(String.format("Unexpected Token '%s'.", parser.peekValue()));
+            case TokenType.STRING_LITERAL -> StringLiteral.create(parser.consume());
+            case TokenType.INTEGER_LITERAL -> IntegerLiteral.create(parser.consume());
+            default -> throw new InvalidTokenException(String.format("Símbolo inesperado '%s'", parser.peekValue()));
         };
     }
 
@@ -28,7 +28,7 @@ public class PrimaryExpr
     {
         parser.consume();
         Expr expr = Expr.parse(parser);
-        parser.expect(TokenType.CLOSE_PARENTHESIS, String.format("Unexpected token received. Expected ')', received '%s'", parser.peekValue()));
+        parser.expect(TokenType.CLOSE_PARENTHESIS, String.format("Símbolo inesperado, esperávamos ')', mas recebemos '%s'", parser.peekValue()));
         return expr;
     }
 }

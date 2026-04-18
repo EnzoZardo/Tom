@@ -4,7 +4,7 @@ import Entities.Enums.Ast.NodeType;
 import Entities.Abstractions.Type;
 import Entities.Abstractions.Ast.Statement;
 import Entities.Exceptions.InvalidArgumentException;
-import Entities.Exceptions.InvalidTokenException;
+import Entities.Exceptions.Parser.InvalidTokenException;
 import Entities.Enums.Lexer.TokenType;
 import Lexer.Tokens.Token;
 import Parser.Parser;
@@ -15,29 +15,29 @@ public class TypeDeclaration extends Statement
     public String identifier;
 
     protected TypeDeclaration(
-            Type value,
-            String identifier)
+        Type value,
+        String identifier)
     {
         super(NodeType.TypeDeclaration);
         this.value = value;
         this.identifier = identifier;
     }
 
+    public static TypeDeclaration create(
+        Type value,
+        String identifier)
+    {
+        return new TypeDeclaration(value, identifier);
+    }
+
     public static TypeDeclaration parse(Parser parser) throws InvalidTokenException, InvalidArgumentException
     {
         parser.consume();
-        Token identifierToken = parser.expect(TokenType.IDENTIFIER, "Expecting identifier name following type statement start.");
+        Token identifierToken = parser.expect(TokenType.IDENTIFIER, "Esperávamos o nome do tipo em sua declaração.");
         String identifier = identifierToken.value;
 
-        parser.expect(TokenType.EQUALS, "Expecting equals token to declare a variable.");
+        parser.expect(TokenType.EQUALS, "Esperávamos '=' para declararmos o tipo " + identifier +".");
         return TypeDeclaration.create(Type.parse(parser), identifier);
-    }
-
-    public static TypeDeclaration create(
-            Type value,
-            String identifier)
-    {
-        return new TypeDeclaration(value, identifier);
     }
 
     @Override

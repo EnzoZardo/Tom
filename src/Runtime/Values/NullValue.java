@@ -29,6 +29,24 @@ public class NullValue extends RuntimeValue
     }
 
     @Override
+    public boolean equals(RuntimeValue that)
+    {
+        return type == that.type;
+    }
+
+    @Override
+    public boolean not()
+    {
+        return true;
+    }
+
+    @Override
+    public boolean bool()
+    {
+        return false;
+    }
+
+    @Override
     public String toString()
     {
         return ReservedKeys.Null;

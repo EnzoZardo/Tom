@@ -1,5 +1,7 @@
 package Runtime.Values;
 
+import Entities.Abstractions.Type;
+import Entities.Exceptions.Evaluate.InvalidBinaryOperation;
 import Entities.Metadata.ParameterMetadata;
 import Entities.Enums.Runtime.ValueType;
 import Entities.Abstractions.Runtime.RuntimeValue;
@@ -28,5 +30,23 @@ public class NativeFunctionValue extends RuntimeValue
         return "\n" + "\t".repeat(level) + "{\n" +
                 "\t".repeat(next) + "node: " + type.toString() + ",\n" +
                 "\t".repeat(level) + "}";
+    }
+
+    @Override
+    public boolean bool()
+    {
+        return true;
+    }
+
+    @Override
+    public boolean not()
+    {
+        return false;
+    }
+
+    @Override
+    public boolean equals(RuntimeValue that)
+    {
+        throw new InvalidBinaryOperation("Não se pode testar a igualdade entre uma função nativa e outro valor.");
     }
 }

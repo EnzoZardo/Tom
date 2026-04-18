@@ -13,3 +13,10 @@ Os próximos passos serão:
 - A adição de tipos como texto e caracteres, além da divisão entre número inteiro e real;
 - Adição de funções para conversão de tipos primitivos;
 - Adição de statements de if e enquanto.
+
+### Atualizações 18.4.26
+- Adicionados tipos e suas respectivas validações;
+- O código foi separado em pastas diferentes para melhor organização;
+- Limpeza e organização de código foi feita e implementadas operações antes faltantes;
+Agora é necessário:
+- Implementar arrays, enums e propriedades computadas em objetos.

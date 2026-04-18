@@ -4,7 +4,7 @@ import Entities.Enums.Ast.NodeType;
 import Entities.Abstractions.Ast.Expr;
 import Entities.Abstractions.Type;
 import Entities.Exceptions.InvalidArgumentException;
-import Entities.Exceptions.InvalidTokenException;
+import Entities.Exceptions.Parser.InvalidTokenException;
 import Entities.Enums.Lexer.TokenType;
 import Parser.Parser;
 import Entities.Metadata.ExprMetadata;
@@ -58,10 +58,10 @@ public class CallExpr extends Expr
         return args;
     }
 
-    private static void parseArg(ArrayList<ExprMetadata> args, Parser parser) throws InvalidTokenException, InvalidArgumentException
+    private static void parseArgDeclaration(ArrayList<ExprMetadata> args, Parser parser) throws InvalidTokenException, InvalidArgumentException
     {
         Expr identifier = AssignmentExpr.parse(parser);
-        parser.expect(TokenType.COLON, "Esperávamos ':' para após o identificador de um argumento.");
+        parser.expect(TokenType.COLON, "Esperávamos ':' após o identificador de um argumento.");
         Type type = Type.parse(parser);
         args.add(ExprMetadata.create(type, identifier));
     }
@@ -69,12 +69,12 @@ public class CallExpr extends Expr
     public static ArrayList<ExprMetadata> parseArgumentsDeclarationList(Parser parser) throws InvalidTokenException, InvalidArgumentException
     {
         ArrayList<ExprMetadata> args = new ArrayList<>();
-        parseArg(args, parser);
+        parseArgDeclaration(args, parser);
 
         while (parser.notEof() && parser.peekIs(TokenType.COMMA))
         {
             parser.consume();
-            parseArg(args, parser);
+            parseArgDeclaration(args, parser);
         }
 
         return args;
@@ -82,7 +82,7 @@ public class CallExpr extends Expr
 
     public static ArrayList<Expr> parseArgs(Parser parser) throws InvalidTokenException, InvalidArgumentException
     {
-        parser.expect(TokenType.OPEN_PARENTHESIS, "Expected open parenthesis");
+        parser.expect(TokenType.OPEN_PARENTHESIS, "Esperávamos '(' para abrir a lista de argumentos.");
 
         if (parser.peekIs(TokenType.CLOSE_PARENTHESIS))
         {
@@ -92,14 +92,14 @@ public class CallExpr extends Expr
 
         ArrayList<Expr> args = CallExpr.parseArgumentsList(parser);
 
-        parser.expect(TokenType.CLOSE_PARENTHESIS, "Missing close parenthesis in arguments list.");
+        parser.expect(TokenType.CLOSE_PARENTHESIS, "Esperávamos ')' para fechar a lista de argumentos.");
 
         return args;
     }
 
     public static ArrayList<ExprMetadata> parseArgsDeclaration(Parser parser) throws InvalidTokenException, InvalidArgumentException
     {
-        parser.expect(TokenType.OPEN_PARENTHESIS, "Expected open parenthesis");
+        parser.expect(TokenType.OPEN_PARENTHESIS, "Esperávamos '(' para abrir a lista de argumentos.");
 
         if (parser.peekIs(TokenType.CLOSE_PARENTHESIS))
         {
@@ -109,7 +109,7 @@ public class CallExpr extends Expr
 
         ArrayList<ExprMetadata> args = CallExpr.parseArgumentsDeclarationList(parser);
 
-        parser.expect(TokenType.CLOSE_PARENTHESIS, "Missing close parenthesis in arguments list.");
+        parser.expect(TokenType.CLOSE_PARENTHESIS, "Esperávamos ')' para fechar a lista de argumentos.");
 
         return args;
     }
@@ -117,8 +117,10 @@ public class CallExpr extends Expr
     private String printArgs(int level)
     {
         final int next = level + 1;
-        StringBuilder ret = new StringBuilder("\n").repeat("\t", level)
+        StringBuilder ret = new StringBuilder("\n")
+                .repeat("\t", level)
                 .append("[");
+
         for (Expr entry : arguments)
         {
             ret.repeat("\t", next)

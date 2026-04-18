@@ -4,7 +4,6 @@ import Entities.Constants.ReservedOperators;
 import Entities.Enums.Ast.NodeType;
 import Entities.Abstractions.Ast.Expr;
 import Entities.Exceptions.InvalidArgumentException;
-import Entities.Exceptions.InvalidTokenException;
 import Parser.Parser;
 
 public class UnaryExpr extends Expr
@@ -12,16 +11,19 @@ public class UnaryExpr extends Expr
     public Expr right;
     public String operator;
 
-    protected UnaryExpr(
-            Expr right,
-            String operator)
+    protected UnaryExpr(Expr right, String operator)
     {
         super(NodeType.UnaryExpr);
         this.right = right;
         this.operator = operator;
     }
 
-    public static Expr parse(Parser parser) throws InvalidTokenException, InvalidArgumentException
+    public static UnaryExpr create(Expr right, String operator)
+    {
+        return new UnaryExpr(right, operator);
+    }
+
+    public static Expr parse(Parser parser) throws InvalidArgumentException
     {
         if (ReservedOperators.isUnary(parser.peekValue()))
         {
@@ -31,13 +33,6 @@ public class UnaryExpr extends Expr
         }
 
         return BinaryExpr.parseBoolean(parser);
-    }
-
-    public static UnaryExpr create(
-            Expr right,
-            String operator)
-    {
-        return new UnaryExpr(right, operator);
     }
 
     @Override

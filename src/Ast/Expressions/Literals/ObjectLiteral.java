@@ -5,7 +5,7 @@ import Ast.Expressions.BinaryExpr;
 import Ast.Expressions.Property;
 import Entities.Abstractions.Ast.Expr;
 import Entities.Exceptions.InvalidArgumentException;
-import Entities.Exceptions.InvalidTokenException;
+import Entities.Exceptions.Parser.InvalidTokenException;
 import Entities.Enums.Lexer.TokenType;
 import Lexer.Tokens.Token;
 import Parser.Parser;

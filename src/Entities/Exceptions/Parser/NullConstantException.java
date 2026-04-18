@@ -1,10 +1,10 @@
-package Entities.Exceptions;
+package Entities.Exceptions.Parser;
 
 public class NullConstantException extends RuntimeException
 {
     public NullConstantException()
     {
-        super("Cannot declare an undefined constant.");
+        super("Não podemos declarar uma constante sem valor.");
     }
 
     public static void ThrowIf(boolean condition)
@@ -14,5 +14,4 @@ public class NullConstantException extends RuntimeException
             throw new NullConstantException();
         }
     }
-
 }

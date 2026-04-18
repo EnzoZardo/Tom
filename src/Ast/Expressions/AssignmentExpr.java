@@ -4,7 +4,7 @@ import Entities.Enums.Ast.NodeType;
 import Ast.Expressions.Literals.ObjectLiteral;
 import Entities.Abstractions.Ast.Expr;
 import Entities.Exceptions.InvalidArgumentException;
-import Entities.Exceptions.InvalidTokenException;
+import Entities.Exceptions.Parser.InvalidTokenException;
 import Entities.Enums.Lexer.TokenType;
 import Parser.Parser;
 

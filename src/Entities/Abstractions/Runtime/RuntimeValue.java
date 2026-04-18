@@ -12,6 +12,9 @@ public abstract class RuntimeValue
     }
 
     public abstract String print(int level);
+    public abstract boolean equals(RuntimeValue that);
+    public abstract boolean bool();
+    public abstract boolean not();
 
     @Override
     public String toString() {

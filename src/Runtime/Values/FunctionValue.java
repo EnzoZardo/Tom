@@ -57,4 +57,44 @@ public class FunctionValue extends RuntimeValue
                 "\t".repeat(next) + "node: " + type.toString() + ",\n" +
                 "\t".repeat(level) + "}";
     }
+
+    @Override
+    public boolean equals(RuntimeValue that)
+    {
+        if (that.type != type) {
+            return false;
+        }
+
+        FunctionValue functionValue = (FunctionValue) that;
+
+        if (parameters.size() != functionValue.parameters.size())
+        {
+            return false;
+        }
+
+        if (Type.equals(returnType, functionValue.returnType).isFailure()) {
+            return false;
+        }
+
+        for (int i = 0; i < parameters.size(); i++)
+        {
+            if (Type.equals(parameters.get(i).getType(), functionValue.parameters.get(i).getType()).isFailure()) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    @Override
+    public boolean bool()
+    {
+        return true;
+    }
+
+    @Override
+    public boolean not()
+    {
+        return false;
+    }
 }

@@ -3,6 +3,8 @@ package Parser;
 import Ast.Statements.*;
 import Entities.Abstractions.Ast.Statement;
 import Entities.Exceptions.*;
+import Entities.Exceptions.Parser.AlreadyParsedException;
+import Entities.Exceptions.Parser.InvalidTokenException;
 import Lexer.Lexer;
 import Entities.Enums.Lexer.TokenType;
 import Lexer.Tokens.Token;

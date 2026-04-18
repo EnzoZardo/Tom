@@ -3,8 +3,8 @@ package Ast.Expressions;
 import Entities.Enums.Ast.NodeType;
 import Entities.Abstractions.Ast.Expr;
 import Entities.Exceptions.InvalidArgumentException;
-import Entities.Exceptions.InvalidNodeException;
-import Entities.Exceptions.InvalidTokenException;
+import Entities.Exceptions.Parser.InvalidNodeException;
+import Entities.Exceptions.Parser.InvalidTokenException;
 import Entities.Enums.Lexer.TokenType;
 import Lexer.Tokens.Token;
 import Parser.Parser;
@@ -26,6 +26,14 @@ public class MemberExpr extends Expr
         this.computed = computed;
     }
 
+    public static MemberExpr create(
+            Expr object,
+            Expr property,
+            boolean computed)
+    {
+        return new MemberExpr(object, property, computed);
+    }
+
     public static Expr parse(Parser parser) throws InvalidTokenException, InvalidArgumentException
     {
         Expr object = PrimaryExpr.parse(parser);
@@ -43,14 +51,14 @@ public class MemberExpr extends Expr
 
                 if (property.type != NodeType.Identifier)
                 {
-                    throw new InvalidNodeException("Expected an identifier after dot on member expression.");
+                    throw new InvalidNodeException("Esperávamos um identificador depois de um '.'");
                 }
             }
             else
             {
                 computed = true;
                 property = PrimaryExpr.parse(parser);
-                parser.expect(TokenType.CLOSE_BRACKETS, "Expecting close brackets after computed member expression.");
+                parser.expect(TokenType.CLOSE_BRACKETS, "Esperávamos um ']' após uma expressão de membro personalizada.");
             }
 
             object = MemberExpr.create(object, property, computed);
@@ -73,14 +81,6 @@ public class MemberExpr extends Expr
     private static boolean isParsingMemberChaining(Parser parser)
     {
         return parser.peekIs(TokenType.DOT) || parser.peekIs(TokenType.OPEN_BRACKETS);
-    }
-
-    public static MemberExpr create(
-            Expr object,
-            Expr property,
-            boolean computed)
-    {
-        return new MemberExpr(object, property, computed);
     }
 
     @Override

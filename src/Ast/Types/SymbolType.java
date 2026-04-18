@@ -1,5 +1,6 @@
 package Ast.Types;
 
+import Entities.Common.Result.ResultVoid;
 import Entities.Constants.ReservedPrimitiveTypes;
 import Entities.Enums.TypeKind;
 import Entities.Abstractions.Type;
@@ -25,7 +26,9 @@ public class SymbolType extends Type
     public static Type reduce(Environment env, Type type)
     {
         SymbolType symbolType = (SymbolType) type;
-        if (!ReservedPrimitiveTypes.isReserved(symbolType.value)) {
+
+        if (!ReservedPrimitiveTypes.isReserved(symbolType.value))
+        {
             return env.lookupType(symbolType.value);
         }
 
@@ -34,15 +37,21 @@ public class SymbolType extends Type
 
     public static Type parse(Parser parser)
     {
-        Token token = parser.expect(TokenType.IDENTIFIER, "Expecting type identifier on type parsing.");
+        Token token = parser.expect(TokenType.IDENTIFIER, "Esperávamos o nome do tipo enquanto analisávamos.");
         return SymbolType.create(token.value);
     }
 
-    public static boolean equals(Type type1, Type type2)
+    public static ResultVoid equals(Type type1, Type type2)
     {
         SymbolType symbol1 = (SymbolType) type1;
         SymbolType symbol2 = (SymbolType) type2;
-        return symbol1.value.equals(symbol2.value);
+
+        if (symbol1.value.equals(symbol2.value))
+        {
+            return ResultVoid.Ok();
+        }
+
+        return ResultVoid.Fail("Os símbolos dos tipos diferem.");
     }
 
     @Override

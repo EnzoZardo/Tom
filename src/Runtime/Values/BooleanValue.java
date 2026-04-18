@@ -30,6 +30,28 @@ public class BooleanValue extends RuntimeValue
     }
 
     @Override
+    public boolean equals(RuntimeValue that)
+    {
+        if (that.type != type) {
+            return false;
+        }
+
+        return value == ((BooleanValue) that).value;
+    }
+
+    @Override
+    public boolean bool()
+    {
+        return value;
+    }
+
+    @Override
+    public boolean not()
+    {
+        return !value;
+    }
+
+    @Override
     public String toString()
     {
         return value ? ReservedKeys.True : ReservedKeys.False;

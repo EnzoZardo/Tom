@@ -2,8 +2,8 @@ package Lexer;
 
 import Entities.Constants.ReservedOperators;
 import Entities.Constants.ReservedWords;
-import Entities.Exceptions.AlreadyParsedException;
-import Entities.Exceptions.InvalidTokenException;
+import Entities.Exceptions.Parser.AlreadyParsedException;
+import Entities.Exceptions.Parser.InvalidTokenException;
 import Entities.Enums.Lexer.TokenType;
 import Lexer.Tokens.PonctuationToken;
 import Lexer.Tokens.Token;
@@ -28,11 +28,11 @@ public class Lexer
         return new Lexer(content);
     }
 
-    public ArrayList<Token> tokenize() throws AlreadyParsedException, InvalidTokenException
+    public ArrayList<Token> tokenize() throws InvalidTokenException
     {
         if (tokenIndex != 0)
         {
-            throw new AlreadyParsedException("Content was already tokenized. Consult 'getTokens' method.");
+            throw new AlreadyParsedException("Conteúdo já foi transformado em símbolo.");
         }
 
         while (_peek() != null)
@@ -70,7 +70,8 @@ public class Lexer
             {
                 _string();
             }
-            else if (ReservedOperators.isReserved(Character.toString(current)) || Token.isAlphabeticOperator(current))
+            else if (ReservedOperators.isReserved(Character.toString(current))
+                || Token.isAlphabeticOperator(current))
             {
                 _operator(_consume());
             }
@@ -106,9 +107,8 @@ public class Lexer
                 }
                 else
                 {
-                    System.err.printf("Unexpected Token" + _peek() + ".");
+                    System.err.printf("Símbolo inesperado " + _peek() + ".");
                     System.exit(1);
-                    //Decidir entre o de cima ou esse: throw new InvalidTokenException("Unrecognizable token found in source code.");
                 }
             }
 
@@ -154,6 +154,7 @@ public class Lexer
                 token = new StringBuilder(Character.toString(_consume()));
                 continue;
             }
+
             token.append(_consume());
         }
 
@@ -173,6 +174,7 @@ public class Lexer
             }
             token.append(_consume());
         }
+
         _consume();
         tokens.add(Token.create(TokenType.STRING_LITERAL, token.toString()));
     }
@@ -258,6 +260,7 @@ public class Lexer
         {
             return null;
         }
+
         return content[tokenIndex + offset];
     }
 

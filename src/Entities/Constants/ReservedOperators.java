@@ -30,7 +30,9 @@ public record ReservedOperators()
 
     public static boolean isUnary(String operator)
     {
-        return ReservedKeys.Not.equals(operator) || ReservedKeys.Minus.equals(operator) || ReservedKeys.Plus.equals(operator);
+        return ReservedKeys.Not.equals(operator)
+            || ReservedKeys.Minus.equals(operator)
+            || ReservedKeys.Plus.equals(operator);
     }
 
     public static boolean isAdditiveOperator(String operator)
@@ -42,10 +44,11 @@ public record ReservedOperators()
     {
         return ReservedKeys.GreaterOrEqual.equals(operator)
             || ReservedKeys.MinorOrEqual.equals(operator)
+            || ReservedKeys.Difference.equals(operator)
             || ReservedKeys.Equality.equals(operator)
             || ReservedKeys.Greater.equals(operator)
-            || ReservedKeys.And.equals(operator)
             || ReservedKeys.Minor.equals(operator)
+            || ReservedKeys.And.equals(operator)
             || ReservedKeys.Or.equals(operator);
     }
 
@@ -54,6 +57,7 @@ public record ReservedOperators()
         if (ReservedKeys.Equals.equals(value)) {
             return Token.create(TokenType.EQUALS, value);
         }
+
         return Token.create(TokenType.BINARY_OPERATOR, value);
     }
 }

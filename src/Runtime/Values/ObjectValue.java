@@ -1,5 +1,6 @@
 package Runtime.Values;
 
+import Entities.Abstractions.Type;
 import Entities.Enums.Runtime.ValueType;
 import Entities.Abstractions.Runtime.RuntimeValue;
 
@@ -35,16 +36,41 @@ public class ObjectValue extends RuntimeValue
         for (Map.Entry<String, RuntimeValue> entry : properties.entrySet())
         {
             ret.repeat("\t", next)
-                    .append(entry.getKey())
-                    .append(": ")
-                    .append(entry.getValue().print(next))
-                    .append(',')
-                    .append('\n');
+                .append(entry.getKey())
+                .append(": ")
+                .append(entry.getValue().print(next))
+                .append(',')
+                .append('\n');
         }
         return ret.append("\n")
                 .repeat("\t", level)
                 .append("]")
                 .toString();
+    }
+
+    @Override
+    public boolean equals(RuntimeValue that)
+    {
+        if (that.type != type) {
+            return false;
+        }
+
+        ObjectValue objectValue = (ObjectValue) that;
+
+        if (properties.size() != objectValue.properties.size())
+        {
+            return false;
+        }
+
+        for (int i = 0; i < properties.size(); i++)
+        {
+            if (!properties.get(i).equals(objectValue.properties.get(i)))
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     @Override
@@ -55,6 +81,22 @@ public class ObjectValue extends RuntimeValue
                 "\t".repeat(next) + "node: " + type.toString() + ",\n" +
                 "\t".repeat(next) + "properties: " + printProps(next) + ",\n" +
                 "\t".repeat(level) + "}";
+    }
+
+    @Override
+    public boolean bool()
+    {
+        final boolean hasProp = !this.properties.isEmpty();
+        final boolean notAllNullProps = !this.properties.values().stream().allMatch(x -> x.type == ValueType.Null);
+        return hasProp && notAllNullProps;
+    }
+
+    @Override
+    public boolean not()
+    {
+        final boolean hasNoProp = this.properties.isEmpty();
+        final boolean allNullProps = this.properties.values().stream().allMatch(x -> x.type == ValueType.Null);
+        return hasNoProp || allNullProps;
     }
 
     @Override

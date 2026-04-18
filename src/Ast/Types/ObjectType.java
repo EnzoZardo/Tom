@@ -1,5 +1,6 @@
 package Ast.Types;
 
+import Entities.Common.Result.ResultVoid;
 import Entities.Enums.TypeKind;
 import Entities.Abstractions.Type;
 import Entities.Enums.Lexer.TokenType;
@@ -25,7 +26,7 @@ public class ObjectType extends Type
         return new ObjectType(properties);
     }
 
-    public static boolean equals(Type type1, Type type2)
+    public static ResultVoid equals(Type type1, Type type2)
     {
         if (type1.type != TypeKind.ObjectType) {
             return ArrayType.equals(type1, type2);
@@ -36,23 +37,25 @@ public class ObjectType extends Type
 
         if (object1.properties.size() != object2.properties.size())
         {
-            return false;
+            return ResultVoid.Fail("A quantidade de propriedades do objeto difere da quantidade de " +
+                    "propriedades de seu tipo");
         }
 
         for (int i = 0; i < object1.properties.size(); i++)
         {
             ObjectTypeProperty prop1 = object1.properties.get(i);
             ObjectTypeProperty prop2 = object2.properties.get(i);
+
             if (!prop1.key.equals(prop2.key)) {
-                return false;
+                return ResultVoid.Fail("O nome das chaves do objeto é diferente.");
             }
 
             if (!Type.equals(prop1.type, prop2.type)) {
-                return false;
+                return ResultVoid.Fail("O tipo das chaves do objeto é diferente.");
             }
         }
 
-        return true;
+        return ResultVoid.Ok();
     }
 
     public static Type reduce(Environment env, Type type)

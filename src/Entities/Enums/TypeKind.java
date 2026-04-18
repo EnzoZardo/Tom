@@ -2,8 +2,8 @@ package Entities.Enums;
 
 public enum TypeKind
 {
-    SymbolType,
     ArrayType,
+    SymbolType,
     ObjectType,
     FunctionType,
     ObjectTypeProperty,

@@ -28,11 +28,11 @@ public class Program extends Statement
     @Override
     public String toString() {
         return "{\n" +
-                "\tnode: " + type.toString() + "\n" +
-                "\tbody: [" +
-                    print(2) + "\n" +
-                "\t]\n" +
-                "}";
+            "\tnode: " + type.toString() + "\n" +
+            "\tbody: [" +
+                print(2) + "\n" +
+            "\t]\n" +
+            "}";
     }
 
     @Override

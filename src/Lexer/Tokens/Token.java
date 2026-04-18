@@ -61,6 +61,7 @@ public class Token
         {
             return type.name() + "=" + value;
         }
+
         return type.name();
     }
 }

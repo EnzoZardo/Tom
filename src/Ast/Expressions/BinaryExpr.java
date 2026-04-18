@@ -5,7 +5,7 @@ import Entities.Constants.ReservedOperators;
 import Entities.Enums.Ast.NodeType;
 import Entities.Abstractions.Ast.Expr;
 import Entities.Exceptions.InvalidArgumentException;
-import Entities.Exceptions.InvalidTokenException;
+import Entities.Exceptions.Parser.InvalidTokenException;
 import Parser.Parser;
 
 public class BinaryExpr extends Expr

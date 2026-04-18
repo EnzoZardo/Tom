@@ -1,5 +1,6 @@
 package Ast.Types;
 
+import Entities.Common.Result.ResultVoid;
 import Entities.Enums.TypeKind;
 import Entities.Abstractions.Type;
 import Entities.Enums.Lexer.TokenType;
@@ -38,13 +39,13 @@ public class ArrayType extends Type
         {
             return SymbolType.parse(parser);
         }
-        parser.consume();
-        parser.expect(TokenType.CLOSE_BRACKETS, "Expecting ']' after open brackets on array type parsing.");
 
+        parser.consume();
+        parser.expect(TokenType.CLOSE_BRACKETS, "Esperávamos ']' depois dos '[' para a declaração de uma lista.");
         return ArrayType.create(Type.parse(parser));
     }
 
-    public static boolean equals(Type type1, Type type2)
+    public static ResultVoid equals(Type type1, Type type2)
     {
         if (type1.type != TypeKind.ArrayType) {
             return SymbolType.equals(type1, type2);
@@ -60,9 +61,10 @@ public class ArrayType extends Type
     public String print(int level)
     {
         final int next = level + 1;
-        return "\n" + "\t".repeat(level) + "{\n" +
-                "\t".repeat(next) + "type: " + type.toString() + ",\n" +
-                "\t".repeat(next) + "underlying: " + underlying.print(next) + ",\n" +
-                "\t".repeat(level) + "}";
+        return "\n" +
+            "\t".repeat(level) + "{\n" +
+            "\t".repeat(next) + "type: " + type.toString() + ",\n" +
+            "\t".repeat(next) + "underlying: " + underlying.print(next) + ",\n" +
+            "\t".repeat(level) + "}";
     }
 }

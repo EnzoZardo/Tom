@@ -43,6 +43,7 @@ public record ReservedKeys()
     public static final String Minor = "<";
     public static final String MinorOrEqual = "<=";
     public static final String Equality = "==";
+    public static final String Difference = "<>";
     public static final String And = "e";
     public static final String Or = "ou";
     public static final String Not = "nao";

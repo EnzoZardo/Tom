@@ -5,12 +5,12 @@ import Entities.Abstractions.Runtime.RuntimeValue;
 
 public class StringValue extends RuntimeValue
 {
-    public final String text;
+    public final String value;
 
-    protected StringValue(String text)
+    protected StringValue(String value)
     {
         super(ValueType.String);
-        this.text = text;
+        this.value = value;
     }
 
     public static StringValue create(String text)
@@ -24,13 +24,37 @@ public class StringValue extends RuntimeValue
         final int next = level + 1;
         return "\n" + "\t".repeat(level) + "{\n" +
                 "\t".repeat(next) + "node: " + type.toString() + ",\n" +
-                "\t".repeat(next) + "text: " + text + ",\n" +
+                "\t".repeat(next) + "text: " + value + ",\n" +
                 "\t".repeat(level) + "}";
+    }
+
+    @Override
+    public boolean equals(RuntimeValue that)
+    {
+        if (that.type != type) {
+            return false;
+        }
+
+        StringValue stringValue = (StringValue) that;
+
+        return stringValue.value.equals(value);
+    }
+
+    @Override
+    public boolean not()
+    {
+        return value.isEmpty() || value.isBlank();
+    }
+
+    @Override
+    public boolean bool()
+    {
+        return !value.isEmpty() && !value.isBlank();
     }
 
     @Override
     public String toString()
     {
-        return text;
+        return value;
     }
 }

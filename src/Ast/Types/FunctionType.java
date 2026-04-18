@@ -1,5 +1,6 @@
 package Ast.Types;
 
+import Entities.Common.Result.ResultVoid;
 import Entities.Enums.TypeKind;
 import Entities.Abstractions.Type;
 import Entities.Enums.Lexer.TokenType;
@@ -25,7 +26,7 @@ public class FunctionType extends Type
         return new FunctionType(arguments, returnType);
     }
 
-    public static boolean equals(Type type1, Type type2)
+    public static ResultVoid equals(Type type1, Type type2)
     {
         if (type1.type != TypeKind.FunctionType) {
             return ObjectType.equals(type1, type2);
@@ -36,22 +37,24 @@ public class FunctionType extends Type
 
         if (function1.parameters.size() != function2.parameters.size())
         {
-            return false;
+            return ResultVoid.Fail("A quantidade dos parâmetros da função com seu tipo diferem.");
         }
 
         if (!Type.equals(function1.returnType, function2.returnType))
         {
-            return false;
+            return ResultVoid.Fail("A o tipo de retorno da função com seu tipo diferem.");
         }
 
         for (int i = 0; i < function1.parameters.size(); i++)
         {
-            if (!Type.equals(function1.parameters.get(i), function2.parameters.get(i))) {
-                return false;
+            ResultVoid result = Type.equals(function1.parameters.get(i), function2.parameters.get(i));
+            if (result.isFailure())
+            {
+                return result;
             }
         }
 
-        return true;
+        return ResultVoid.Ok();
     }
 
     public static Type reduce(Environment env, Type type)
@@ -80,15 +83,15 @@ public class FunctionType extends Type
         }
 
         parser.consume();
-
         ArrayList<Type> parameters = new ArrayList<>();
+
         while (parser.notEof() && !parser.peekIs(TokenType.CLOSE_PARENTHESIS))
         {
             Type type = Type.parse(parser);
 
             if (!parser.peekIs(TokenType.CLOSE_PARENTHESIS))
             {
-                parser.expect(TokenType.COMMA, "Invalid token found parsing function type. Expected COMMA or close parenthesis.");
+                parser.expect(TokenType.COMMA, "Símbolo inválido %s na declaração de uma função. Esperávamos ':' ou ')'");
             }
 
             if (parser.peekIs(TokenType.COMMA))
@@ -99,38 +102,40 @@ public class FunctionType extends Type
             parameters.add(type);
         }
 
-        parser.expect(TokenType.CLOSE_PARENTHESIS, "Expecting a close parenthesis after last object value.");
-        parser.expect(TokenType.COLON, "Invalid token found parsing function type. Expected colon or close parenthesis.");
-
-        Type returnType = Type.parse(parser);
-
-        return FunctionType.create(parameters, returnType);
+        parser.expect(TokenType.CLOSE_PARENTHESIS, "Esperávamos ')' depois da declaração dos tipos dos " +
+                "argumentos da função.");
+        parser.expect(TokenType.COLON, "Esperávamos ':' para declarar o tipo de retorno da função.");
+        return FunctionType.create(parameters, Type.parse(parser));
     }
 
     private String printProps(int level)
     {
         final int next = level + 1;
-        StringBuilder ret = new StringBuilder("\n").repeat("\t", level)
-                .append("[");
+        StringBuilder ret = new StringBuilder("\n")
+            .repeat("\t", level)
+            .append("[");
+
         for (Type entry : parameters)
         {
             ret.repeat("\t", next)
-                    .append(entry.print(next))
-                    .append(',');
+                .append(entry.print(next))
+                .append(',');
         }
+
         return ret.append("\n")
-                .repeat("\t", level)
-                .append("]")
-                .toString();
+            .repeat("\t", level)
+            .append("]")
+            .toString();
     }
 
     @Override
     public String print(int level)
     {
         final int next = level + 1;
-        return "\n" + "\t".repeat(level) + "{\n" +
-                "\t".repeat(next) + "node: " + type + ",\n" +
-                "\t".repeat(next) + "properties: " + printProps(next) + ",\n" +
-                "\t".repeat(level) + "}";
+        return "\n" +
+            "\t".repeat(level) + "{\n" +
+            "\t".repeat(next) + "node: " + type + ",\n" +
+            "\t".repeat(next) + "properties: " + printProps(next) + ",\n" +
+            "\t".repeat(level) + "}";
     }
 }
