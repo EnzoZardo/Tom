@@ -225,12 +225,12 @@ public class Expressions
     {
         RuntimeValue object = Interpreter.evaluate(memberExpr.object, env);
 
-        //TODO: verify, maybe check types unless instanceof
+        //TODO: verify, maybe check types instead of instanceof
         if (object instanceof ObjectValue value)
         {
             /* TODO: this probably does not support computed properties, but we don't even have strings, so i will concern with this after */
             if (memberExpr.property instanceof Identifier id && value.properties.containsKey(id.value)) {
-                return value.properties.get(id.value));
+                return value.properties.get(id.value);
             }
 
             return NullValue.create();
