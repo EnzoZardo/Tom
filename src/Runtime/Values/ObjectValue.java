@@ -62,9 +62,16 @@ public class ObjectValue extends RuntimeValue
             return false;
         }
 
-        for (int i = 0; i < properties.size(); i++)
+        for (String key : properties.keySet())
         {
-            if (!properties.get(i).equals(objectValue.properties.get(i)))
+            RuntimeValue value = objectValue.properties.get(key);
+
+            if (value == null)
+            {
+                return false;
+            }
+
+            if (!properties.get(key).equals(value))
             {
                 return false;
             }
@@ -89,14 +96,6 @@ public class ObjectValue extends RuntimeValue
         final boolean hasProp = !this.properties.isEmpty();
         final boolean notAllNullProps = !this.properties.values().stream().allMatch(x -> x.type == ValueType.Null);
         return hasProp && notAllNullProps;
-    }
-
-    @Override
-    public boolean not()
-    {
-        final boolean hasNoProp = this.properties.isEmpty();
-        final boolean allNullProps = this.properties.values().stream().allMatch(x -> x.type == ValueType.Null);
-        return hasNoProp || allNullProps;
     }
 
     @Override

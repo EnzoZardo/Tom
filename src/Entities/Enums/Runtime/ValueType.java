@@ -4,6 +4,7 @@ public enum ValueType
 {
     Type,
     Null,
+    Array,
     Object,
     String,
     Numeric,

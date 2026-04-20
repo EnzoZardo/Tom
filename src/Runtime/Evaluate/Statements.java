@@ -35,10 +35,10 @@ public class Statements
 
         if (!TypeChecker.check(env, value, declaration.expectedType) && declaration.value != null)
         {
-            throw new ExpectedTypeNotMatch(String.format("Wrong type informed for variable %s", declaration.identifier));
+            throw new ExpectedTypeNotMatch(String.format("Tipo incorreto informado para a variável '%s'.", declaration.identifier));
         }
 
-        return env.declareVariable(declaration.identifier, value, declaration.constant);
+        return env.declareVariable(declaration.identifier, value, declaration.expectedType, declaration.constant);
     }
 
     public static RuntimeValue evaluateTypeDeclaration(

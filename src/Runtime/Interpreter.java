@@ -1,9 +1,6 @@
 package Runtime;
 
-import Ast.Expressions.Literals.FloatLiteral;
-import Ast.Expressions.Literals.IntegerLiteral;
-import Ast.Expressions.Literals.ObjectLiteral;
-import Ast.Expressions.Literals.StringLiteral;
+import Ast.Expressions.Literals.*;
 import Ast.Statements.*;
 import Ast.Expressions.*;
 import Entities.Enums.Ast.NodeType;
@@ -30,10 +27,11 @@ public class Interpreter
     {
         return switch (node.type)
         {
-            case NodeType.IntegerValue -> NumericValue.create(((IntegerLiteral) node).value, true);
-            case NodeType.FloatValue -> NumericValue.create(((FloatLiteral) node).value, false);
-            case NodeType.StringValue -> StringValue.create(((StringLiteral) node).value);
+            case NodeType.IntegerLiteral -> NumericValue.create(((IntegerLiteral) node).value, true);
+            case NodeType.FloatLiteral -> NumericValue.create(((FloatLiteral) node).value, false);
+            case NodeType.StringLiteral -> StringValue.create(((StringLiteral) node).value);
             case NodeType.Identifier -> Expressions.evaluateIdentifier((Identifier) node, env);
+            case NodeType.ArrayLiteral -> Expressions.evaluateArrayExpression((ArrayLiteral) node, env);
             case NodeType.ObjectLiteral -> Expressions.evaluateObjectExpression((ObjectLiteral) node, env);
             case NodeType.CallExpression -> Expressions.evaluateCallExpression((CallExpr) node, env);
             case NodeType.MemberExpression -> Expressions.evaluateMemberExpression((MemberExpr) node, env);

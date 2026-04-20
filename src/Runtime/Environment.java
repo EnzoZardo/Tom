@@ -1,18 +1,22 @@
 package Runtime;
 
 import Ast.Types.Primitive.*;
+import Ast.Types.SymbolType;
 import Entities.Abstractions.Type;
+import Entities.Common.Result.ResultVoid;
 import Entities.Constants.ReservedKeys;
-import Entities.Exceptions.AlreadyDeclaredVariableException;
-import Entities.Exceptions.ConstantAssignmentException;
-import Entities.Exceptions.InvalidVariableException;
-import Entities.Exceptions.TypeReassignmentException;
+import Entities.Constants.ReservedPrimitiveTypes;
+import Entities.Enums.Runtime.ValueType;
+import Entities.Enums.TypeKind;
+import Entities.Exceptions.*;
+import Entities.Exceptions.Evaluate.InvalidMemberAssignException;
 import Runtime.NativeFunctions.Print;
 import Entities.Abstractions.Runtime.RuntimeValue;
 import Runtime.Values.BooleanValue;
 import Runtime.Values.NativeFunctionValue;
 import Runtime.Values.NullValue;
 import Entities.Metadata.ValueMetadata;
+import Runtime.Values.ObjectValue;
 
 import java.util.HashMap;
 
@@ -50,7 +54,7 @@ public class Environment
         return new Environment(parentEnv);
     }
 
-    public RuntimeValue declareVariable(String name, RuntimeValue value, boolean constant) throws AlreadyDeclaredVariableException
+    public RuntimeValue declareVariable(String name, RuntimeValue value, Type type, boolean constant) throws AlreadyDeclaredVariableException
     {
         if (variables.containsKey(name) || constants.containsKey(name))
         {
@@ -59,11 +63,11 @@ public class Environment
 
         if (constant)
         {
-            constants.put(name, ValueMetadata.create(null, value));
+            constants.put(name, ValueMetadata.create(type, value));
             return value;
         }
 
-        variables.put(name, ValueMetadata.create(null, value));
+        variables.put(name, ValueMetadata.create(type, value));
         return value;
     }
 
@@ -87,8 +91,63 @@ public class Environment
             throw new ConstantAssignmentException("Cannot assign variable, it was declared as constant.");
         }
 
-        variableEnvironment.variables.put(name, ValueMetadata.create(variableEnvironment.variables.get(name).getType(), value));
+        ValueMetadata variable = variableEnvironment.variables.get(name);
+
+        Type expectedType = variable.getType();
+
+        if (!TypeChecker.check(this, value, expectedType))
+        {
+            throw new ExpectedTypeNotMatch("Tipo incorreto para a variável informado.");
+        }
+
+        variableEnvironment.variables.put(name, ValueMetadata.create(variable.getType(), value));
         return value;
+    }
+
+    public RuntimeValue assignMember(String name, String keyName, RuntimeValue value)
+    {
+        Environment variableEnvironment = resolve(name);
+        ValueMetadata obj = variableEnvironment.constants.get(name);
+
+        if (variableEnvironment.variables.containsKey(name))
+        {
+            obj = variableEnvironment.variables.get(name);
+        }
+
+        if (obj.getValue().type != ValueType.Object)
+        {
+            throw new InvalidMemberAssignException("O valor para o qual está tentando dar um novo " +
+                    "valor não é do tipo objeto.");
+        }
+
+        ObjectValue objectValue = (ObjectValue) obj.getValue();
+        Type reducedType = Type.reduce(this, obj.getType());
+
+        if (reducedType.type == TypeKind.ObjectType)
+        {
+            if (objectValue.properties.containsKey(keyName))
+            {
+                objectValue.properties.put(keyName, value);
+                return objectValue;
+            }
+
+            throw new InvalidMemberAssignException("Não foi encontrada nenhuma chave com o nome " +
+                keyName + " para este objeto.");
+        }
+
+        if (reducedType.type == TypeKind.SymbolType)
+        {
+            SymbolType symbol = (SymbolType) obj.getType();
+
+            if (ReservedKeys.Object.equals(symbol.value))
+            {
+                objectValue.properties.put(keyName, value);
+                return objectValue;
+            }
+        }
+
+        throw new InvalidMemberAssignException("Não foi possível dar valor para a chave " +
+                keyName + " para este objeto.");
     }
 
     public RuntimeValue lookupVariable(String name)

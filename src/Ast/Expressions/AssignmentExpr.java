@@ -1,5 +1,6 @@
 package Ast.Expressions;
 
+import Ast.Expressions.Literals.ArrayLiteral;
 import Entities.Enums.Ast.NodeType;
 import Ast.Expressions.Literals.ObjectLiteral;
 import Entities.Abstractions.Ast.Expr;
@@ -24,7 +25,7 @@ public class AssignmentExpr extends Expr
 
     public static Expr parse(Parser parser) throws InvalidTokenException, InvalidArgumentException
     {
-        Expr left = ObjectLiteral.parse(parser);
+        Expr left = ArrayLiteral.parse(parser);
 
         if (parser.peekIs(TokenType.EQUALS))
         {

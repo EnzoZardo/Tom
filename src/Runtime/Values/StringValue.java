@@ -41,12 +41,6 @@ public class StringValue extends RuntimeValue
     }
 
     @Override
-    public boolean not()
-    {
-        return value.isEmpty() || value.isBlank();
-    }
-
-    @Override
     public boolean bool()
     {
         return !value.isEmpty() && !value.isBlank();

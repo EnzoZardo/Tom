@@ -47,12 +47,12 @@ public class CallExpr extends Expr
     public static ArrayList<Expr> parseArgumentsList(Parser parser) throws InvalidTokenException, InvalidArgumentException
     {
         ArrayList<Expr> args = new ArrayList<>();
-        args.add(AssignmentExpr.parse(parser));
+        args.add(Expr.parse(parser));
 
         while (parser.notEof() && parser.peekIs(TokenType.COMMA))
         {
             parser.consume();
-            args.add(AssignmentExpr.parse(parser));
+            args.add(Expr.parse(parser));
         }
 
         return args;

@@ -35,12 +35,6 @@ public class NullValue extends RuntimeValue
     }
 
     @Override
-    public boolean not()
-    {
-        return true;
-    }
-
-    @Override
     public boolean bool()
     {
         return false;

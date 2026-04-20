@@ -11,7 +11,7 @@ public class StringLiteral extends Expr
     protected StringLiteral(String value)
     {
         this.value = value;
-        super(NodeType.StringValue);
+        super(NodeType.StringLiteral);
     }
 
     public static StringLiteral create(Token token)

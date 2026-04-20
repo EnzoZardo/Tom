@@ -1,6 +1,7 @@
 package Runtime.Evaluate;
 
 import Ast.Expressions.*;
+import Ast.Expressions.Literals.ArrayLiteral;
 import Entities.Constants.ReservedKeys;
 import Entities.Constants.ReservedOperators;
 import Entities.Enums.Ast.NodeType;
@@ -9,6 +10,7 @@ import Entities.Abstractions.Ast.Expr;
 import Entities.Abstractions.Ast.Statement;
 import Entities.Exceptions.AlreadyDeclaredVariableException;
 import Entities.Exceptions.Evaluate.*;
+import Entities.Exceptions.ExpectedTypeNotMatch;
 import Entities.Exceptions.InvalidCallException;
 import Entities.Exceptions.Parser.InvalidNodeException;
 import Entities.Metadata.ParameterMetadata;
@@ -22,10 +24,11 @@ import Entities.Metadata.ArgumentMetadata;
 
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 
 public class Expressions
 {
-    //TODO: if something is not expected, throw exception, don't just return nullvalue
     public static float evaluateDivision(Number left, Number right)
     {
         ZeroDivisionException.ThrowIfZero(left);
@@ -51,7 +54,7 @@ public class Expressions
         };
 
         boolean isFloat = !operator.equals(ReservedKeys.IntegerDivision);
-        return NumericValue.create(result, left.isInteger && right.isInteger && !isFloat);
+        return NumericValue.create(result, left.isInteger && right.isInteger && isFloat);
     }
 
     public static BooleanValue evaluateSizeOperator(RuntimeValue left, RuntimeValue right, String operator)
@@ -77,23 +80,23 @@ public class Expressions
         return BooleanValue.create(result);
     }
 
-    public static BooleanValue evaluateBooleanBinaryExpr(RuntimeValue left, RuntimeValue right, String operator)
+    public static RuntimeValue evaluateBooleanBinaryExpr(RuntimeValue left, RuntimeValue right, String operator)
     {
         return switch (operator)
         {
             case ReservedKeys.Or -> BooleanValue.create(left.bool() || right.bool());
             case ReservedKeys.And -> BooleanValue.create(left.bool() && right.bool());
+            case ReservedKeys.Equality -> BooleanValue.create(left.equals(right));
+            case ReservedKeys.Difference -> BooleanValue.create(!left.equals(right));
             case ReservedKeys.Minor,
                  ReservedKeys.Greater,
                  ReservedKeys.MinorOrEqual,
                  ReservedKeys.GreaterOrEqual -> evaluateSizeOperator(left, right, operator);
-            case ReservedKeys.Equality -> BooleanValue.create(left.equals(right));
-            case ReservedKeys.Difference -> BooleanValue.create(!left.equals(right));
             default -> throw new InvalidOperatorException(operator);
         };
     }
 
-    public static StringValue evaluateStringAdditiveExpr(RuntimeValue left, RuntimeValue right, String operator)
+    public static RuntimeValue evaluateStringAdditiveExpr(RuntimeValue left, RuntimeValue right, String operator)
     {
         if (ReservedKeys.Plus.equals(operator))
         {
@@ -130,6 +133,45 @@ public class Expressions
             }
         }
 
+        if (ReservedKeys.Division.equals(operator) || ReservedKeys.IntegerDivision.equals(operator))
+        {
+            final String error = "Operação de divisão só é permitida entre texto e inteiro.";
+            if (left.type != ValueType.String || right.type != ValueType.Numeric)
+            {
+                throw new InvalidStringOperation(error);
+            }
+
+            StringValue leftValue  = (StringValue) left;
+            NumericValue rightValue = (NumericValue) right;
+
+            if (!rightValue.isInteger)
+            {
+                throw new InvalidStringOperation(error);
+            }
+
+            int divisor = (int) rightValue.value;
+            ZeroDivisionException.ThrowIfZero(divisor);
+
+            String target = leftValue.value;
+
+            if (divisor > target.length())
+            {
+                throw new InvalidStringOperation("Não se pode dividir um texto por um tamanho maior do que o seu.");
+            }
+
+            HashMap<Integer, RuntimeValue> items = new HashMap<>();
+            int size = Math.ceilDiv(target.length(), divisor);
+            int index = 0;
+
+            for (int i = 0; i < target.length(); i += size) {
+                String value = target.substring(i, Math.min(i + size, target.length()));
+                items.put(index, StringValue.create(value));
+                index++;
+            }
+
+            return ArrayValue.create(items);
+        }
+
         throw new InvalidStringOperation(String.format("Operação '%s' não permitida para valores do tipo texto.",
                 operator));
     }
@@ -164,7 +206,7 @@ public class Expressions
         RuntimeValue leftHandSide = Interpreter.evaluate(expr.left, env);
         RuntimeValue rightHandSide = Interpreter.evaluate(expr.right, env);
 
-        if (ReservedOperators.isAdditiveOperator(expr.operator))
+        if (ReservedOperators.isNumericOperator(expr.operator))
         {
             if (leftHandSide.type == ValueType.Numeric && rightHandSide.type == ValueType.Numeric)
             {
@@ -193,12 +235,48 @@ public class Expressions
     {
         if (assignment.type != NodeType.AssignmentExpression)
         {
-            throw new InvalidNodeException("An Identifier is expected to assign a variable.");
+            throw new InvalidNodeException("O nome da variável é esperado para atribuirmos ela.");
         }
 
-        String name = ((Identifier) assignment.assigned).value;
-        RuntimeValue value = Interpreter.evaluate(assignment.value, env);
-        return env.assignVariable(name, value);
+        if (assignment.assigned.type == NodeType.Identifier)
+        {
+            String name = ((Identifier) assignment.assigned).value;
+            RuntimeValue value = Interpreter.evaluate(assignment.value, env);
+            return env.assignVariable(name, value);
+        }
+
+        if (assignment.assigned.type == NodeType.MemberExpression)
+        {
+            MemberExpr memberExpr = ((MemberExpr) assignment.assigned);
+            RuntimeValue value = Interpreter.evaluate(assignment.value, env);
+
+            //TODO: validate if object is of type object or array or anything else
+            if (memberExpr.object.type == NodeType.Identifier)
+            {
+                Identifier objectIdentifier = (Identifier) memberExpr.object;
+
+                if (!memberExpr.computed)
+                {
+                    Identifier memberIdentifier = (Identifier) memberExpr.property;
+                    return env.assignMember(objectIdentifier.value, memberIdentifier.value, value);
+                }
+
+                RuntimeValue propValue = Interpreter.evaluate(memberExpr.property, env);
+
+                if (propValue.type == ValueType.String) {
+                    StringValue memberIdentifier = (StringValue) propValue;
+                    return env.assignMember(objectIdentifier.value, memberIdentifier.value, value);
+                }
+            }
+
+            if (memberExpr.object.type == NodeType.ObjectLiteral)
+            {
+                return NullValue.create();
+            }
+        }
+
+        throw new InvalidNodeException("Esperávamos um membro de objeto ou uma variável para a expressão " +
+            "darmos um novo valor para ela.");
     }
 
     public static RuntimeValue evaluateObjectExpression(
@@ -220,39 +298,112 @@ public class Expressions
         return value;
     }
 
+    public static RuntimeValue evaluateArrayExpression(
+            ArrayLiteral array, Environment env) throws AlreadyDeclaredVariableException
+    {
+        ArrayValue value = ArrayValue.create();
+
+        for (int i = 0; i < array.items.size(); i++)
+        {
+            Expr item = array.items.get(i);
+            RuntimeValue evaluated = Interpreter.evaluate(item, env);
+            value.items.put(i, evaluated);
+        }
+
+        return value;
+    }
+
+
     public static RuntimeValue evaluateMemberExpression(
             MemberExpr memberExpr, Environment env) throws AlreadyDeclaredVariableException
     {
         RuntimeValue object = Interpreter.evaluate(memberExpr.object, env);
 
-        //TODO: verify, maybe check types instead of instanceof
-        if (object instanceof ObjectValue value)
+        if (object.type == ValueType.Object)
         {
-            /* TODO: this probably does not support computed properties, but we don't even have strings, so i will concern with this after */
-            if (memberExpr.property instanceof Identifier id && value.properties.containsKey(id.value)) {
-                return value.properties.get(id.value);
+            ObjectValue value = (ObjectValue) object;
+
+            if (memberExpr.property.type == NodeType.Identifier && !memberExpr.computed)
+            {
+                Identifier id = (Identifier) memberExpr.property;
+                if (value.properties.containsKey(id.value))
+                {
+                    return value.properties.get(id.value);
+                }
+            }
+            else
+            {
+                RuntimeValue member = Interpreter.evaluate(memberExpr.property, env);
+
+                if (member.type == ValueType.String)
+                {
+                    StringValue id = (StringValue) member;
+                    if (value.properties.containsKey(id.value))
+                    {
+                        return value.properties.get(id.value);
+                    }
+                }
+
+                throw new InvalidComputedObjectKeyType();
             }
 
             return NullValue.create();
         }
 
-        // TODO: change this exception
-        throw new InvalidNodeException("Incorrect object node");
+        if (object.type == ValueType.Array && memberExpr.computed)
+        {
+            ArrayValue value = (ArrayValue) object;
+
+            RuntimeValue member = Interpreter.evaluate(memberExpr.property, env);
+
+            if (member.type == ValueType.Numeric)
+            {
+                NumericValue key = (NumericValue) member;
+
+                if (!key.isInteger)
+                {
+                    throw new InvalidArrayIndexTypeException();
+                }
+
+                int index = (int)key.value;
+                if (value.items.containsKey(index))
+                {
+                    return value.items.get(index);
+                }
+
+                return NullValue.create();
+            }
+
+            throw new InvalidArrayIndexTypeException();
+        }
+
+        throw new InvalidNodeException("Esperávamos um objeto ou lista para buscarmos uma chave dele.");
     }
 
     public static RuntimeValue evaluateCallExpression(
-            CallExpr call, Environment env) throws AlreadyDeclaredVariableException
+        CallExpr call, Environment env) throws AlreadyDeclaredVariableException
     {
         ArrayList<RuntimeValue> args = new ArrayList<>();
 
-        for (Expr expr : call.arguments) {
+        for (Expr expr : call.arguments)
+        {
             args.add(Interpreter.evaluate(expr, env));
         }
 
         RuntimeValue caller = Interpreter.evaluate(call.caller, env);
 
-        if (caller instanceof FunctionValue function) {
+        if (caller.type == ValueType.Function)
+        {
+            FunctionValue function = (FunctionValue) caller;
             Environment scope = Environment.create(function.declarationEnv);
+
+            if (function.parameters.size() != call.arguments.size())
+            {
+                throw new IncorrectNumberOfArgumentsException(String.format("A função %s esperava %d argumento(s), mas recebeu %d.",
+                    function.name,
+                    function.parameters.size(),
+                    call.arguments.size()));
+            }
 
             for (int i = 0; i < function.parameters.size(); i++)
             {
@@ -263,7 +414,7 @@ public class Expressions
                     throw new RuntimeException("Invalid Argument type");
                 }
 
-                scope.declareVariable(name, args.get(i), false);
+                scope.declareVariable(name, args.get(i), param.getType(), false);
             }
 
             RuntimeValue result = NullValue.create();
@@ -273,16 +424,18 @@ public class Expressions
             }
 
             if (!TypeChecker.check(env, result, function.returnType)) {
-                throw new RuntimeException("Invalid return type");
+                throw new ExpectedTypeNotMatch("Tipo de retorno não condiz com o tipo esperado.");
             }
 
             return result;
         }
 
         if (caller.type == ValueType.NativeFunction) {
-            return ((NativeFunctionValue) caller).call.apply(ParameterMetadata.create(args, env));
+            NativeFunctionValue nativeFunction = (NativeFunctionValue) caller;
+            ParameterMetadata parameters = ParameterMetadata.create(args, env);
+            return nativeFunction.call.apply(parameters);
         }
 
-        throw new InvalidCallException("Cannot call a value that's not a NativeFunctionValue");
+        throw new InvalidCallException("Valor informado não permite ser chamado como uma função.");
     }
 }

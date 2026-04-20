@@ -10,11 +10,14 @@ public abstract class RuntimeValue
     {
         this.type = type;
     }
-
     public abstract String print(int level);
     public abstract boolean equals(RuntimeValue that);
     public abstract boolean bool();
-    public abstract boolean not();
+
+    public boolean not()
+    {
+        return !bool();
+    }
 
     @Override
     public String toString() {

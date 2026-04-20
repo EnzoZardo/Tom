@@ -11,7 +11,7 @@ public class IntegerLiteral extends Expr
 
     protected IntegerLiteral(int value)
     {
-        super(NodeType.IntegerValue);
+        super(NodeType.IntegerLiteral);
         this.value = value;
     }
 

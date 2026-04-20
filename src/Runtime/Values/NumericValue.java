@@ -40,13 +40,8 @@ public class NumericValue extends RuntimeValue
     }
 
     @Override
-    public boolean not()
-    {
-        return value == 0;
-    }
-
-    @Override
     public boolean bool()
+
     {
         return value != 0;
     }

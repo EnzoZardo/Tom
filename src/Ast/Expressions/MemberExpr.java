@@ -57,8 +57,9 @@ public class MemberExpr extends Expr
             else
             {
                 computed = true;
-                property = PrimaryExpr.parse(parser);
-                parser.expect(TokenType.CLOSE_BRACKETS, "Esperávamos um ']' após uma expressão de membro personalizada.");
+                property = Expr.parse(parser);
+                parser.expect(TokenType.CLOSE_BRACKETS, "Esperávamos um ']' após uma expressão de " +
+                    "membro personalizada.");
             }
 
             object = MemberExpr.create(object, property, computed);

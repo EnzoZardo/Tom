@@ -50,7 +50,7 @@ public class ObjectType extends Type
                 return ResultVoid.Fail("O nome das chaves do objeto é diferente.");
             }
 
-            if (!Type.equals(prop1.type, prop2.type)) {
+            if (Type.equals(prop1.type, prop2.type).isFailure()) {
                 return ResultVoid.Fail("O tipo das chaves do objeto é diferente.");
             }
         }

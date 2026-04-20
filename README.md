@@ -20,3 +20,10 @@ Os próximos passos serão:
 - Limpeza e organização de código foi feita e implementadas operações antes faltantes;
 Agora é necessário:
 - Implementar arrays, enums e propriedades computadas em objetos.
+
+### Atualizações 20.4.26
+- Adicionados arrays e suas indexações
+- Adicionando reassign em object keys
+- Finalização da refatoração inicial
+- Divisão de string por inteiro que resulta em uma lista
+- É necessário agora adicionar uma validação somente para membros de objetos e arrays poderem receber o assign na função de assignMember

@@ -1,12 +1,5 @@
+dec a: []texto = "bodia" / 2
 
-fun bomdia(a: (texto): texto, b: texto): texto
-{
-    a(b)
-}
+a[0] = "teste"
 
-fun c(oi: texto): texto
-{
-    oi
-}
-
-escreva(bomdia(c, "fala"))
+escreva(a[0])

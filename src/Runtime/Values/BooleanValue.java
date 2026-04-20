@@ -46,12 +46,6 @@ public class BooleanValue extends RuntimeValue
     }
 
     @Override
-    public boolean not()
-    {
-        return !value;
-    }
-
-    @Override
     public String toString()
     {
         return value ? ReservedKeys.True : ReservedKeys.False;

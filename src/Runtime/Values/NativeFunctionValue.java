@@ -39,12 +39,6 @@ public class NativeFunctionValue extends RuntimeValue
     }
 
     @Override
-    public boolean not()
-    {
-        return false;
-    }
-
-    @Override
     public boolean equals(RuntimeValue that)
     {
         throw new InvalidBinaryOperation("Não se pode testar a igualdade entre uma função nativa e outro valor.");

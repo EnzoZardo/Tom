@@ -17,6 +17,7 @@ public record ReservedOperators()
         ReservedKeys.Greater,
         ReservedKeys.Equality,
         ReservedKeys.Division,
+        ReservedKeys.Difference,
         ReservedKeys.MinorOrEqual,
         ReservedKeys.GreaterOrEqual,
         ReservedKeys.Multiplication,
@@ -38,6 +39,16 @@ public record ReservedOperators()
     public static boolean isAdditiveOperator(String operator)
     {
         return ReservedKeys.Plus.equals(operator) || ReservedKeys.Minus.equals(operator);
+    }
+
+    public static boolean isNumericOperator(String operator)
+    {
+        return ReservedKeys.Mod.equals(operator)
+            || ReservedKeys.Plus.equals(operator)
+            || ReservedKeys.Minus.equals(operator)
+            || ReservedKeys.Division.equals(operator)
+            || ReservedKeys.Multiplication.equals(operator)
+            || ReservedKeys.IntegerDivision.equals(operator);
     }
 
     public static boolean isBooleanOperator(String operator)

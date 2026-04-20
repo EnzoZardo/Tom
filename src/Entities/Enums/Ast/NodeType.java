@@ -15,9 +15,10 @@ public enum NodeType
     AssignmentExpression,
     // These are literals
     Property,
-    FloatValue,
+    FloatLiteral,
     Identifier,
-    StringValue,
-    IntegerValue,
+    ArrayLiteral,
+    StringLiteral,
+    IntegerLiteral,
     ObjectLiteral,
 }

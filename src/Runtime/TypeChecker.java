@@ -7,6 +7,7 @@ import Ast.Types.*;
 import Entities.Abstractions.Type;
 import Entities.Enums.Runtime.ValueType;
 import Entities.Abstractions.Runtime.RuntimeValue;
+import Runtime.Values.ArrayValue;
 import Runtime.Values.FunctionValue;
 import Runtime.Values.NumericValue;
 import Runtime.Values.ObjectValue;
@@ -14,11 +15,6 @@ import Runtime.Values.ObjectValue;
 public class TypeChecker
 {
     protected TypeChecker() {}
-
-    public static TypeChecker create()
-    {
-        return new TypeChecker();
-    }
 
     public static boolean check(Environment env, RuntimeValue value, Type expected)
     {
@@ -33,6 +29,11 @@ public class TypeChecker
             {
                 ObjectType object = (ObjectType) expected;
                 yield checkObject(env, object, value);
+            }
+            case TypeKind.ArrayType ->
+            {
+                ArrayType array = (ArrayType) expected;
+                yield checkArray(env, array, value);
             }
             case TypeKind.FunctionType ->
             {
@@ -90,7 +91,7 @@ public class TypeChecker
         Type currentReturn = Type.reduce(env, function.returnType);
         Type expectedReturn = Type.reduce(env, type.returnType);
 
-        if (!Type.equals(currentReturn, expectedReturn))
+        if (Type.equals(currentReturn, expectedReturn).isFailure())
         {
             return false;
         }
@@ -99,8 +100,34 @@ public class TypeChecker
         {
             Type currentType = Type.reduce(env, function.parameters.get(i).getType());
             Type expectedType = Type.reduce(env,type.parameters.get(i));
-            if (Type.equals(currentType, expectedType))
+            if (Type.equals(currentType, expectedType).isSuccess())
             {
+                continue;
+            }
+
+            return false;
+        }
+
+        return true;
+    }
+
+    private static boolean checkArray(Environment env, ArrayType type, RuntimeValue value)
+    {
+        if (value.type != ValueType.Array)
+        {
+            return false;
+        }
+
+        ArrayValue array = (ArrayValue) value;
+
+        if (array.items.isEmpty())
+        {
+            return true;
+        }
+
+        for (RuntimeValue item : array.items.values())
+        {
+            if (check(env, item, type.underlying)) {
                 continue;
             }
 

@@ -40,7 +40,7 @@ public class FunctionType extends Type
             return ResultVoid.Fail("A quantidade dos parâmetros da função com seu tipo diferem.");
         }
 
-        if (!Type.equals(function1.returnType, function2.returnType))
+        if (Type.equals(function1.returnType, function2.returnType).isFailure())
         {
             return ResultVoid.Fail("A o tipo de retorno da função com seu tipo diferem.");
         }
@@ -135,7 +135,8 @@ public class FunctionType extends Type
         return "\n" +
             "\t".repeat(level) + "{\n" +
             "\t".repeat(next) + "node: " + type + ",\n" +
-            "\t".repeat(next) + "properties: " + printProps(next) + ",\n" +
+            "\t".repeat(next) + "returnType: " + returnType.print(next) + ",\n" +
+            "\t".repeat(next) + "parameters: " + printProps(next) + ",\n" +
             "\t".repeat(level) + "}";
     }
 }

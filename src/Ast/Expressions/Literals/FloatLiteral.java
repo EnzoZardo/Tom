@@ -11,7 +11,7 @@ public class FloatLiteral extends Expr
 
     protected FloatLiteral(float value)
     {
-        super(NodeType.FloatValue);
+        super(NodeType.FloatLiteral);
         this.value = value;
     }
 

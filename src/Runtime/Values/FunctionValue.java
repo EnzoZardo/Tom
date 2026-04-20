@@ -91,10 +91,4 @@ public class FunctionValue extends RuntimeValue
     {
         return true;
     }
-
-    @Override
-    public boolean not()
-    {
-        return false;
-    }
 }
