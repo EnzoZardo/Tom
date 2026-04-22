@@ -1,5 +1,3 @@
-dec a: []texto = "bodia" / 2
 
-a[0] = "teste"
 
-escreva(a[0])
+

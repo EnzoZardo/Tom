@@ -54,7 +54,20 @@ public class ArrayValue extends RuntimeValue
             return false;
         }
 
-        //TODO: implement equals
+        ArrayValue arrayValue = (ArrayValue) that;
+
+        if (arrayValue.items.size() != items.size())
+        {
+            return false;
+        }
+
+        for (int i = 0; i < items.size(); i++)
+        {
+            if (!items.get(i).equals(arrayValue.items.get(i)))
+            {
+                 return false;
+            }
+        }
 
         return true;
     }

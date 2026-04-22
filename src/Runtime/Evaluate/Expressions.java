@@ -160,12 +160,18 @@ public class Expressions
             }
 
             HashMap<Integer, RuntimeValue> items = new HashMap<>();
-            int size = Math.ceilDiv(target.length(), divisor);
-            int index = 0;
+            int len = target.length();
+            int size = Math.floorDiv(len, divisor);
+            int res = len % divisor;
 
-            for (int i = 0; i < target.length(); i += size) {
-                String value = target.substring(i, Math.min(i + size, target.length()));
+            int start = 0, index = 0;
+
+            for (int i = 0; i < divisor; i++) {
+                int partSize = size + (i < res ? 1 : 0);
+                int end = start + partSize;
+                String value = target.substring(start, end);
                 items.put(index, StringValue.create(value));
+                start = end;
                 index++;
             }
 
