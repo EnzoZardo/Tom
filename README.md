@@ -27,3 +27,9 @@ Agora é necessário:
 - Finalização da refatoração inicial
 - Divisão de string por inteiro que resulta em uma lista
 - É necessário agora adicionar uma validação somente para membros de objetos e arrays poderem receber o assign na função de assignMember
+
+### Atualizações 22.4.26
+- Adicionando reassign em array index
+- Adicionando novo escopo
+- Agora expressões simples são aceitas no meio do código
+- É necessário adicionar ; no final das expressões pq tá ficando complicado

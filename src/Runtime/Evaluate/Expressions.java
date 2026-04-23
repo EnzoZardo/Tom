@@ -256,12 +256,12 @@ public class Expressions
             MemberExpr memberExpr = ((MemberExpr) assignment.assigned);
             RuntimeValue value = Interpreter.evaluate(assignment.value, env);
 
-            //TODO: validate if object is of type object or array or anything else
             if (memberExpr.object.type == NodeType.Identifier)
             {
                 Identifier objectIdentifier = (Identifier) memberExpr.object;
+                RuntimeValue variable = env.lookupVariable(objectIdentifier.value);
 
-                if (!memberExpr.computed)
+                if (!memberExpr.computed && variable.type == ValueType.Object)
                 {
                     Identifier memberIdentifier = (Identifier) memberExpr.property;
                     return env.assignMember(objectIdentifier.value, memberIdentifier.value, value);
@@ -269,13 +269,24 @@ public class Expressions
 
                 RuntimeValue propValue = Interpreter.evaluate(memberExpr.property, env);
 
-                if (propValue.type == ValueType.String) {
+                if (propValue.type == ValueType.String && variable.type == ValueType.Object)
+                {
                     StringValue memberIdentifier = (StringValue) propValue;
                     return env.assignMember(objectIdentifier.value, memberIdentifier.value, value);
                 }
+
+                if (propValue.type == ValueType.Numeric && variable.type == ValueType.Array)
+                {
+                    NumericValue memberIdentifier = (NumericValue) propValue;
+                    if (!memberIdentifier.isInteger)
+                    {
+                        throw new ExpectedTypeNotMatch("Não se pode indexar uma lista com uma chave do tipo real.");
+                    }
+                    return env.assignIndex(objectIdentifier.value, (int) memberIdentifier.value, value);
+                }
             }
 
-            if (memberExpr.object.type == NodeType.ObjectLiteral)
+            if (memberExpr.object.type == NodeType.ObjectLiteral || memberExpr.object.type == NodeType.ArrayLiteral)
             {
                 return NullValue.create();
             }

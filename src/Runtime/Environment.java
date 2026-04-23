@@ -12,11 +12,8 @@ import Entities.Exceptions.*;
 import Entities.Exceptions.Evaluate.InvalidMemberAssignException;
 import Runtime.NativeFunctions.Print;
 import Entities.Abstractions.Runtime.RuntimeValue;
-import Runtime.Values.BooleanValue;
-import Runtime.Values.NativeFunctionValue;
-import Runtime.Values.NullValue;
+import Runtime.Values.*;
 import Entities.Metadata.ValueMetadata;
-import Runtime.Values.ObjectValue;
 
 import java.util.HashMap;
 
@@ -102,6 +99,35 @@ public class Environment
 
         variableEnvironment.variables.put(name, ValueMetadata.create(variable.getType(), value));
         return value;
+    }
+
+    public RuntimeValue assignIndex(String name, int number, RuntimeValue value)
+    {
+        Environment variableEnvironment = resolve(name);
+        ValueMetadata obj = variableEnvironment.constants.get(name);
+
+        if (variableEnvironment.variables.containsKey(name))
+        {
+            obj = variableEnvironment.variables.get(name);
+        }
+
+        if (obj.getValue().type != ValueType.Array)
+        {
+            throw new InvalidMemberAssignException("O valor para o qual está tentando dar um novo " +
+                    "valor não é do tipo lista.");
+        }
+
+        ArrayValue arrayValue = (ArrayValue) obj.getValue();
+        Type reducedType = Type.reduce(this, obj.getType());
+
+        if (reducedType.type == TypeKind.ArrayType && arrayValue.items.containsKey(number))
+        {
+            arrayValue.items.put(number, value);
+            return arrayValue;
+        }
+
+        throw new InvalidMemberAssignException("Não foi encontrada nenhum índice com o número " +
+                number + " para esta.");
     }
 
     public RuntimeValue assignMember(String name, String keyName, RuntimeValue value)
