@@ -25,7 +25,7 @@ public class AssignmentExpr extends Expr
 
     public static Expr parse(Parser parser) throws InvalidTokenException, InvalidArgumentException
     {
-        Expr left = ArrayLiteral.parse(parser);
+        Expr left = BinaryExpr.parseAdditive(parser);
 
         if (parser.peekIs(TokenType.EQUALS))
         {

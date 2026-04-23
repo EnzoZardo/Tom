@@ -1,8 +1,6 @@
 package Ast.Expressions;
 
-import Ast.Expressions.Literals.FloatLiteral;
-import Ast.Expressions.Literals.IntegerLiteral;
-import Ast.Expressions.Literals.StringLiteral;
+import Ast.Expressions.Literals.*;
 import Entities.Abstractions.Ast.Expr;
 import Entities.Exceptions.InvalidArgumentException;
 import Entities.Exceptions.Parser.InvalidTokenException;
@@ -20,6 +18,8 @@ public class PrimaryExpr
             case TokenType.OPEN_PARENTHESIS -> PrimaryExpr.parseParenthesis(parser);
             case TokenType.STRING_LITERAL -> StringLiteral.create(parser.consume());
             case TokenType.INTEGER_LITERAL -> IntegerLiteral.create(parser.consume());
+            case TokenType.OPEN_BRACE -> ObjectLiteral.parse(parser);
+            case TokenType.OPEN_BRACKETS -> ArrayLiteral.parse(parser);
             default -> throw new InvalidTokenException(String.format("Símbolo inesperado '%s'", parser.peekValue()));
         };
     }

@@ -1,5 +1,6 @@
 package Ast.Expressions.Literals;
 
+import Ast.Expressions.BinaryExpr;
 import Entities.Abstractions.Ast.Expr;
 import Entities.Enums.Ast.NodeType;
 import Entities.Enums.Lexer.TokenType;
@@ -28,7 +29,7 @@ public class ArrayLiteral extends Expr
     {
         if (!parser.peekIs(TokenType.OPEN_BRACKETS))
         {
-            return ObjectLiteral.parse(parser);
+            return BinaryExpr.parseAdditive(parser);
         }
 
         parser.consume();

@@ -54,4 +54,15 @@ public class Statements
         FunctionValue value = FunctionValue.createFromStatement(declaration, env);
         return env.declareConstant(value.name, value);
     }
+
+    public static RuntimeValue evaluateScopeDeclaration(ScopeDeclaration scopeDeclaration, Environment env) throws AlreadyDeclaredVariableException
+    {
+        Environment scope = Environment.create(env);
+        for (Statement statement : scopeDeclaration.body)
+        {
+            Interpreter.evaluate(statement, scope);
+        }
+        return NullValue.create();
+    }
+
 }

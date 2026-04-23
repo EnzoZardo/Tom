@@ -45,6 +45,8 @@ public class Interpreter
                     Statements.evaluateFunctionDeclaration((FunctionDeclaration) node, env);
             case NodeType.TypeDeclaration ->
                     Statements.evaluateTypeDeclaration((TypeDeclaration) node, env);
+            case NodeType.ScopeDeclaration ->
+                    Statements.evaluateScopeDeclaration((ScopeDeclaration) node, env);
             default -> throw new RuntimeException("This AST Node was not recognized yet." + node.print(0));
         };
     }

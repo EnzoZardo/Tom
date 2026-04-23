@@ -1,5 +1,6 @@
 package Ast.Expressions.Literals;
 
+import Ast.Expressions.MemberExpr;
 import Entities.Enums.Ast.NodeType;
 import Ast.Expressions.BinaryExpr;
 import Ast.Expressions.Property;
@@ -74,6 +75,7 @@ public class ObjectLiteral extends Expr
         }
 
         parser.expect(TokenType.CLOSE_BRACE, "Esperávamos '}' para fechar o objeto, mas recebemos '%s'");
+
         return ObjectLiteral.create(properties);
     }
 

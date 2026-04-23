@@ -5,6 +5,7 @@ public enum NodeType
     // These are statements
     Program,
     TypeDeclaration,
+    ScopeDeclaration,
     VariableDeclaration,
     FunctionDeclaration,
     // These are expressions

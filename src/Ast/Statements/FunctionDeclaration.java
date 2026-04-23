@@ -130,7 +130,6 @@ public class FunctionDeclaration extends Statement
         return "\n" +
             "\t".repeat(level) + "{\n" +
             "\t".repeat(next) + "type: " + type.toString() + ",\n" +
-            "\t".repeat(next) + "node: " + type.toString() + ",\n" +
             "\t".repeat(next) + "identifier: " + identifier + ",\n" +
             "\t".repeat(next) + "parameters: " + printParams(next) + ",\n" +
             "\t".repeat(next) + "body: " + printBody(next) + ",\n" +

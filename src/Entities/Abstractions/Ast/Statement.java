@@ -1,5 +1,6 @@
 package Entities.Abstractions.Ast;
 
+import Ast.Statements.ScopeDeclaration;
 import Entities.Enums.Ast.NodeType;
 import Ast.Statements.FunctionDeclaration;
 import Ast.Statements.TypeDeclaration;
@@ -24,6 +25,7 @@ public abstract class Statement
             case TokenType.DECLARE, TokenType.CONSTANT -> VariableDeclaration.parse(parser);
             case TokenType.TYPE ->  TypeDeclaration.parse(parser);
             case TokenType.FUNCTION -> FunctionDeclaration.parse(parser);
+            case TokenType.OPEN_BRACE -> ScopeDeclaration.parse(parser);
             default -> Expr.parse(parser);
         };
     }

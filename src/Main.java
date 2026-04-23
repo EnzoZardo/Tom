@@ -28,7 +28,7 @@ void main(String[] args) throws AlreadyParsedException, IOException, InvalidToke
 
     Parser parser = Parser.create(content.toCharArray());
     Program program = parser.build();
-//    IO.println(program);
+    IO.println(program);
     Interpreter.evaluate(program, Environment.create());
 
 //    while (true)

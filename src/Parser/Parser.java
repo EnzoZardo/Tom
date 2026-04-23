@@ -61,13 +61,18 @@ public class Parser
         return !peekIs(TokenType.EOF);
     }
 
-    public Token peek()
+    private Token peek()
     {
-        if (tokenIndex >= tokens.size())
+        return peek(0);
+    }
+
+    public Token peek(int offset)
+    {
+        if (tokenIndex + offset >= tokens.size())
         {
             return null;
         }
-        return tokens.get(tokenIndex);
+        return tokens.get(tokenIndex + offset);
     }
 
     public String peekValue()
@@ -75,14 +80,24 @@ public class Parser
         return peek().value;
     }
 
+    public TokenType peekType(int offset)
+    {
+        return peek(offset).type;
+    }
+
+    public boolean peekIs(int offset, TokenType token)
+    {
+        return peekType(offset) == token;
+    }
+
     public TokenType peekType()
     {
-        return peek().type;
+        return peek(0).type;
     }
 
     public boolean peekIs(TokenType token)
     {
-        return peekType() == token;
+        return peekType(0) == token;
     }
 
     public Token consume()
