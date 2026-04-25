@@ -2,6 +2,10 @@ package Runtime.Values;
 
 import Entities.Enums.Runtime.ValueType;
 import Entities.Abstractions.Runtime.RuntimeValue;
+import Entities.Exceptions.InvalidIndexException;
+
+import java.util.List;
+import java.util.Map;
 
 public class StringValue extends RuntimeValue
 {
@@ -16,6 +20,11 @@ public class StringValue extends RuntimeValue
     public static StringValue create(String text)
     {
         return new StringValue(text);
+    }
+
+    public static StringValue create(char text)
+    {
+        return new StringValue(Character.toString(text));
     }
 
     @Override
@@ -44,6 +53,23 @@ public class StringValue extends RuntimeValue
     public boolean bool()
     {
         return !value.isEmpty() && !value.isBlank();
+    }
+
+    @Override
+    public RuntimeValue iterate(int index)
+    {
+        if (index < 0 || index >= value.length())
+        {
+            throw new InvalidIndexException("O índice " + index + "é inválido.");
+        }
+
+        return StringValue.create(value.charAt(index));
+    }
+
+    @Override
+    public int iteratorSize()
+    {
+        return value.length();
     }
 
     @Override

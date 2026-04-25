@@ -2,6 +2,7 @@ package Runtime.Values;
 
 import Entities.Abstractions.Runtime.RuntimeValue;
 import Entities.Enums.Runtime.ValueType;
+import Entities.Exceptions.InvalidIndexException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -86,6 +87,23 @@ public class ArrayValue extends RuntimeValue
     public boolean bool()
     {
         return !this.items.isEmpty();
+    }
+
+    @Override
+    public RuntimeValue iterate(int index)
+    {
+        if (index < 0 || index >= items.size())
+        {
+            throw new InvalidIndexException("O índice " + index + "é inválido.");
+        }
+
+        return items.get(index);
+    }
+
+    @Override
+    public int iteratorSize()
+    {
+        return items.size();
     }
 
     @Override

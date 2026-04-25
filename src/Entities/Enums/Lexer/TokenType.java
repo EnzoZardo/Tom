@@ -5,6 +5,8 @@ public enum TokenType
     IF,
     DOT,
     EOF,
+    FOR,
+    EACH,
     ELSE,
     TYPE,
     WHILE,

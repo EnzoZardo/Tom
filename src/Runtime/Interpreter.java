@@ -39,8 +39,9 @@ public class Interpreter
             case NodeType.UnaryExpr -> Expressions.evaluateUnaryExpr((UnaryExpr) node, env);
             case NodeType.BinaryExpr -> Expressions.evaluateBinaryExpr((BinaryExpr) node, env);
             case NodeType.Program -> Statements.evaluateProgram((Program) node, env);
-            case NodeType.IfStatement -> Statements.evaluateIfStatement((IfStatement) node, env);
-            case NodeType.WhileStatement -> Statements.evaluateWhileStatement((WhileStatement) node, env);
+            case NodeType.IfStatement -> Statements.evaluateIfStatement((IfConditional) node, env);
+            case NodeType.WhileStatement -> Statements.evaluateWhileStatement((While) node, env);
+            case NodeType.ForEachStatement -> Statements.evaluateForEachStatement((ForEach) node, env);
             case NodeType.VariableDeclaration ->
                     Statements.evaluateVariableDeclaration((VariableDeclaration) node, env);
             case NodeType.FunctionDeclaration ->

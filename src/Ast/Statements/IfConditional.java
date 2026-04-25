@@ -7,15 +7,13 @@ import Entities.Enums.Lexer.TokenType;
 import Entities.Exceptions.InvalidArgumentException;
 import Parser.Parser;
 
-import java.util.ArrayList;
-
-public class IfStatement extends Statement
+public class IfConditional extends Statement
 {
     public Expr test;
     public Statement consequent;
     public Statement alternate;
 
-    protected IfStatement(
+    protected IfConditional(
         Expr test,
         Statement consequent,
         Statement alternate)
@@ -26,19 +24,19 @@ public class IfStatement extends Statement
         this.alternate = alternate;
     }
 
-    public static IfStatement create(
+    public static IfConditional create(
         Expr test,
         Statement consequent,
         Statement alternate)
     {
-        return new IfStatement(test, consequent, alternate);
+        return new IfConditional(test, consequent, alternate);
     }
 
-    public static IfStatement create(
+    public static IfConditional create(
         Expr test,
         Statement consequent)
     {
-        return new IfStatement(test, consequent, null);
+        return new IfConditional(test, consequent, null);
     }
 
     public static Statement parse(Parser parser) throws InvalidArgumentException
@@ -53,10 +51,10 @@ public class IfStatement extends Statement
         {
             parser.consume();
             Statement alternate = Statement.parse(parser);
-            return IfStatement.create(test, consequent, alternate);
+            return IfConditional.create(test, consequent, alternate);
         }
 
-        return IfStatement.create(test, consequent);
+        return IfConditional.create(test, consequent);
     }
 
     @Override

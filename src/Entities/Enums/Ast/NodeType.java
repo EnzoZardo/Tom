@@ -8,6 +8,7 @@ public enum NodeType
     WhileStatement,
     TypeDeclaration,
     ScopeDeclaration,
+    ForEachStatement,
     VariableDeclaration,
     FunctionDeclaration,
 

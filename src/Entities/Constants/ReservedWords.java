@@ -12,13 +12,16 @@ public record ReservedWords()
     {{
         put(ReservedKeys.And, TokenType.BINARY_OPERATOR);
         put(ReservedKeys.Or, TokenType.BINARY_OPERATOR);
+        put(ReservedKeys.In, TokenType.BINARY_OPERATOR);
         put(ReservedKeys.Constant, TokenType.CONSTANT);
         put(ReservedKeys.Function, TokenType.FUNCTION);
         put(ReservedKeys.Variable, TokenType.DECLARE);
         put(ReservedKeys.Return, TokenType.RETURN);
         put(ReservedKeys.While, TokenType.WHILE);
         put(ReservedKeys.Type, TokenType.TYPE);
+        put(ReservedKeys.Each, TokenType.EACH);
         put(ReservedKeys.Else, TokenType.ELSE);
+        put(ReservedKeys.For, TokenType.FOR);
         put(ReservedKeys.If, TokenType.IF);
     }};
 

@@ -23,6 +23,8 @@ public record ReservedKeys()
     public static final String Function = "fun";
     public static final String Variable = "var";
     public static final String Constant = "con";
+    public static final String For = "para";
+    public static final String Each = "cada";
     public static final String While = "enquanto";
     public static final String Else = "senao";
     public static final String If = "se";
@@ -50,6 +52,7 @@ public record ReservedKeys()
     public static final String And = "e";
     public static final String Or = "ou";
     public static final String Not = "nao";
+    public static final String In = "em";
 
     // Primitive Types
     public static final String Float = "real";

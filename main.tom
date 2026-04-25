@@ -1,11 +1,31 @@
-var a: inteiro = 0
-
-fun escreveIncrementa(amiga: inteiro): inteiro
-{
-    escreva("*" * a)
-    amiga + 1
+tipo tipoDoObjetoDoido = {
+   a: texto;
+   b: inteiro;
+   c: nulo
 }
 
-enquanto (a < 10) a = escreveIncrementa(a)
+var objetoDoido: tipoDoObjetoDoido =
+{
+   a: "Fica quieto",
+   b: 1,
+   c: nulo
+}
 
-escreva("\nF I M")
+escreva("Separação em 3 iteradores")
+para cada ( indice, chave, valor em objetoDoido )
+{
+    objetoDoido.c = "Testando ele"
+    escreva(indice, chave, valor)
+}
+
+escreva("\nSeparação em 2 iteradores")
+para cada ( indice, dupla em objetoDoido )
+{
+    escreva(indice, dupla)
+}
+
+escreva("\nApenas 1 iterador")
+para cada ( dupla em objetoDoido )
+{
+    escreva(dupla)
+}

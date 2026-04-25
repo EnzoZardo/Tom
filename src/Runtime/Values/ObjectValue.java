@@ -3,8 +3,11 @@ package Runtime.Values;
 import Entities.Abstractions.Type;
 import Entities.Enums.Runtime.ValueType;
 import Entities.Abstractions.Runtime.RuntimeValue;
+import Entities.Exceptions.InvalidIndexException;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class ObjectValue extends RuntimeValue
@@ -25,6 +28,13 @@ public class ObjectValue extends RuntimeValue
     public static ObjectValue create()
     {
         return new ObjectValue(new HashMap<>());
+    }
+
+    public static ObjectValue createUnique(Map.Entry<String, RuntimeValue> key)
+    {
+        HashMap<String, RuntimeValue> entry = new HashMap<>();
+        entry.put(key.getKey(), key.getValue());
+        return new ObjectValue(entry);
     }
 
     private String printProps(int level)
@@ -96,6 +106,24 @@ public class ObjectValue extends RuntimeValue
         final boolean hasProp = !this.properties.isEmpty();
         final boolean notAllNullProps = !this.properties.values().stream().allMatch(x -> x.type == ValueType.Null);
         return hasProp && notAllNullProps;
+    }
+
+    @Override
+    public RuntimeValue iterate(int index)
+    {
+        if (index < 0 || index >= properties.size())
+        {
+            throw new InvalidIndexException("O índice " + index + "é inválido.");
+        }
+
+        List<Map.Entry<String, RuntimeValue>> arr = properties.entrySet().stream().toList();
+        return ObjectValue.createUnique(arr.get(index));
+    }
+
+    @Override
+    public int iteratorSize()
+    {
+        return properties.size();
     }
 
     @Override

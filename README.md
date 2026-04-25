@@ -43,3 +43,10 @@ Agora é necessário:
 - Adicionados if's e else's
 - Adicionado enquanto 
 - Criação de logo da linguagem (em homenagem ao gato)
+
+### Atualizações 25.4.26 - Parte 2
+- Adicionando foreach
+- É necessário criar o operador binário "em" para textos, números, arrays e objetos
+- É necessário criar classes
+- É necessário incrementar a tipagem para termos expressões binárias como "ou"
+- É necessário criar o tipo caractere

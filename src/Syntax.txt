@@ -3,9 +3,9 @@ inteiro
 real
 logico 
 texto
-caractere
 objeto
 classe
+
 estrutura
 enumerador
 funcao
@@ -13,15 +13,7 @@ funcao
 var a = 1; //numerico
 var b = 'a'; //caractere
 var c = "Esse texto é assim"; //texto
-const d = { a: 1 }; //objeto
-
-estrutura Nome {
-  teste: texto,
-}
-
-const e = crie Nome {
-  teste: "Bom dia"
-}
+con d = { a: 1 }; //objeto
 
 enumerador Nome {
   a,
@@ -32,7 +24,7 @@ var f = Nome.a
 
 a = inteiro(b); //converte para inteiro
 
-para cada x em array 
+para cada (x em array)
 {
 }
 

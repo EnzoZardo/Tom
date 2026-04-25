@@ -7,12 +7,12 @@ import Entities.Enums.Lexer.TokenType;
 import Entities.Exceptions.InvalidArgumentException;
 import Parser.Parser;
 
-public class WhileStatement extends Statement
+public class While extends Statement
 {
     public Expr test;
     public Statement consequent;
 
-    protected WhileStatement(
+    protected While(
             Expr test,
             Statement consequent)
     {
@@ -21,9 +21,9 @@ public class WhileStatement extends Statement
         this.consequent = consequent;
     }
 
-    public static WhileStatement create(Expr test, Statement consequent)
+    public static While create(Expr test, Statement consequent)
     {
-        return new WhileStatement(test, consequent);
+        return new While(test, consequent);
     }
 
     public static Statement parse(Parser parser) throws InvalidArgumentException
@@ -34,7 +34,7 @@ public class WhileStatement extends Statement
         parser.expect(TokenType.CLOSE_PARENTHESIS, "Esperávamos ')' após a expressão de teste de um enquanto.");
         Statement consequent = Statement.parse(parser);
 
-        return WhileStatement.create(test, consequent);
+        return While.create(test, consequent);
     }
 
     @Override
