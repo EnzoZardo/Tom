@@ -27,7 +27,7 @@ public class Statements
     }
 
     public static RuntimeValue evaluateVariableDeclaration(
-            VariableDeclaration declaration, Environment env) throws AlreadyDeclaredVariableException
+        VariableDeclaration declaration, Environment env) throws AlreadyDeclaredVariableException
     {
         RuntimeValue value = declaration.value == null
                 ? NullValue.create()
@@ -42,20 +42,22 @@ public class Statements
     }
 
     public static RuntimeValue evaluateTypeDeclaration(
-            TypeDeclaration declaration, Environment env) throws AlreadyDeclaredVariableException
+        TypeDeclaration declaration, Environment env) throws AlreadyDeclaredVariableException
     {
         env.declareType(declaration.identifier, Type.reduce(env, declaration.value));
         return NullValue.create();
     }
 
     public static RuntimeValue evaluateFunctionDeclaration(
-            FunctionDeclaration declaration, Environment env) throws AlreadyDeclaredVariableException
+        FunctionDeclaration declaration, Environment env) throws AlreadyDeclaredVariableException
     {
         FunctionValue value = FunctionValue.createFromStatement(declaration, env);
         return env.declareConstant(value.name, value);
     }
 
-    public static RuntimeValue evaluateScopeDeclaration(ScopeDeclaration scopeDeclaration, Environment env) throws AlreadyDeclaredVariableException
+    public static RuntimeValue evaluateScopeDeclaration(
+        ScopeDeclaration scopeDeclaration,
+        Environment env) throws AlreadyDeclaredVariableException
     {
         Environment scope = Environment.create(env);
         for (Statement statement : scopeDeclaration.body)
@@ -65,4 +67,37 @@ public class Statements
         return NullValue.create();
     }
 
+    public static RuntimeValue evaluateIfStatement(
+        IfStatement ifStatement,
+        Environment env) throws AlreadyDeclaredVariableException
+    {
+        RuntimeValue value = Interpreter.evaluate(ifStatement.test, env);
+
+        if (value.bool())
+        {
+            return Interpreter.evaluate(ifStatement.consequent, env);
+        }
+
+        if (ifStatement.alternate != null)
+        {
+            return Interpreter.evaluate(ifStatement.alternate, env);
+        }
+
+        return NullValue.create();
+    }
+
+    public static RuntimeValue evaluateWhileStatement(
+        WhileStatement whileStatement,
+        Environment env) throws AlreadyDeclaredVariableException
+    {
+        RuntimeValue value = Interpreter.evaluate(whileStatement.test, env);
+        RuntimeValue ret = NullValue.create();
+        while (value.bool())
+        {
+            ret = Interpreter.evaluate(whileStatement.consequent, env);
+            value = Interpreter.evaluate(whileStatement.test, env);
+        }
+
+        return ret;
+    }
 }

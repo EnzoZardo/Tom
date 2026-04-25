@@ -1,6 +1,5 @@
 package Ast.Statements;
 
-import Ast.Expressions.Literals.ObjectLiteral;
 import Entities.Abstractions.Ast.Expr;
 import Entities.Abstractions.Ast.Statement;
 import Entities.Enums.Ast.NodeType;

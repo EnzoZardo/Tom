@@ -2,9 +2,12 @@ package Entities.Enums.Lexer;
 
 public enum TokenType
 {
+    IF,
     DOT,
     EOF,
+    ELSE,
     TYPE,
+    WHILE,
     COLON,
     COMMA,
     EQUALS,

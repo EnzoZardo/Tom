@@ -70,10 +70,10 @@ public class Expressions
 
         boolean result = switch (operator)
         {
-            case ReservedKeys.Minor -> rightValue.value < leftValue.value;
-            case ReservedKeys.Greater -> rightValue.value > leftValue.value;
-            case ReservedKeys.MinorOrEqual -> rightValue.value <= leftValue.value;
-            case ReservedKeys.GreaterOrEqual -> rightValue.value >= leftValue.value;
+            case ReservedKeys.Minor -> leftValue.value < rightValue.value;
+            case ReservedKeys.Greater -> leftValue.value > rightValue.value;
+            case ReservedKeys.MinorOrEqual -> leftValue.value <= rightValue.value;
+            case ReservedKeys.GreaterOrEqual -> leftValue.value >= rightValue.value;
             default -> throw new InvalidOperatorException(operator);
         };
 
@@ -278,10 +278,12 @@ public class Expressions
                 if (propValue.type == ValueType.Numeric && variable.type == ValueType.Array)
                 {
                     NumericValue memberIdentifier = (NumericValue) propValue;
+
                     if (!memberIdentifier.isInteger)
                     {
                         throw new ExpectedTypeNotMatch("Não se pode indexar uma lista com uma chave do tipo real.");
                     }
+
                     return env.assignIndex(objectIdentifier.value, (int) memberIdentifier.value, value);
                 }
             }
@@ -377,7 +379,7 @@ public class Expressions
             {
                 NumericValue key = (NumericValue) member;
 
-                if (!key.isInteger)
+                if (!key.isInteger || key.value < 0)
                 {
                     throw new InvalidArrayIndexTypeException();
                 }
@@ -386,6 +388,33 @@ public class Expressions
                 if (value.items.containsKey(index))
                 {
                     return value.items.get(index);
+                }
+
+                return NullValue.create();
+            }
+
+            throw new InvalidArrayIndexTypeException();
+        }
+
+        if (object.type == ValueType.String && memberExpr.computed)
+        {
+            StringValue value = (StringValue) object;
+
+            RuntimeValue member = Interpreter.evaluate(memberExpr.property, env);
+
+            if (member.type == ValueType.Numeric)
+            {
+                NumericValue key = (NumericValue) member;
+
+                if (!key.isInteger || key.value < 0)
+                {
+                    throw new InvalidArrayIndexTypeException();
+                }
+
+                int index = (int)key.value;
+                if (index < value.value.length())
+                {
+                    return StringValue.create(Character.toString(value.value.charAt(index)));
                 }
 
                 return NullValue.create();

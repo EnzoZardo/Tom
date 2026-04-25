@@ -1,10 +1,14 @@
-# Tom
+# Tom Lang
+
+<img src="tom-logo.svg" alt="tom-logo.svg" style="width:200px; border-radius:20px"/>
+<br/>
+
 Linguagem simples de programação (Tom Lang)
 
 Estou me baseando na seguinte playlist para criar meu próprio interpretador:
 https://www.youtube.com/watch?v=8VB5TY1sIRo&list=PL_2VhOvlMk4UHGqYCLWc6GO8FaPl8fQTh
-
-Como o projeto está em andamento, deixo claro que ainda preciso ver coisas como condicionais, loop's, operadores unários, overload de operações, entre muitas outras coisas que terão de ser estudadas sem me basear na playlist informada, pois ela não contempla isso.
+  0
+1Como o projeto está em andamento, deixo claro que ainda preciso ver coisas como condicionais, loop's, operadores unários, overload de operações, entre muitas outras coisas que terão de ser estudadas sem me basear na playlist informada, pois ela não contempla isso.
 
 ### Atualizações 3.4.26
 Playlist finalizada, agora estou por minha conta. 
@@ -33,3 +37,9 @@ Agora é necessário:
 - Adicionando novo escopo
 - Agora expressões simples são aceitas no meio do código
 - É necessário adicionar ; no final das expressões pq tá ficando complicado
+
+### Atualizações 25.4.26
+- Adicionando indexação em string (mas não reatribuição de indíce)
+- Adicionados if's e else's
+- Adicionado enquanto 
+- Criação de logo da linguagem (em homenagem ao gato)

@@ -21,8 +21,11 @@ public record ReservedKeys()
     // Reserved Keys
     public static final String Return = "retorne";
     public static final String Function = "fun";
-    public static final String Variable = "dec";
-    public static final String Constant = "const";
+    public static final String Variable = "var";
+    public static final String Constant = "con";
+    public static final String While = "enquanto";
+    public static final String Else = "senao";
+    public static final String If = "se";
     public static final String Type = "tipo";
     public static final String True = "verdadeiro";
     public static final String False = "falso";
