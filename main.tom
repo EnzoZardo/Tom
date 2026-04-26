@@ -1,7 +1,15 @@
-con a: []inteiro = intervalo(0, 12)
-var b: texto = texto.converte(1)
+var informado: inteiro = inteiro.converte(leia("Informe qualquer número:"))
 
-para cada (x em a)
+se (informado) 
 {
-    escreva(x)
+    escreva("O usuário te informou um texto vazio, que sacanagem...")
+} 
+senao
+{
+    escreva("Opa, o conteudo era:", informado, "\nMas vamos soletrar:")
+    
+    para cada (digito em informado) 
+    {
+        escreva(digito)
+    }
 }

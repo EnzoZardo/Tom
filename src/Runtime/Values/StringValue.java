@@ -69,7 +69,7 @@ public class StringValue extends RuntimeValue
     @Override
     public int iteratorSize()
     {
-        return value.length();
+        return value.length() + 1;
     }
 
     @Override

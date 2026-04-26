@@ -11,6 +11,10 @@ import java.util.HashMap;
 
 public class IntegerObject extends ObjectValue
 {
+    private static final String TEN = "dez";
+    private static final String ONE = "um";
+    private static final String ZERO = "zero";
+
     protected IntegerObject(HashMap<String, RuntimeValue> properties)
     {
         super(properties);
@@ -18,9 +22,9 @@ public class IntegerObject extends ObjectValue
 
     public static ObjectValue create() {
         HashMap<String, RuntimeValue> properties = new HashMap<>() {{
-            put("zero", NumericValue.create(0, true));
-            put("um", NumericValue.create(1, true));
-            put("dez", NumericValue.create(10, true));
+            put(ZERO, NumericValue.create(0, true));
+            put(ONE, NumericValue.create(1, true));
+            put(TEN, NumericValue.create(10, true));
             put(ReservedKeys.Convert, NativeFunctionValue.create(ToInteger::call));
         }};
 

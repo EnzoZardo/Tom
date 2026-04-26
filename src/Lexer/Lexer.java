@@ -1,5 +1,6 @@
 package Lexer;
 
+import Entities.Constants.ReservedComments;
 import Entities.Constants.ReservedOperators;
 import Entities.Constants.ReservedWords;
 import Entities.Exceptions.Parser.AlreadyParsedException;
@@ -38,7 +39,15 @@ public class Lexer
         while (_peek() != null)
         {
             char current = _peek();
-            if (PonctuationToken.isOpenParenthesis(current))
+            if (ReservedComments.isInlineComment(current))
+            {
+                _inlineComment();
+            }
+            else if (ReservedComments.isOpenMultiLineComment(current, _peek(1)))
+            {
+                _multiLineComment();
+            }
+            else if (PonctuationToken.isOpenParenthesis(current))
             {
                 _consumeAndAdd(TokenType.OPEN_PARENTHESIS, current);
             }
@@ -161,6 +170,24 @@ public class Lexer
         tokens.add(ReservedOperators.token(token.toString()));
     }
 
+    private void _inlineComment()
+    {
+        do
+        {
+            _consume();
+        } while (_peek() != null && _peek() != '\n');
+    }
+
+    private void _multiLineComment()
+    {
+        do
+        {
+            _consume();
+        } while (_peek() != null && !ReservedComments.isCloseMultiLineComment(_peek(), _peek(1)));
+        _consume();
+        _consume();
+    }
+
     private void _string()
     {
         _consume();
@@ -256,7 +283,7 @@ public class Lexer
 
     private Character _peek(int offset)
     {
-        if (tokenIndex >= content.length)
+        if (tokenIndex + offset >= content.length)
         {
             return null;
         }

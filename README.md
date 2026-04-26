@@ -50,3 +50,7 @@ Agora é necessário:
 - É necessário criar classes
 - É necessário incrementar a tipagem para termos expressões binárias como "ou"
 - É necessário criar o tipo caractere
+
+### Atualizações 26.4.26
+- Comentários
+- Objetos nativos

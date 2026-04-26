@@ -18,6 +18,11 @@ public record ReservedKeys()
     public static final char Backslash = '\\';
     public static final char Quote = '"';
 
+    // Comment's Tokens
+    public static final String InlineComment = "#";
+    public static final String OpenMultiLineComment = "/*";
+    public static final String CloseMultiLineComment = "*/";
+
     // Reserved Keys
     public static final String Return = "retorne";
     public static final String Function = "fun";
