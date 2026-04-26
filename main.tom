@@ -1,31 +1,7 @@
-tipo tipoDoObjetoDoido = {
-   a: texto;
-   b: inteiro;
-   c: nulo
-}
+con a: []inteiro = intervalo(0, 12)
+var b: texto = texto.converte(1)
 
-var objetoDoido: tipoDoObjetoDoido =
+para cada (x em a)
 {
-   a: "Fica quieto",
-   b: 1,
-   c: nulo
-}
-
-escreva("Separação em 3 iteradores")
-para cada ( indice, chave, valor em objetoDoido )
-{
-    objetoDoido.c = "Testando ele"
-    escreva(indice, chave, valor)
-}
-
-escreva("\nSeparação em 2 iteradores")
-para cada ( indice, dupla em objetoDoido )
-{
-    escreva(indice, dupla)
-}
-
-escreva("\nApenas 1 iterador")
-para cada ( dupla em objetoDoido )
-{
-    escreva(dupla)
+    escreva(x)
 }

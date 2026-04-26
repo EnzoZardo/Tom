@@ -34,6 +34,9 @@ public record ReservedKeys()
 
     // Native Functions
     public static final String Print = "escreva";
+    public static final String Read = "leia";
+    public static final String Interval = "intervalo";
+    public static final String Convert = "converte";
 
     // Binary Operators
     public static final String Equals = "=";

@@ -1,0 +1,12 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Run Tom Extension",
+      "type": "extensionHost",
+      "request": "launch",
+      "runtimeExecutable": "code",
+      "args": ["--extensionDevelopmentPath=${workspaceFolder}"]
+    }
+  ]
+}

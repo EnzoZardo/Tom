@@ -21,6 +21,7 @@ import Runtime.Values.*;
 import Runtime.TypeChecker;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -147,7 +148,7 @@ public class Statements
             .map(x -> (Identifier) x)
             .toList();
 
-        for (int i = 0; i < iterable.iteratorSize(); i++)
+        for (int i = 0; i < iterable.iteratorSize() - 1; i++)
         {
             Environment operationEnv = Environment.create(env);
 
@@ -161,11 +162,11 @@ public class Statements
                 }
                 case OBJECT_ARGS_SIZE ->
                 {
-                    ObjectValue iterated = (ObjectValue) iterable.iterate(i);
-                    Map.Entry<String, RuntimeValue> value = iterated.properties.entrySet().iterator().next();
+                    ArrayValue iterated = (ArrayValue) iterable.iterate(i);
+                    HashMap<Integer, RuntimeValue> value = iterated.items;
                     operationEnv.declareConstant(identifiers.getFirst().value, NumericValue.create(i, true));
-                    operationEnv.declareConstant(identifiers.get(1).value, StringValue.create(value.getKey()));
-                    operationEnv.declareConstant(identifiers.getLast().value, value.getValue());
+                    operationEnv.declareConstant(identifiers.get(1).value, value.get(0));
+                    operationEnv.declareConstant(identifiers.getLast().value, value.get(1));
                 }
                 default -> throw new IncorrectNumberOfArgumentsException(message);
             }

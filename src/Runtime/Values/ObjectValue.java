@@ -30,13 +30,6 @@ public class ObjectValue extends RuntimeValue
         return new ObjectValue(new HashMap<>());
     }
 
-    public static ObjectValue createUnique(Map.Entry<String, RuntimeValue> key)
-    {
-        HashMap<String, RuntimeValue> entry = new HashMap<>();
-        entry.put(key.getKey(), key.getValue());
-        return new ObjectValue(entry);
-    }
-
     private String printProps(int level)
     {
         final int next = level + 1;
@@ -113,11 +106,16 @@ public class ObjectValue extends RuntimeValue
     {
         if (index < 0 || index >= properties.size())
         {
-            throw new InvalidIndexException("O índice " + index + "é inválido.");
+            throw new InvalidIndexException("O índice " + index + " é inválido.");
         }
 
         List<Map.Entry<String, RuntimeValue>> arr = properties.entrySet().stream().toList();
-        return ObjectValue.createUnique(arr.get(index));
+        HashMap<Integer, RuntimeValue> entry = new HashMap<>() {{
+            put(0, StringValue.create(arr.get(index).getKey()));
+            put(1, arr.get(index).getValue());
+        }};
+
+        return ArrayValue.create(entry);
     }
 
     @Override

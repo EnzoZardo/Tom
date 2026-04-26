@@ -10,11 +10,16 @@ import Entities.Enums.Runtime.ValueType;
 import Entities.Enums.TypeKind;
 import Entities.Exceptions.*;
 import Entities.Exceptions.Evaluate.InvalidMemberAssignException;
+import Runtime.NativeFunctions.Interval;
 import Runtime.NativeFunctions.Print;
 import Entities.Abstractions.Runtime.RuntimeValue;
+import Runtime.NativeFunctions.Read;
+import Runtime.NativeObjects.IntegerObject;
+import Runtime.NativeObjects.StringObject;
 import Runtime.Values.*;
 import Entities.Metadata.ValueMetadata;
 
+import java.io.IOException;
 import java.util.HashMap;
 
 public class Environment
@@ -244,9 +249,24 @@ public class Environment
         declareType(ReservedKeys.Boolean, BooleanType.create());
         declareType(ReservedKeys.Integer, IntegerType.create());
 
+        declareConstant(ReservedKeys.Integer, IntegerObject.create());
+        declareConstant(ReservedKeys.String, StringObject.create());
+
         declareConstant(ReservedKeys.Null, NullValue.create());
         declareConstant(ReservedKeys.True, BooleanValue.create(true));
         declareConstant(ReservedKeys.False, BooleanValue.create(false));
         declareConstant(ReservedKeys.Print, NativeFunctionValue.create(Print::call));
+        declareConstant(ReservedKeys.Interval, NativeFunctionValue.create(Interval::call));
+        declareConstant(ReservedKeys.Read, NativeFunctionValue.create(x ->
+        {
+            try
+            {
+                return Read.call(x);
+            }
+            catch (IOException e)
+            {
+                throw new RuntimeException(e);
+            }
+        }));
     }
 }

@@ -60,7 +60,7 @@ public class StringValue extends RuntimeValue
     {
         if (index < 0 || index >= value.length())
         {
-            throw new InvalidIndexException("O índice " + index + "é inválido.");
+            throw new InvalidIndexException("O índice " + index + " é inválido.");
         }
 
         return StringValue.create(value.charAt(index));

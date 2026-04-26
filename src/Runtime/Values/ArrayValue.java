@@ -94,7 +94,7 @@ public class ArrayValue extends RuntimeValue
     {
         if (index < 0 || index >= items.size())
         {
-            throw new InvalidIndexException("O índice " + index + "é inválido.");
+            throw new InvalidIndexException("O índice " + index + " é inválido.");
         }
 
         return items.get(index);
