@@ -28,6 +28,17 @@ public class Interval
         return ArrayValue.create(interval);
     }
 
+    private static ArrayValue reverseRange(int start, int end, int step)
+    {
+        HashMap<Integer, RuntimeValue> interval = new HashMap<>();
+        for (int i = start; i > end; i += step)
+        {
+            interval.put(i, NumericValue.create(i, true));
+        }
+
+        return ArrayValue.create(interval);
+    }
+
     public static ArrayValue call(ParameterMetadata args)
     {
         if (args.getValues().size() > MAX_ARGUMENTS)
@@ -36,7 +47,9 @@ public class Interval
                     "função de intervalo.");
         }
 
-        if (args.getValues().stream().anyMatch(x -> x.type != ValueType.Numeric
+        if (args.getValues()
+                .stream()
+                .anyMatch(x -> x.type != ValueType.Numeric
             && !((NumericValue) x).isInteger))
         {
             throw new ExpectedTypeNotMatch("Somente números inteiros são aceitos para a função de intervalo.");
@@ -64,6 +77,25 @@ public class Interval
             NumericValue start = (NumericValue) values.getFirst();
             NumericValue end = (NumericValue) values.get(1);
             NumericValue step = (NumericValue) values.getLast();
+
+            if (start.value < end.value
+                && start.value < 0
+                && step.value < 0)
+            {
+                return reverseRange((int) start.value, (int) end.value, (int) step.value);
+            }
+
+            if (start.value > end.value && step.value < 0)
+            {
+                return reverseRange((int) start.value, (int) end.value, (int) step.value);
+            }
+
+            if (start.value < end.value
+                && start.value > 0
+                && step.value < 0)
+            {
+                return ArrayValue.create();
+            }
 
             return range((int) start.value, (int) end.value, (int) step.value);
         }

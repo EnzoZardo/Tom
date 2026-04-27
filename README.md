@@ -54,3 +54,6 @@ Agora é necessário:
 ### Atualizações 26.4.26
 - Comentários
 - Objetos nativos
+
+### Atualizações 27.4.26
+- REPL bem primitivo

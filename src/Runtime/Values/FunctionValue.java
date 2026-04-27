@@ -3,6 +3,7 @@ package Runtime.Values;
 import Ast.Statements.FunctionDeclaration;
 import Entities.Abstractions.Ast.Statement;
 import Entities.Abstractions.Type;
+import Entities.Constants.ReservedKeys;
 import Entities.Enums.Runtime.ValueType;
 import Entities.Abstractions.Runtime.RuntimeValue;
 
@@ -90,5 +91,11 @@ public class FunctionValue extends RuntimeValue
     public boolean bool()
     {
         return true;
+    }
+
+    @Override
+    public String toString()
+    {
+        return ReservedKeys.Null;
     }
 }

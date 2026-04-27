@@ -109,11 +109,15 @@ public class ArrayValue extends RuntimeValue
     @Override
     public String toString()
     {
-        StringBuilder ret = new StringBuilder("[ ");
+        StringBuilder ret = new StringBuilder("[");
 
-        for (RuntimeValue entry : items.values())
+        for (int i = 0; i < items.size(); i++)
         {
-            ret.append(entry).append(", ");
+            ret.append(items.get(i));
+            if (i < items.size() - 1)
+            {
+                ret.append(", ");
+            }
         }
 
         return ret.append("]").toString();

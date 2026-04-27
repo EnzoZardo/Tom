@@ -7,6 +7,7 @@ import Runtime.Values.StringValue;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 
 public class Read
 {
@@ -14,9 +15,14 @@ public class Read
 
     public static StringValue call(ParameterMetadata args) throws IOException
     {
-        for (RuntimeValue arg : args.getValues())
+        ArrayList<RuntimeValue> values = args.getValues();
+        for (int i = 0; i < values.size(); i++)
         {
-            IO.print(arg.toString() + ' ');
+            IO.print(values.get(i).toString());
+            if (i < values.size() - 1)
+            {
+                IO.print(' ');
+            }
         }
 
         try
