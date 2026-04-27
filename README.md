@@ -57,3 +57,4 @@ Agora é necessário:
 
 ### Atualizações 27.4.26
 - REPL bem primitivo
+- É necessário adicionar o operador unário "congela" para objetos e listas e evaluar o operador binário "em"
