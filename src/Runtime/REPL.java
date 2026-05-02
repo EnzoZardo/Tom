@@ -3,88 +3,139 @@ package Runtime;
 import Ast.Statements.Program;
 import Entities.Constants.ReservedKeys;
 import Entities.Exceptions.AlreadyDeclaredVariableException;
-import Entities.Exceptions.InvalidArgumentException;
 import Lexer.Tokens.PonctuationToken;
 import Parser.Parser;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Stream;
 
 public class REPL
 {
     private final BufferedReader bf = new BufferedReader(new InputStreamReader(System.in));
+    private final Queue<String> lastOpen;
     private boolean stop;
     private boolean isParenthesisOpen;
     private boolean isBracketOpen;
+    private boolean isCommentOpen;
     private boolean isBraceOpen;
     private boolean isQuoteOpen;
-    private char lastOpen;
 
     private REPL() {
         stop = false;
+        lastOpen = new LinkedList<>();
         isQuoteOpen = false;
         isBraceOpen = false;
         isBracketOpen = false;
+        isCommentOpen = false;
         isParenthesisOpen = false;
     }
 
     private void validateLine(List<Character> line)
     {
+        boolean isOpeningComments = false;
+        boolean isClosingComments = false;
         for (char c : line)
         {
-            if (PonctuationToken.isQuotationMark(c))
+            if (isClosingComments)
+            {
+                isClosingComments = false;
+                if (PonctuationToken.isSlash(c))
+                {
+                    isCommentOpen = false;
+                }
+            }
+
+            if (isCommentOpen && PonctuationToken.isAsterisc(c)) {
+                isClosingComments = true;
+                continue;
+            }
+
+            if (isOpeningComments) {
+                isOpeningComments = false;
+                if (PonctuationToken.isAsterisc(c))
+                {
+                    isCommentOpen = true;
+                }
+                continue;
+            }
+
+            if (!isQuoteOpen && !isCommentOpen && PonctuationToken.isSlash(c)) {
+                isOpeningComments = true;
+                continue;
+            }
+
+            if (!isCommentOpen && PonctuationToken.isQuotationMark(c))
             {
                 isQuoteOpen = !isQuoteOpen;
-                lastOpen = ReservedKeys.Quote;
+                continue;
             }
 
-            if (!isQuoteOpen && PonctuationToken.isOpenBrace(c))
+            if (!isCommentOpen && !isQuoteOpen && PonctuationToken.isOpenBrace(c))
             {
                 isBraceOpen = true;
-                lastOpen = ReservedKeys.OpenBrace;
+                lastOpen.add("chaves");
+                continue;
             }
 
-            if (!isQuoteOpen && PonctuationToken.isOpenBrackets(c))
+            if (!isCommentOpen && !isQuoteOpen && PonctuationToken.isOpenBrackets(c))
             {
                 isBracketOpen = true;
-                lastOpen = ReservedKeys.OpenBrackets;
+                lastOpen.add("colchetes");
+                continue;
             }
 
-            if (!isQuoteOpen && PonctuationToken.isOpenParenthesis(c))
+            if (!isCommentOpen && !isQuoteOpen && PonctuationToken.isOpenParenthesis(c))
             {
                 isParenthesisOpen = true;
-                lastOpen = ReservedKeys.OpenParenthesis;
+                lastOpen.add("parênteses");
+                continue;
             }
 
-            if (!isQuoteOpen && isBraceOpen && PonctuationToken.isCloseBrace(c))
+            if (!isCommentOpen && !isQuoteOpen && isBraceOpen && PonctuationToken.isCloseBrace(c))
             {
                 isBraceOpen = false;
+                lastOpen.poll();
+                continue;
             }
 
-            if (!isQuoteOpen && isBracketOpen && PonctuationToken.isCloseBrackets(c))
+            if (!isCommentOpen && !isQuoteOpen && isBracketOpen && PonctuationToken.isCloseBrackets(c))
             {
                 isBracketOpen = false;
+                lastOpen.poll();
+                continue;
             }
 
-            if (!isQuoteOpen && isParenthesisOpen && PonctuationToken.isCloseParenthesis(c))
+            if (!isCommentOpen && !isQuoteOpen && isParenthesisOpen && PonctuationToken.isCloseParenthesis(c))
             {
                 isParenthesisOpen = false;
+                lastOpen.poll();
             }
         }
     }
 
+    private List<Character> readLine(String hint) throws IOException
+    {
+        String line = "";
+
+        while (line.isBlank())
+        {
+            IO.print(hint);
+            line = bf.readLine();
+        }
+
+        return Arrays
+            .stream(line.split(""))
+            .map(x -> x.toCharArray()[0])
+            .toList();
+    }
+
+
     private char[] getInput() throws IOException
     {
-        IO.print("$ ");
-        List<Character> line = new ArrayList<>(Arrays
-                .stream(bf.readLine()
-                        .split(""))
-                .map(x -> x.toCharArray()[0])
-                .toList());
+        List<Character> line = new ArrayList<>(readLine("$ "));
 
         List<Character> complement;
         validateLine(line);
@@ -92,33 +143,26 @@ public class REPL
         while (isQuoteOpen
             || isBraceOpen
             || isBracketOpen
-            || isParenthesisOpen)
+            || isParenthesisOpen
+            || isCommentOpen)
         {
-            if (isQuoteOpen)
+            if (isCommentOpen)
             {
-                IO.print("aspas $ ");
-                complement = Arrays
-                        .stream(bf.readLine()
-                                .split(""))
-                        .map(x -> x.toCharArray()[0])
-                        .toList();
+                complement = readLine("comentário $ ");
                 validateLine(complement);
                 line.addAll(complement);
                 continue;
             }
 
-            String hint = switch (lastOpen) {
-                case ReservedKeys.OpenBrace -> "chaves";
-                case ReservedKeys.OpenBrackets -> "colchetes";
-                default -> "parenteses";
-            };
+            if (isQuoteOpen)
+            {
+                complement = readLine("aspas $ ");
+                validateLine(complement);
+                line.addAll(complement);
+                continue;
+            }
 
-            IO.print(hint + " $ ");
-            complement = Arrays
-                    .stream(bf.readLine()
-                            .split(""))
-                    .map(x -> x.toCharArray()[0])
-                    .toList();
+            complement = readLine(lastOpen.peek() + " $ ");
             validateLine(complement);
             line.addAll(complement);
         }

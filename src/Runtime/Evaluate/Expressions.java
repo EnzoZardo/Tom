@@ -80,10 +80,96 @@ public class Expressions
         return BooleanValue.create(result);
     }
 
+    public static RuntimeValue evaluateInOperator(RuntimeValue left, RuntimeValue right) {
+        if (right.type == ValueType.Array)
+        {
+            ArrayValue arrayValue = (ArrayValue) right;
+            boolean contained = switch (left.type) {
+                case ValueType.Numeric ->
+                {
+                    NumericValue value = (NumericValue)left;
+                    yield arrayValue.items.values().stream().anyMatch(x -> x.type == ValueType.Numeric && value.equals(x));
+                }
+                case ValueType.String ->
+                {
+                    StringValue value = (StringValue)left;
+                    yield arrayValue.items.values().stream().anyMatch(x -> x.type == ValueType.String && value.equals(x));
+                }
+                case ValueType.Object ->
+                {
+                    ObjectValue value = (ObjectValue)left;
+                    yield arrayValue.items.values().stream().anyMatch(x -> x.type == ValueType.Object && value.equals(x));
+                }
+                case ValueType.Array ->
+                {
+                    ArrayValue value = (ArrayValue)left;
+                    yield arrayValue.items.values().stream().anyMatch(x -> x.type == ValueType.Array && value.equals(x));
+                }
+                case ValueType.Boolean ->
+                {
+                    BooleanValue value = (BooleanValue)left;
+                    yield arrayValue.items.values().stream().anyMatch(x -> x.type == ValueType.Boolean && value.equals(x));
+                }
+                case ValueType.Null -> arrayValue.items.values().stream().anyMatch(x -> x.type == ValueType.Null);
+                default -> throw new InvalidBinaryOperation("Valor não permitido para ser verificado se está em lista.");
+            };
+
+            return BooleanValue.create(contained);
+        }
+
+        if (right.type == ValueType.String)
+        {
+            StringValue stringValue = (StringValue) right;
+
+            if (left.type != ValueType.String)
+            {
+                throw new InvalidBinaryOperation("Somente textos podem ser usados para testar se estão em textos.");
+            }
+
+            return BooleanValue.create(stringValue.value.contains(((StringValue)left).value));
+        }
+
+        if (right.type == ValueType.Object) {
+            ObjectValue objectValue = (ObjectValue) right;
+            boolean contained = switch (left.type) {
+                case ValueType.String ->
+                {
+                    StringValue value = (StringValue)left;
+                    yield objectValue.properties.keySet().stream().anyMatch(value.value::equals);
+                }
+                case ValueType.Array ->
+                {
+                    ArrayValue value = (ArrayValue)left;
+                    if (value.items.size() > 2)
+                    {
+                        yield false;
+                    }
+
+                    for (int i = 0; i < objectValue.iteratorSize(); i++)
+                    {
+                        ArrayValue entry = (ArrayValue) objectValue.iterate(i);
+                        if (value.equals(entry))
+                        {
+                            yield true;
+                        }
+                    }
+
+                    yield false;
+                }
+                default -> throw new InvalidBinaryOperation("Valor não permitido para ser verificado se está em objeto.");
+            };
+
+            return BooleanValue.create(contained);
+        }
+
+        throw new InvalidBinaryOperation("Só é permitido verificar se um valor está presente em listas, objetos ou textos.");
+    }
+
     public static RuntimeValue evaluateBooleanBinaryExpr(RuntimeValue left, RuntimeValue right, String operator)
     {
         return switch (operator)
         {
+            case ReservedKeys.In -> evaluateInOperator(left, right);
             case ReservedKeys.Or -> BooleanValue.create(left.bool() || right.bool());
             case ReservedKeys.And -> BooleanValue.create(left.bool() && right.bool());
             case ReservedKeys.Equality -> BooleanValue.create(left.equals(right));

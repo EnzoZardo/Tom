@@ -60,7 +60,8 @@ public record ReservedOperators()
             || ReservedKeys.Greater.equals(operator)
             || ReservedKeys.Minor.equals(operator)
             || ReservedKeys.And.equals(operator)
-            || ReservedKeys.Or.equals(operator);
+            || ReservedKeys.Or.equals(operator)
+            || ReservedKeys.In.equals(operator);
     }
 
     public static Token token(String value)

@@ -10,7 +10,7 @@ import Runtime.Values.StringValue;
 
 import java.util.HashMap;
 
-public class StringObject  extends ObjectValue
+public class StringObject extends ObjectValue
 {
     private static final String EMPTY = "vazio";
     private static final String SPACE = "espaco";

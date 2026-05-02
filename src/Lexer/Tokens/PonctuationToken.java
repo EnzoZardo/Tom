@@ -69,4 +69,14 @@ public class PonctuationToken extends Token
     {
         return ReservedKeys.Backslash == c;
     }
+
+    public static boolean isSlash(char c)
+    {
+        return ReservedKeys.Division.equals(Character.toString(c));
+    }
+
+    public static boolean isAsterisc(char c)
+    {
+        return ReservedKeys.Multiplication.equals(Character.toString(c));
+    }
 }
