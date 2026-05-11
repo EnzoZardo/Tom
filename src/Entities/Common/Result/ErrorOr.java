@@ -14,13 +14,19 @@ public class ErrorOr<T>
         return !success;
     }
 
-    public ErrorOr(T value)
+    private ErrorOr(T value, boolean isSuccess)
+    {
+        this.success = isSuccess;
+        this.value = value;
+    }
+
+    private ErrorOr(T value)
     {
         this.success = true;
         this.value = value;
     }
 
-    public ErrorOr(Error error)
+    private ErrorOr(Error error)
     {
         this.success = false;
         this.error = error;
@@ -32,7 +38,7 @@ public class ErrorOr<T>
     }
     public static ErrorOr<Void> Ok()
     {
-        return new ErrorOr<>(null);
+        return new ErrorOr<>(null, true);
     }
     public static <T> ErrorOr<T> Fail(Error error)
     {
