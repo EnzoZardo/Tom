@@ -5,9 +5,9 @@ import Entities.Enums.Lexer.TokenType;
 
 public class PonctuationToken extends Token
 {
-    protected PonctuationToken(TokenType type, String value)
+    protected PonctuationToken(TokenType type, String value, TokenFileLocation start, TokenFileLocation end)
     {
-        super(type, value);
+        super(type, value, TokenLocation.create(start, end));
     }
 
     public static boolean isSemicolon(char c)

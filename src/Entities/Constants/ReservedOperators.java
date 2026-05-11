@@ -2,12 +2,14 @@ package Entities.Constants;
 
 import Entities.Enums.Lexer.TokenType;
 import Lexer.Tokens.Token;
+import Lexer.Tokens.TokenFileLocation;
 
 import java.util.Set;
 
 public record ReservedOperators()
 {
     private final static Set<String> relations = Set.of(
+        ReservedKeys.In,
         ReservedKeys.Not,
         ReservedKeys.Mod,
         ReservedKeys.Plus,
@@ -33,7 +35,8 @@ public record ReservedOperators()
     {
         return ReservedKeys.Not.equals(operator)
             || ReservedKeys.Minus.equals(operator)
-            || ReservedKeys.Plus.equals(operator);
+            || ReservedKeys.Plus.equals(operator)
+            || ReservedKeys.Freeze.equals(operator);
     }
 
     public static boolean isAdditiveOperator(String operator)
@@ -64,12 +67,12 @@ public record ReservedOperators()
             || ReservedKeys.In.equals(operator);
     }
 
-    public static Token token(String value)
+    public static Token token(String value, TokenFileLocation start, TokenFileLocation end)
     {
         if (ReservedKeys.Equals.equals(value)) {
-            return Token.create(TokenType.EQUALS, value);
+            return Token.create(TokenType.EQUALS, value, start, end);
         }
 
-        return Token.create(TokenType.BINARY_OPERATOR, value);
+        return Token.create(TokenType.BINARY_OPERATOR, value, start, end);
     }
 }

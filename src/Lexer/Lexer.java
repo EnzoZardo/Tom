@@ -8,11 +8,15 @@ import Entities.Exceptions.Parser.InvalidTokenException;
 import Entities.Enums.Lexer.TokenType;
 import Lexer.Tokens.PonctuationToken;
 import Lexer.Tokens.Token;
+import Lexer.Tokens.TokenFileLocation;
+import Lexer.Tokens.TokenLocation;
 
 import java.util.ArrayList;
 
 public class Lexer
 {
+    private int columnIndex;
+    private int lineIndex;
     private int tokenIndex;
     private final char[] content;
     private final ArrayList<Token> tokens;
@@ -21,7 +25,9 @@ public class Lexer
     {
         this.content = content;
         this.tokens = new ArrayList<>();
+        this.lineIndex = 0;
         this.tokenIndex = 0;
+        this.columnIndex = 0;
     }
 
     public static Lexer create(char[] content)
@@ -110,6 +116,11 @@ public class Lexer
                 {
                     _numeric(_consume());
                 }
+                else if (Token.isNewLine(current))
+                {
+                    _nextLine();
+                    _consume();
+                }
                 else if (Token.isIgnorable(current))
                 {
                     _consume();
@@ -126,14 +137,22 @@ public class Lexer
         return tokens;
     }
 
+    private void _nextLine() {
+        columnIndex++;
+        lineIndex = 0;
+    }
+
     private void _eof()
     {
-        tokens.add(Token.create(TokenType.EOF, ""));
+        TokenFileLocation fileLocation = TokenFileLocation.create(columnIndex, lineIndex, tokenIndex);
+        TokenLocation location = TokenLocation.create(fileLocation, fileLocation);
+        tokens.add(Token.create(TokenType.EOF, "", location));
     }
 
     private void _operator(char c)
     {
         StringBuilder token = new StringBuilder(Character.toString(c));
+        TokenFileLocation start = TokenFileLocation.create(columnIndex, lineIndex, tokenIndex);
 
         if (Character.isAlphabetic(c))
         {
@@ -145,21 +164,30 @@ public class Lexer
             String tk = token.toString();
             if (ReservedWords.isReserved(tk))
             {
-                tokens.add(ReservedWords.token(tk));
+                TokenFileLocation end = TokenFileLocation.create(columnIndex, lineIndex, tokenIndex);
+                tokens.add(ReservedWords.token(tk, start, end));
                 return;
             }
 
-            tokens.add(Token.create(TokenType.IDENTIFIER, token.toString()));
+            TokenFileLocation end = TokenFileLocation.create(columnIndex, lineIndex, tokenIndex);
+            tokens.add(Token.create(TokenType.IDENTIFIER, token.toString(), start, end));
             return;
         }
 
         while (_peek() != null
-                && ReservedOperators.isReserved(token.toString())
-                && ReservedOperators.isReserved(Character.toString(_peek())))
+            && ReservedOperators.isReserved(token.toString())
+            && ReservedOperators.isReserved(Character.toString(_peek())))
         {
+            if (start == null)
+            {
+                start = TokenFileLocation.create(columnIndex, lineIndex, tokenIndex);
+            }
+
             if (!ReservedOperators.isReserved(token + Character.toString(_peek())))
             {
-                tokens.add(ReservedOperators.token(token.toString()));
+                TokenFileLocation end = TokenFileLocation.create(columnIndex, lineIndex, tokenIndex);
+                tokens.add(ReservedOperators.token(token.toString(), start, end));
+                start = null;
                 token = new StringBuilder(Character.toString(_consume()));
                 continue;
             }
@@ -167,7 +195,8 @@ public class Lexer
             token.append(_consume());
         }
 
-        tokens.add(ReservedOperators.token(token.toString()));
+        TokenFileLocation end = TokenFileLocation.create(columnIndex, lineIndex, tokenIndex);
+        tokens.add(ReservedOperators.token(token.toString(), start, end));
     }
 
     private void _inlineComment()
@@ -182,7 +211,10 @@ public class Lexer
     {
         do
         {
-            _consume();
+            if (Token.isNewLine(_consume()))
+            {
+                _nextLine();
+            }
         } while (_peek() != null && !ReservedComments.isCloseMultiLineComment(_peek(), _peek(1)));
         _consume();
         _consume();
@@ -190,20 +222,27 @@ public class Lexer
 
     private void _string()
     {
+        TokenFileLocation start = TokenFileLocation.create(columnIndex, lineIndex, tokenIndex);
         _consume();
         StringBuilder token = new StringBuilder();
         while (_peek() != null && !PonctuationToken.isQuotationMark(_peek()))
         {
             if (PonctuationToken.isBackslash(_peek()))
             {
-                token.append(_stringEscape());
+                String escape = _stringEscape();
+                token.append(escape);
+                if (Token.isNewLine(escape))
+                {
+                    _nextLine();
+                }
                 continue;
             }
             token.append(_consume());
         }
 
+        TokenFileLocation end = TokenFileLocation.create(columnIndex, lineIndex, tokenIndex);
         _consume();
-        tokens.add(Token.create(TokenType.STRING_LITERAL, token.toString()));
+        tokens.add(Token.create(TokenType.STRING_LITERAL, token.toString(), start, end));
     }
 
     private String _stringEscape()
@@ -227,23 +266,26 @@ public class Lexer
     private void _alphabetic(char c)
     {
         StringBuilder token = new StringBuilder(Character.toString(c));
+        TokenFileLocation start = TokenFileLocation.create(columnIndex, lineIndex, tokenIndex);
         while (_peek() != null && Character.isAlphabetic(_peek()))
         {
             token.append(_consume());
         }
 
+        TokenFileLocation end = TokenFileLocation.create(columnIndex, lineIndex, tokenIndex);
         if (ReservedWords.isReserved(token.toString()))
         {
-            tokens.add(ReservedWords.token(token.toString()));
+            tokens.add(ReservedWords.token(token.toString(), start, end));
         }
         else
         {
-            tokens.add(Token.create(TokenType.IDENTIFIER, token.toString()));
+            tokens.add(Token.create(TokenType.IDENTIFIER, token.toString(), start, end));
         }
     }
 
     private void _numeric(char c)
     {
+        TokenFileLocation start = TokenFileLocation.create(columnIndex, lineIndex, tokenIndex);
         StringBuilder token = new StringBuilder(Character.toString(c));
         TokenType type = TokenType.INTEGER_LITERAL;
 
@@ -261,19 +303,16 @@ public class Lexer
             token.append(_consume());
         }
 
-        tokens.add(Token.create(type, token.toString()));
-    }
-
-    private void _consumeAndAdd(TokenType type, String value)
-    {
-        _consume();
-        tokens.add(Token.create(type, value));
+        TokenFileLocation end = TokenFileLocation.create(columnIndex, lineIndex, tokenIndex);
+        tokens.add(Token.create(type, token.toString(), start, end));
     }
 
     private void _consumeAndAdd(TokenType type, char value)
     {
+        TokenFileLocation start = TokenFileLocation.create(columnIndex, lineIndex, tokenIndex);
         _consume();
-        tokens.add(Token.create(type, Character.toString(value)));
+        TokenFileLocation end = TokenFileLocation.create(columnIndex, lineIndex, tokenIndex);
+        tokens.add(Token.create(type, Character.toString(value), start, end));
     }
 
     private Character _peek()
@@ -293,6 +332,7 @@ public class Lexer
 
     private Character _consume()
     {
+        columnIndex++;
         return content[tokenIndex++];
     }
 }

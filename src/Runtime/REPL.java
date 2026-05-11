@@ -1,7 +1,6 @@
 package Runtime;
 
 import Ast.Statements.Program;
-import Entities.Constants.ReservedKeys;
 import Entities.Exceptions.AlreadyDeclaredVariableException;
 import Lexer.Tokens.PonctuationToken;
 import Parser.Parser;
@@ -10,13 +9,11 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.*;
-import java.util.stream.Stream;
 
 public class REPL
 {
     private final BufferedReader bf = new BufferedReader(new InputStreamReader(System.in));
-    private final Queue<String> lastOpen;
-    private boolean stop;
+    private final Stack<String> lastOpen;
     private boolean isParenthesisOpen;
     private boolean isBracketOpen;
     private boolean isCommentOpen;
@@ -24,8 +21,7 @@ public class REPL
     private boolean isQuoteOpen;
 
     private REPL() {
-        stop = false;
-        lastOpen = new LinkedList<>();
+        lastOpen = new Stack<>();
         isQuoteOpen = false;
         isBraceOpen = false;
         isBracketOpen = false;
@@ -97,21 +93,21 @@ public class REPL
             if (!isCommentOpen && !isQuoteOpen && isBraceOpen && PonctuationToken.isCloseBrace(c))
             {
                 isBraceOpen = false;
-                lastOpen.poll();
+                lastOpen.pop();
                 continue;
             }
 
             if (!isCommentOpen && !isQuoteOpen && isBracketOpen && PonctuationToken.isCloseBrackets(c))
             {
                 isBracketOpen = false;
-                lastOpen.poll();
+                lastOpen.pop();
                 continue;
             }
 
             if (!isCommentOpen && !isQuoteOpen && isParenthesisOpen && PonctuationToken.isCloseParenthesis(c))
             {
                 isParenthesisOpen = false;
-                lastOpen.poll();
+                lastOpen.pop();
             }
         }
     }
@@ -177,7 +173,7 @@ public class REPL
 
     private boolean mustStop()
     {
-        return stop;
+        return false;
     }
 
     public static void run() throws AlreadyDeclaredVariableException

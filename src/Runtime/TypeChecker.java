@@ -1,5 +1,6 @@
 package Runtime;
 
+import Entities.Common.Result.ErrorOr;
 import Entities.Constants.ReservedKeys;
 import Entities.Constants.ReservedPrimitiveTypes;
 import Entities.Enums.TypeKind;
@@ -16,7 +17,7 @@ public class TypeChecker
 {
     protected TypeChecker() {}
 
-    public static boolean check(Environment env, RuntimeValue value, Type expected)
+    public static ErrorOr<Void> check(Environment env, RuntimeValue value, Type expected)
     {
         return switch (expected.type)
         {
@@ -40,11 +41,11 @@ public class TypeChecker
                 FunctionType function = (FunctionType) expected;
                 yield checkFunction(env, function, value);
             }
-            default -> false;
+            default -> ErrorOr.Fail("Tipo informado é desconhecido.");
         };
     }
 
-    private static boolean checkSymbol(Environment env, SymbolType symbol, RuntimeValue value)
+    private static ErrorOr<Void> checkSymbol(Environment env, SymbolType symbol, RuntimeValue value)
     {
         if (ReservedPrimitiveTypes.isReserved(symbol.value))
         {
@@ -56,99 +57,143 @@ public class TypeChecker
         return check(env, value, type);
     }
 
-    private static boolean checkPrimitive(String symbol, RuntimeValue value)
+    //TODO: insert checks on each primitive type
+    private static ErrorOr<Void> checkPrimitive(String symbol, RuntimeValue value)
     {
         return switch (symbol)
         {
-            case ReservedKeys.Integer -> value.type == ValueType.Numeric && ((NumericValue) value).isInteger;
-            case ReservedKeys.Float -> value.type == ValueType.Numeric && !((NumericValue) value).isInteger;
-            case ReservedKeys.Boolean -> value.type == ValueType.Boolean;
-            case ReservedKeys.String -> value.type == ValueType.String;
-            case ReservedKeys.Object -> value.type == ValueType.Object;
-            case ReservedKeys.Null -> value.type == ValueType.Null;
-            default -> false;
+            case ReservedKeys.Integer ->
+            {
+                if (value.type == ValueType.Numeric && ((NumericValue) value).isInteger)
+                {
+                    yield ErrorOr.Ok();
+                }
+                yield ErrorOr.Fail("O valor informado não é um inteiro válido.");
+            }
+            case ReservedKeys.Float ->
+            {
+                if (value.type == ValueType.Numeric && !((NumericValue) value).isInteger)
+                {
+                    yield ErrorOr.Ok();
+                }
+                yield ErrorOr.Fail("O valor informado não é um real válido.");
+            }
+            case ReservedKeys.Boolean ->
+            {
+                if (value.type == ValueType.Boolean)
+                {
+                    yield ErrorOr.Ok();
+                }
+                yield ErrorOr.Fail("O valor informado não é um lógico válido.");
+            }
+            case ReservedKeys.String ->
+            {
+                if (value.type == ValueType.String)
+                {
+                    yield ErrorOr.Ok();
+                }
+                yield ErrorOr.Fail("O valor informado não é um texto válido.");
+            }
+            case ReservedKeys.Object ->
+            {
+                if (value.type == ValueType.Object)
+                {
+                    yield ErrorOr.Ok();
+                }
+                yield ErrorOr.Fail("O valor informado não é um objeto válido.");
+            }
+            case ReservedKeys.Null -> {
+                if (value.type == ValueType.Null)
+                {
+                    yield ErrorOr.Ok();
+                }
+                yield ErrorOr.Fail("O valor informado não é um nulo válido.");
+            }
+            default -> ErrorOr.Fail("Tipo " + symbol + " desconhecido.");
         };
     }
 
-    private static boolean checkFunction(Environment env, FunctionType type, RuntimeValue value)
+    private static ErrorOr<Void> checkFunction(Environment env, FunctionType type, RuntimeValue value)
     {
         if (value.type != ValueType.Function)
         {
-            return false;
+            return ErrorOr.Fail("O valor informado não é uma função.");
         }
 
         FunctionValue function = (FunctionValue) value;
 
         if (function.parameters.size() != type.parameters.size())
         {
-            return false;
+            return ErrorOr.Fail("O número de parâmetros informados está incorreto.");
         }
 
         if (function.returnType.type != type.returnType.type) {
-            return false;
+            return ErrorOr.Fail("O tipo de retorno está incorreto.");
         }
 
         Type currentReturn = Type.reduce(env, function.returnType);
         Type expectedReturn = Type.reduce(env, type.returnType);
+        ErrorOr<Void> equality = Type.equals(currentReturn, expectedReturn);
 
-        if (Type.equals(currentReturn, expectedReturn).isFailure())
+        if (equality.isError())
         {
-            return false;
+            return equality;
         }
 
         for (int i = 0; i < type.parameters.size(); i++)
         {
             Type currentType = Type.reduce(env, function.parameters.get(i).getType());
             Type expectedType = Type.reduce(env,type.parameters.get(i));
-            if (Type.equals(currentType, expectedType).isSuccess())
-            {
-                continue;
-            }
+            equality = Type.equals(currentType, expectedType);
 
-            return false;
+            if (equality.isError())
+            {
+                return equality;
+            }
         }
 
-        return true;
+        return ErrorOr.Ok();
     }
 
-    private static boolean checkArray(Environment env, ArrayType type, RuntimeValue value)
+    private static ErrorOr<Void> checkArray(Environment env, ArrayType type, RuntimeValue value)
     {
         if (value.type != ValueType.Array)
         {
-            return false;
+            return ErrorOr.Fail("O valor informado não é uma lista.");
         }
 
         ArrayValue array = (ArrayValue) value;
 
         if (array.items.isEmpty())
         {
-            return true;
+            return ErrorOr.Ok();
         }
 
         for (RuntimeValue item : array.items.values())
         {
-            if (check(env, item, type.underlying)) {
-                continue;
-            }
+            ErrorOr<Void> equality = check(env, item, type.underlying);
 
-            return false;
+            if (equality.isError())
+            {
+                return equality;
+            }
         }
 
-        return true;
+        return ErrorOr.Ok();
     }
 
-    private static boolean checkObject(Environment env, ObjectType type, RuntimeValue value)
+    private static ErrorOr<Void> checkObject(Environment env, ObjectType type, RuntimeValue value)
     {
         if (value.type != ValueType.Object)
         {
-            return false;
+            return ErrorOr.Fail("O valor informado não é um objeto.");
         }
 
         ObjectValue object = (ObjectValue) value;
 
         if (object.properties.size() != type.properties.size())
         {
-            return false;
+            return ErrorOr.Fail("O número de chaves informadas está incorreto.");
         }
 
         for (ObjectTypeProperty prop : type.properties)
@@ -156,16 +201,16 @@ public class TypeChecker
             if (object.properties.containsKey(prop.key))
             {
                 RuntimeValue property = object.properties.get(prop.key);
+                ErrorOr<Void> equality = check(env, property, prop.type);
 
-                if (check(env, property, prop.type))
+                if (equality.isError())
                 {
-                    continue;
+                    return equality;
                 }
             }
 
-            return false;
         }
 
-        return true;
+        return ErrorOr.Ok();
     }
 }

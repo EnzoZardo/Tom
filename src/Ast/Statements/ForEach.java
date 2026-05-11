@@ -1,5 +1,8 @@
 package Ast.Statements;
 
+import Ast.Expressions.AssignmentExpr;
+import Ast.Expressions.Identifier;
+import Ast.Expressions.PrimaryExpr;
 import Entities.Abstractions.Ast.Expr;
 import Entities.Abstractions.Ast.Statement;
 import Entities.Enums.Ast.NodeType;
@@ -58,12 +61,12 @@ public class ForEach extends Statement
     public static ArrayList<Expr> parseArgumentsList(Parser parser) throws InvalidTokenException, InvalidArgumentException
     {
         ArrayList<Expr> args = new ArrayList<>();
-        args.add(Expr.parse(parser));
+        args.add(PrimaryExpr.parse(parser));
 
         while (parser.notEof() && parser.peekIs(TokenType.COMMA))
         {
             parser.consume();
-            args.add(Expr.parse(parser));
+            args.add(PrimaryExpr.parse(parser));
         }
 
         return args;

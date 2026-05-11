@@ -1,33 +1,37 @@
 package Runtime.Values;
 
-import Entities.Abstractions.Type;
+import Entities.Abstractions.Runtime.FreezableValue;
 import Entities.Enums.Runtime.ValueType;
 import Entities.Abstractions.Runtime.RuntimeValue;
 import Entities.Exceptions.InvalidIndexException;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class ObjectValue extends RuntimeValue
+public class ObjectValue extends FreezableValue
 {
     public HashMap<String, RuntimeValue> properties;
 
-    protected ObjectValue(HashMap<String, RuntimeValue> properties)
+    protected ObjectValue(HashMap<String, RuntimeValue> properties, boolean frozen)
     {
-        super(ValueType.Object);
+        super(ValueType.Object, frozen);
         this.properties = properties;
     }
 
     public static ObjectValue create(HashMap<String, RuntimeValue> properties)
     {
-        return new ObjectValue(properties);
+        return new ObjectValue(properties, false);
+    }
+
+    public static ObjectValue createFreeze(HashMap<String, RuntimeValue> properties)
+    {
+        return new ObjectValue(properties, true);
     }
 
     public static ObjectValue create()
     {
-        return new ObjectValue(new HashMap<>());
+        return new ObjectValue(new HashMap<>(), false);
     }
 
     private String printProps(int level)

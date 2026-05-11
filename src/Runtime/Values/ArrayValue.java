@@ -1,5 +1,6 @@
 package Runtime.Values;
 
+import Entities.Abstractions.Runtime.FreezableValue;
 import Entities.Abstractions.Runtime.RuntimeValue;
 import Entities.Enums.Runtime.ValueType;
 import Entities.Exceptions.InvalidIndexException;
@@ -7,24 +8,29 @@ import Entities.Exceptions.InvalidIndexException;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ArrayValue extends RuntimeValue
+public class ArrayValue extends FreezableValue
 {
     public HashMap<Integer, RuntimeValue> items;
 
-    protected ArrayValue(HashMap<Integer, RuntimeValue> items)
+    protected ArrayValue(HashMap<Integer, RuntimeValue> items, boolean frozen)
     {
-        super(ValueType.Array);
+        super(ValueType.Array, frozen);
         this.items = items;
     }
 
     public static ArrayValue create(HashMap<Integer, RuntimeValue> items)
     {
-        return new ArrayValue(items);
+        return new ArrayValue(items, false);
+    }
+
+    public static ArrayValue create(HashMap<Integer, RuntimeValue> items, boolean frozen)
+    {
+        return new ArrayValue(items, frozen);
     }
 
     public static ArrayValue create()
     {
-        return new ArrayValue(new HashMap<>());
+        return new ArrayValue(new HashMap<>(), false);
     }
 
     private String printProps(int level)

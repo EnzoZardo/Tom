@@ -6,5 +6,6 @@ public enum TypeKind
     SymbolType,
     ObjectType,
     FunctionType,
+    NativeFunction,
     ObjectTypeProperty,
 }

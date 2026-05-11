@@ -176,7 +176,7 @@
       "patterns": [
         {
           "name": "keyword.operator.tom",
-          "match": "==|=|\\+|-|\\*|/|:|<>"
+          "match": "==|=|\\+|-|\\*|/|:|<>|nao|congele"
         }
       ]
     }

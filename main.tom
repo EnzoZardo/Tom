@@ -1,1 +1,8 @@
-#1 em intervalo(0, -3)
+con objetoCongelado: objeto = congele 
+{ 
+    chave: leia("Me diga a chave: ")
+}
+
+escreva(texto.vazioOuEspaco(objetoCongelado.chave))
+
+

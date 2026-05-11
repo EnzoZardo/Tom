@@ -1,6 +1,6 @@
 package Ast.Types;
 
-import Entities.Common.Result.ResultVoid;
+import Entities.Common.Result.ErrorOr;
 import Entities.Constants.ReservedPrimitiveTypes;
 import Entities.Enums.TypeKind;
 import Entities.Abstractions.Type;
@@ -41,17 +41,17 @@ public class SymbolType extends Type
         return SymbolType.create(token.value);
     }
 
-    public static ResultVoid equals(Type type1, Type type2)
+    public static ErrorOr<Void> equals(Type type1, Type type2)
     {
         SymbolType symbol1 = (SymbolType) type1;
         SymbolType symbol2 = (SymbolType) type2;
-
+        ErrorOr<Void> teste = ErrorOr.Ok();
         if (symbol1.value.equals(symbol2.value))
         {
-            return ResultVoid.Ok();
+            return ErrorOr.Ok();
         }
 
-        return ResultVoid.Fail("Os símbolos dos tipos diferem.");
+        return ErrorOr.Fail("Os símbolos dos tipos diferem.");
     }
 
     @Override

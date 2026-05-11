@@ -1,6 +1,7 @@
 package Runtime.Values;
 
 import Ast.Statements.FunctionDeclaration;
+import Ast.Types.FunctionType;
 import Entities.Abstractions.Ast.Statement;
 import Entities.Abstractions.Type;
 import Entities.Constants.ReservedKeys;
@@ -50,6 +51,10 @@ public class FunctionValue extends RuntimeValue
         return new FunctionValue(statement.identifier, statement.body, statement.parameters, statement.returnType, env);
     }
 
+    public Type type() {
+        return FunctionType.create((ArrayList<Type>) parameters.stream().map(ArgumentMetadata::getType).toList(), returnType);
+    }
+
     @Override
     public String print(int level)
     {
@@ -73,13 +78,13 @@ public class FunctionValue extends RuntimeValue
             return false;
         }
 
-        if (Type.equals(returnType, functionValue.returnType).isFailure()) {
+        if (Type.equals(returnType, functionValue.returnType).isError()) {
             return false;
         }
 
         for (int i = 0; i < parameters.size(); i++)
         {
-            if (Type.equals(parameters.get(i).getType(), functionValue.parameters.get(i).getType()).isFailure()) {
+            if (Type.equals(parameters.get(i).getType(), functionValue.parameters.get(i).getType()).isError()) {
                 return false;
             }
         }

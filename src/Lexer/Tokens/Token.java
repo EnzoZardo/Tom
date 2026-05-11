@@ -6,17 +6,24 @@ import Entities.Enums.Lexer.TokenType;
 public class Token
 {
     public TokenType type;
+    public TokenLocation location;
     public String value;
 
-    protected Token(TokenType type, String value)
+    protected Token(TokenType type, String value, TokenLocation location)
     {
         this.type = type;
         this.value = value;
+        this.location = location;
     }
 
-    public static Token create(TokenType type, String value)
+    public static Token create(TokenType type, String value, TokenLocation location)
     {
-        return new Token(type, value);
+        return new Token(type, value, location);
+    }
+
+    public static Token create(TokenType type, String value, TokenFileLocation start, TokenFileLocation end)
+    {
+        return new Token(type, value, TokenLocation.create(start, end));
     }
 
     public static boolean isNumeric(char c)
@@ -41,7 +48,17 @@ public class Token
 
     public static boolean isIgnorable(char c)
     {
-        return Character.isSpaceChar(c) || c == '\n' || c == '\t' || c == '\r';
+        return Character.isSpaceChar(c) || c == '\t' || c == '\r';
+    }
+
+    public static boolean isNewLine(char c)
+    {
+        return c == '\n';
+    }
+
+    public static boolean isNewLine(String c)
+    {
+        return "\n".equals(c);
     }
 
     public char Char()
@@ -59,7 +76,7 @@ public class Token
     {
         if (value != null)
         {
-            return type.name() + "=" + value;
+            return "{ " + type.name() + " = " + value + ", localização = " + location + " }";
         }
 
         return type.name();

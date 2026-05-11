@@ -19,13 +19,8 @@ public class Error
         return message;
     }
 
-    public <T> ResultValue<T> toResultValue()
+    public <T> ErrorOr<T> errorOr()
     {
-        return ResultValue.Fail(this);
-    }
-
-    public ResultVoid toResultVoid()
-    {
-        return ResultVoid.Fail(this);
+        return ErrorOr.Fail(this);
     }
 }

@@ -2,6 +2,8 @@ package Runtime.Evaluate;
 
 import Ast.Expressions.*;
 import Ast.Expressions.Literals.ArrayLiteral;
+import Entities.Abstractions.Runtime.FreezableValue;
+import Entities.Common.Result.ErrorOr;
 import Entities.Constants.ReservedKeys;
 import Entities.Constants.ReservedOperators;
 import Entities.Enums.Ast.NodeType;
@@ -24,7 +26,6 @@ import Entities.Metadata.ArgumentMetadata;
 
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 
 public class Expressions
@@ -278,6 +279,16 @@ public class Expressions
             return BooleanValue.create(rightHandSide.not());
         }
 
+        if (ReservedKeys.Freeze.equals(expr.operator))
+        {
+            if (!rightHandSide.freezable)
+            {
+                throw new InvalidUnaryExpression("Valor do tipo informado não pode ser congelado.");
+            }
+
+            return ((FreezableValue) rightHandSide).freezeMe();
+        }
+
         if (ReservedKeys.Minus.equals(expr.operator) || ReservedKeys.Plus.equals(expr.operator)
             && rightHandSide.type == ValueType.Numeric)
         {
@@ -376,7 +387,7 @@ public class Expressions
 
             if (memberExpr.object.type == NodeType.ObjectLiteral || memberExpr.object.type == NodeType.ArrayLiteral)
             {
-                return NullValue.create();
+                return value;
             }
         }
 
@@ -542,8 +553,11 @@ public class Expressions
                 ArgumentMetadata param = function.parameters.get(i);
                 String name = param.getName();
 
-                if (!TypeChecker.check(env, args.get(i), param.getType())) {
-                    throw new RuntimeException("Invalid Argument type");
+                ErrorOr<Void> equality = TypeChecker.check(env, args.get(i), param.getType());
+                if (equality.isError()) {
+                    throw new RuntimeException(String.format("Tipo incorreto informado para o argumento '%s'. %s",
+                        name,
+                        equality.error.getMessage()));
                 }
 
                 scope.declareVariable(name, args.get(i), param.getType(), false);
@@ -555,8 +569,10 @@ public class Expressions
                 result = Interpreter.evaluate(statement, scope);
             }
 
-            if (!TypeChecker.check(env, result, function.returnType)) {
-                throw new ExpectedTypeNotMatch("Tipo de retorno não condiz com o tipo esperado.");
+            ErrorOr<Void> equality = TypeChecker.check(env, result, function.returnType);
+            if (equality.isError()) {
+                throw new ExpectedTypeNotMatch(String.format("Tipo de retorno não condiz com o tipo esperado. %s",
+                    equality));
             }
 
             return result;

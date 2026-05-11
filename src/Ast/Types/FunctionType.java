@@ -1,6 +1,6 @@
 package Ast.Types;
 
-import Entities.Common.Result.ResultVoid;
+import Entities.Common.Result.ErrorOr;
 import Entities.Enums.TypeKind;
 import Entities.Abstractions.Type;
 import Entities.Enums.Lexer.TokenType;
@@ -26,7 +26,7 @@ public class FunctionType extends Type
         return new FunctionType(arguments, returnType);
     }
 
-    public static ResultVoid equals(Type type1, Type type2)
+    public static ErrorOr<Void> equals(Type type1, Type type2)
     {
         if (type1.type != TypeKind.FunctionType) {
             return ObjectType.equals(type1, type2);
@@ -37,24 +37,24 @@ public class FunctionType extends Type
 
         if (function1.parameters.size() != function2.parameters.size())
         {
-            return ResultVoid.Fail("A quantidade dos parâmetros da função com seu tipo diferem.");
+            return ErrorOr.Fail("A quantidade dos parâmetros da função com seu tipo diferem.");
         }
 
-        if (Type.equals(function1.returnType, function2.returnType).isFailure())
+        if (Type.equals(function1.returnType, function2.returnType).isError())
         {
-            return ResultVoid.Fail("A o tipo de retorno da função com seu tipo diferem.");
+            return ErrorOr.Fail("A o tipo de retorno da função com seu tipo diferem.");
         }
 
         for (int i = 0; i < function1.parameters.size(); i++)
         {
-            ResultVoid result = Type.equals(function1.parameters.get(i), function2.parameters.get(i));
-            if (result.isFailure())
+            ErrorOr<Void> result = Type.equals(function1.parameters.get(i), function2.parameters.get(i));
+            if (result.isError())
             {
                 return result;
             }
         }
 
-        return ResultVoid.Ok();
+        return ErrorOr.Ok();
     }
 
     public static Type reduce(Environment env, Type type)

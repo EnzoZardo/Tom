@@ -6,10 +6,12 @@ import Entities.Exceptions.NotIterableException;
 public abstract class RuntimeValue
 {
     public final ValueType type;
+    public boolean freezable;
 
     protected RuntimeValue(ValueType type)
     {
         this.type = type;
+        this.freezable = false;
     }
 
     public abstract String print(int level);

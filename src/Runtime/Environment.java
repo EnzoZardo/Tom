@@ -1,14 +1,16 @@
 package Runtime;
 
+import Ast.Types.ArrayType;
+import Ast.Types.ObjectType;
 import Ast.Types.Primitive.*;
 import Ast.Types.SymbolType;
 import Entities.Abstractions.Type;
-import Entities.Common.Result.ResultVoid;
+import Entities.Common.Result.ErrorOr;
 import Entities.Constants.ReservedKeys;
-import Entities.Constants.ReservedPrimitiveTypes;
 import Entities.Enums.Runtime.ValueType;
 import Entities.Enums.TypeKind;
 import Entities.Exceptions.*;
+import Entities.Exceptions.Evaluate.InvalidAssignmentExpression;
 import Entities.Exceptions.Evaluate.InvalidMemberAssignException;
 import Runtime.NativeFunctions.Interval;
 import Runtime.NativeFunctions.Print;
@@ -73,14 +75,14 @@ public class Environment
         return value;
     }
 
-    public RuntimeValue declareConstant(String name, RuntimeValue value) throws AlreadyDeclaredVariableException
+    public RuntimeValue declareConstant(String name, RuntimeValue value, Type type) throws AlreadyDeclaredVariableException
     {
         if (variables.containsKey(name) || constants.containsKey(name))
         {
             throw new AlreadyDeclaredVariableException(name);
         }
 
-        constants.put(name, ValueMetadata.create(null, value));
+        constants.put(name, ValueMetadata.create(type, value));
         return value;
     }
 
@@ -90,16 +92,18 @@ public class Environment
 
         if (variableEnvironment.constants.containsKey(name))
         {
-            throw new ConstantAssignmentException("Cannot assign variable, it was declared as constant.");
+            throw new ConstantAssignmentException(String.format(
+                "Não podemos atribuir a variável '%s', ela é constante.",
+                name));
         }
 
         ValueMetadata variable = variableEnvironment.variables.get(name);
 
         Type expectedType = variable.getType();
-
-        if (!TypeChecker.check(this, value, expectedType))
+        ErrorOr<Void> equality = TypeChecker.check(this, value, expectedType);
+        if (equality.isError())
         {
-            throw new ExpectedTypeNotMatch("Tipo incorreto para a variável informado.");
+            throw new ExpectedTypeNotMatch(equality.error.getMessage());
         }
 
         variableEnvironment.variables.put(name, ValueMetadata.create(variable.getType(), value));
@@ -124,6 +128,11 @@ public class Environment
 
         ArrayValue arrayValue = (ArrayValue) obj.getValue();
         Type reducedType = Type.reduce(this, obj.getType());
+
+        if (arrayValue.isFrozen())
+        {
+            throw new InvalidAssignmentExpression("Vocẽ não pode alterar a chave de um valor congelado.");
+        }
 
         if (reducedType.type == TypeKind.ArrayType && arrayValue.items.containsKey(number))
         {
@@ -153,6 +162,11 @@ public class Environment
 
         ObjectValue objectValue = (ObjectValue) obj.getValue();
         Type reducedType = Type.reduce(this, obj.getType());
+
+        if (objectValue.isFrozen())
+        {
+            throw new InvalidAssignmentExpression("Vocẽ não pode alterar a chave de um valor congelado.");
+        }
 
         if (reducedType.type == TypeKind.ObjectType)
         {
@@ -193,14 +207,16 @@ public class Environment
         return variableEnvironment.constants.get(name).getValue();
     }
 
-    public void declareType(String name, Type type)
+    public Type declareType(String name, Type type)
     {
         if (types.containsKey(name))
         {
-            throw new TypeReassignmentException("Cannot assign type, it was already declared.");
+            throw new TypeReassignmentException(String.format(
+                "Não podemos atribuir o tipo %s. Ele já existe.",
+                name));
         }
 
-        types.put(name, type);
+        return types.put(name, type);
     }
 
     public Type lookupType(String name)
@@ -243,20 +259,22 @@ public class Environment
 
     private void setupScope() throws AlreadyDeclaredVariableException
     {
-        declareType(ReservedKeys.Null, NullType.create());
-        declareType(ReservedKeys.Float, FloatType.create());
-        declareType(ReservedKeys.String, StringType.create());
-        declareType(ReservedKeys.Boolean, BooleanType.create());
-        declareType(ReservedKeys.Integer, IntegerType.create());
+        Type nullType = declareType(ReservedKeys.Null, NullType.create());
+        Type stringType = declareType(ReservedKeys.String, StringType.create());
+        Type boolType = declareType(ReservedKeys.Boolean, BooleanType.create());
+        Type intType = declareType(ReservedKeys.Integer, IntegerType.create());
 
-        declareConstant(ReservedKeys.Integer, IntegerObject.create());
-        declareConstant(ReservedKeys.String, StringObject.create());
+        declareConstant(ReservedKeys.Integer, IntegerObject.create(), IntegerObject.type());
+        declareConstant(ReservedKeys.String, StringObject.create(), StringObject.type());
 
-        declareConstant(ReservedKeys.Null, NullValue.create());
-        declareConstant(ReservedKeys.True, BooleanValue.create(true));
-        declareConstant(ReservedKeys.False, BooleanValue.create(false));
-        declareConstant(ReservedKeys.Print, NativeFunctionValue.create(Print::call));
-        declareConstant(ReservedKeys.Interval, NativeFunctionValue.create(Interval::call));
+        declareConstant(ReservedKeys.Null, NullValue.create(), nullType);
+        declareConstant(ReservedKeys.True, BooleanValue.create(true), boolType);
+        declareConstant(ReservedKeys.False, BooleanValue.create(false), boolType);
+        declareConstant(ReservedKeys.Print,
+            NativeFunctionValue.create(Print::call),
+            NativeFunctionType.create(nullType));
+        declareConstant(ReservedKeys.Interval, NativeFunctionValue.create(Interval::call),
+            NativeFunctionType.create(ArrayType.create(intType)));
         declareConstant(ReservedKeys.Read, NativeFunctionValue.create(x ->
         {
             try
@@ -267,6 +285,6 @@ public class Environment
             {
                 throw new RuntimeException(e);
             }
-        }));
+        }), NativeFunctionType.create(stringType));
     }
 }

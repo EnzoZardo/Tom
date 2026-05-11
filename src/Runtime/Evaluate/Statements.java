@@ -3,8 +3,11 @@ package Runtime.Evaluate;
 import Ast.Expressions.Identifier;
 import Ast.Expressions.Property;
 import Ast.Statements.*;
+import Ast.Types.ArrayType;
+import Ast.Types.Primitive.IntegerType;
 import Entities.Abstractions.Type;
 import Entities.Abstractions.Ast.Statement;
+import Entities.Common.Result.ErrorOr;
 import Entities.Constants.ReservedKeys;
 import Entities.Enums.Ast.NodeType;
 import Entities.Enums.Runtime.ValueType;
@@ -46,10 +49,12 @@ public class Statements
                 ? NullValue.create()
                 : Interpreter.evaluate(declaration.value, env);
 
-        if (!TypeChecker.check(env, value, declaration.expectedType) && declaration.value != null)
+        ErrorOr<Void> equality = TypeChecker.check(env, value, declaration.expectedType);
+        if (equality.isError() && declaration.value != null)
         {
-            throw new ExpectedTypeNotMatch(String.format("Tipo incorreto informado para a variável '%s'.",
-                declaration.identifier));
+            throw new ExpectedTypeNotMatch(String.format("Tipo incorreto informado para a variável '%s'. %s",
+                declaration.identifier,
+                equality.error.getMessage()));
         }
 
         return env.declareVariable(declaration.identifier, value, declaration.expectedType, declaration.constant);
@@ -66,7 +71,7 @@ public class Statements
         FunctionDeclaration declaration, Environment env) throws AlreadyDeclaredVariableException
     {
         FunctionValue value = FunctionValue.createFromStatement(declaration, env);
-        return env.declareConstant(value.name, value);
+        return env.declareConstant(value.name, value, value.type());
     }
 
     public static RuntimeValue evaluateScopeDeclaration(
@@ -154,19 +159,37 @@ public class Statements
 
             switch (identifiers.size())
             {
-                case MINIMUM_ARGS_SIZE -> operationEnv.declareConstant(identifiers.getFirst().value, iterable.iterate(i));
+                case MINIMUM_ARGS_SIZE -> operationEnv.declareConstant(
+                        identifiers.getFirst().value,
+                        iterable.iterate(i),
+                        IntegerType.create());
                 case ARGS_SIZE ->
                 {
-                    operationEnv.declareConstant(identifiers.getFirst().value, NumericValue.create(i, true));
-                    operationEnv.declareConstant(identifiers.get(1).value, iterable.iterate(i));
+                    operationEnv.declareConstant(
+                        identifiers.getFirst().value,
+                        NumericValue.create(i, true),
+                        IntegerType.create());
+                    operationEnv.declareConstant(
+                        identifiers.get(1).value,
+                        iterable.iterate(i),
+                        IntegerType.create());
                 }
                 case OBJECT_ARGS_SIZE ->
                 {
                     ArrayValue iterated = (ArrayValue) iterable.iterate(i);
                     HashMap<Integer, RuntimeValue> value = iterated.items;
-                    operationEnv.declareConstant(identifiers.getFirst().value, NumericValue.create(i, true));
-                    operationEnv.declareConstant(identifiers.get(1).value, value.get(0));
-                    operationEnv.declareConstant(identifiers.getLast().value, value.get(1));
+                    operationEnv.declareConstant(
+                        identifiers.getFirst().value,
+                        NumericValue.create(i, true),
+                        IntegerType.create());
+                    operationEnv.declareConstant(
+                        identifiers.get(1).value,
+                        value.get(0),
+                        IntegerType.create());
+                    operationEnv.declareConstant(
+                        identifiers.getLast().value,
+                        value.get(1),
+                        IntegerType.create());
                 }
                 default -> throw new IncorrectNumberOfArgumentsException(message);
             }

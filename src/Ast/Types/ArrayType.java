@@ -1,6 +1,6 @@
 package Ast.Types;
 
-import Entities.Common.Result.ResultVoid;
+import Entities.Common.Result.ErrorOr;
 import Entities.Enums.TypeKind;
 import Entities.Abstractions.Type;
 import Entities.Enums.Lexer.TokenType;
@@ -45,7 +45,7 @@ public class ArrayType extends Type
         return ArrayType.create(Type.parse(parser));
     }
 
-    public static ResultVoid equals(Type type1, Type type2)
+    public static ErrorOr<Void> equals(Type type1, Type type2)
     {
         if (type1.type != TypeKind.ArrayType) {
             return SymbolType.equals(type1, type2);

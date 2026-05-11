@@ -6,4 +6,9 @@ public class InvalidUnaryExpression extends EvaluatingException
     {
         super("Expressão unária inválida.");
     }
+
+    public InvalidUnaryExpression(String message)
+    {
+        super(message);
+    }
 }

@@ -43,7 +43,7 @@ public record ReservedKeys()
     public static final String Interval = "intervalo";
     public static final String Convert = "converte";
 
-    // Binary Operators
+    // Some Unary/Binary Operators
     public static final String Equals = "=";
     public static final String Plus = "+";
     public static final String Minus = "-";
@@ -61,6 +61,7 @@ public record ReservedKeys()
     public static final String Or = "ou";
     public static final String Not = "nao";
     public static final String In = "em";
+    public static final String Freeze = "congele";
 
     // Primitive Types
     public static final String Float = "real";

@@ -1,7 +1,7 @@
 package Entities.Abstractions;
 
 import Entities.Abstractions.Ast.Statement;
-import Entities.Common.Result.ResultVoid;
+import Entities.Common.Result.ErrorOr;
 import Entities.Enums.Ast.NodeType;
 import Entities.Enums.TypeKind;
 import Ast.Types.FunctionType;
@@ -25,14 +25,19 @@ public abstract class Type extends Statement
 
     public static Type reduce(Environment env, Type type)
     {
+        if (type.type == TypeKind.NativeFunction)
+        {
+            return type;
+        }
+
         return FunctionType.reduce(env, type);
     }
 
-    public static ResultVoid equals(Type type1, Type type2)
+    public static ErrorOr<Void> equals(Type type1, Type type2)
     {
         if (type1.type != type2.type)
         {
-            return ResultVoid.Fail("Os tipos são diferentes.");
+            return ErrorOr.Fail("Os tipos são diferentes.");
         }
 
         return FunctionType.equals(type1, type2);
