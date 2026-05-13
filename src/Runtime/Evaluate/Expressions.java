@@ -23,6 +23,7 @@ import Entities.Abstractions.Runtime.RuntimeValue;
 import Runtime.Values.*;
 import Runtime.TypeChecker;
 import Entities.Metadata.ArgumentMetadata;
+import Runtime.Values.FlowControl.ReturnFlow;
 
 
 import java.util.ArrayList;
@@ -281,7 +282,7 @@ public class Expressions
 
         if (ReservedKeys.Freeze.equals(expr.operator))
         {
-            if (!rightHandSide.freezable)
+            if (!rightHandSide.isFreezable())
             {
                 throw new InvalidUnaryExpression("Valor do tipo informado não pode ser congelado.");
             }
@@ -542,7 +543,8 @@ public class Expressions
 
             if (function.parameters.size() != call.arguments.size())
             {
-                throw new IncorrectNumberOfArgumentsException(String.format("A função %s esperava %d argumento(s), mas recebeu %d.",
+                throw new IncorrectNumberOfArgumentsException(String.format(
+                    "A função %s esperava %d argumento(s), mas recebeu %d.",
                     function.name,
                     function.parameters.size(),
                     call.arguments.size()));
@@ -555,7 +557,8 @@ public class Expressions
 
                 ErrorOr<Void> equality = TypeChecker.check(env, args.get(i), param.getType());
                 if (equality.isError()) {
-                    throw new RuntimeException(String.format("Tipo incorreto informado para o argumento '%s'. %s",
+                    throw new RuntimeException(String.format(
+                        "Tipo incorreto informado para o argumento '%s'. %s",
                         name,
                         equality.error.getMessage()));
                 }
@@ -567,15 +570,26 @@ public class Expressions
             for (Statement statement : function.body)
             {
                 result = Interpreter.evaluate(statement, scope);
+
+                if (result.type == ValueType.Return)
+                {
+                    break;
+                }
             }
 
-            ErrorOr<Void> equality = TypeChecker.check(env, result, function.returnType);
+            RuntimeValue ret = result.type == ValueType.Return
+                ? ((ReturnFlow) result).value
+                : NullValue.create();
+
+            ErrorOr<Void> equality = TypeChecker.check(env, ret, function.returnType);
+
             if (equality.isError()) {
-                throw new ExpectedTypeNotMatch(String.format("Tipo de retorno não condiz com o tipo esperado. %s",
-                    equality));
+                throw new ExpectedTypeNotMatch(String.format(
+                    "Tipo de retorno não condiz com o tipo esperado. %s",
+                    equality.error.getMessage()));
             }
 
-            return result;
+            return ret;
         }
 
         if (caller.type == ValueType.NativeFunction) {

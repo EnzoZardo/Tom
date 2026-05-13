@@ -67,4 +67,10 @@ public class ArrayType extends Type
             "\t".repeat(next) + "underlying: " + underlying.print(next) + ",\n" +
             "\t".repeat(level) + "}";
     }
+
+    @Override
+    public String toString()
+    {
+        return "[]" + underlying;
+    }
 }

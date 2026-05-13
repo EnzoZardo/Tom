@@ -5,6 +5,7 @@ import Ast.Expressions.Property;
 import Ast.Statements.*;
 import Ast.Types.ArrayType;
 import Ast.Types.Primitive.IntegerType;
+import Entities.Abstractions.Runtime.RuntimeException;
 import Entities.Abstractions.Type;
 import Entities.Abstractions.Ast.Statement;
 import Entities.Common.Result.ErrorOr;
@@ -22,6 +23,9 @@ import Runtime.Interpreter;
 import Entities.Abstractions.Runtime.RuntimeValue;
 import Runtime.Values.*;
 import Runtime.TypeChecker;
+import Runtime.Values.FlowControl.BreakFlow;
+import Runtime.Values.FlowControl.ContinueFlow;
+import Runtime.Values.FlowControl.ReturnFlow;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -74,6 +78,12 @@ public class Statements
         return env.declareConstant(value.name, value, value.type());
     }
 
+    public static RuntimeException evaluateReturnStatement(
+            Return returnStatement, Environment env) throws AlreadyDeclaredVariableException
+    {
+        return ReturnFlow.create(Interpreter.evaluate(returnStatement.value, env));
+    }
+
     public static RuntimeValue evaluateScopeDeclaration(
         ScopeDeclaration scopeDeclaration,
         Environment env) throws AlreadyDeclaredVariableException
@@ -81,8 +91,16 @@ public class Statements
         Environment scope = Environment.create(env);
         for (Statement statement : scopeDeclaration.body)
         {
-            Interpreter.evaluate(statement, scope);
+            RuntimeValue value = Interpreter.evaluate(statement, scope);
+
+            if (value.type == ValueType.Return ||
+                value.type == ValueType.Continue ||
+                value.type == ValueType.Break)
+            {
+                return value;
+            }
         }
+
         return NullValue.create();
     }
 
@@ -110,14 +128,25 @@ public class Statements
         Environment env) throws AlreadyDeclaredVariableException
     {
         RuntimeValue value = Interpreter.evaluate(whileStatement.test, env);
-        RuntimeValue ret = NullValue.create();
+        RuntimeValue ret;
         while (value.bool())
         {
             ret = Interpreter.evaluate(whileStatement.consequent, env);
+
+            if (ret.type == ValueType.Return)
+            {
+                return ret;
+            }
+
+            if (ret.type == ValueType.Break)
+            {
+                return NullValue.create();
+            }
+
             value = Interpreter.evaluate(whileStatement.test, env);
         }
 
-        return ret;
+        return NullValue.create();
     }
 
     public static RuntimeValue evaluateForEachStatement(
@@ -128,7 +157,7 @@ public class Statements
         final int ARGS_SIZE = 2;
         final int MINIMUM_ARGS_SIZE = 1;
         final String message = "Número incorreto de argumentos para o loop";
-        RuntimeValue lastEvaluated = null;
+        RuntimeValue value;
 
         if (!ReservedKeys.In.equals(forEach.operator))
         {
@@ -153,7 +182,7 @@ public class Statements
             .map(x -> (Identifier) x)
             .toList();
 
-        for (int i = 0; i < iterable.iteratorSize() - 1; i++)
+        for (int i = 0; i < iterable.iteratorSize(); i++)
         {
             Environment operationEnv = Environment.create(env);
 
@@ -177,26 +206,46 @@ public class Statements
                 case OBJECT_ARGS_SIZE ->
                 {
                     ArrayValue iterated = (ArrayValue) iterable.iterate(i);
-                    HashMap<Integer, RuntimeValue> value = iterated.items;
+                    HashMap<Integer, RuntimeValue> items = iterated.items;
                     operationEnv.declareConstant(
                         identifiers.getFirst().value,
                         NumericValue.create(i, true),
                         IntegerType.create());
                     operationEnv.declareConstant(
                         identifiers.get(1).value,
-                        value.get(0),
+                        items.get(0),
                         IntegerType.create());
                     operationEnv.declareConstant(
                         identifiers.getLast().value,
-                        value.get(1),
+                        items.get(1),
                         IntegerType.create());
                 }
                 default -> throw new IncorrectNumberOfArgumentsException(message);
             }
 
-            lastEvaluated = Interpreter.evaluate(forEach.consequent, operationEnv);
+            value = Interpreter.evaluate(forEach.consequent, operationEnv);
+
+            if (value.type == ValueType.Return)
+            {
+                return value;
+            }
+
+            if (value.type == ValueType.Break)
+            {
+                return NullValue.create();
+            }
         }
 
-        return lastEvaluated;
+        return NullValue.create();
+    }
+
+    public static RuntimeException evaluateContinue()
+    {
+        return ContinueFlow.create();
+    }
+
+    public static RuntimeException evaluateBreak()
+    {
+        return BreakFlow.create();
     }
 }

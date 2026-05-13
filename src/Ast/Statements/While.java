@@ -32,7 +32,9 @@ public class While extends Statement
         parser.expect(TokenType.OPEN_PARENTHESIS, "Esperávamos '(' após um enquanto.");
         Expr test = Expr.parse(parser);
         parser.expect(TokenType.CLOSE_PARENTHESIS, "Esperávamos ')' após a expressão de teste de um enquanto.");
+        parser.context.enterLoop();
         Statement consequent = Statement.parse(parser);
+        parser.context.outLoop();
 
         return While.create(test, consequent);
     }

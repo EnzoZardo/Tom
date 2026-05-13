@@ -24,4 +24,10 @@ public class ArgumentMetadata extends Pair<Type, String>
     {
         return get1();
     }
+
+    @Override
+    public String toString()
+    {
+        return getName() + ": " + getType();
+    }
 }

@@ -27,12 +27,12 @@ public class BinaryExpr extends Expr
 
     public static Expr parseBoolean(Parser parser) throws InvalidTokenException, InvalidArgumentException
     {
-        Expr left = MemberExpr.parseCall(parser);
+        Expr left = BinaryExpr.parseAdditive(parser);
 
         while (ReservedOperators.isBooleanOperator(parser.peekValue()))
         {
             String operator = parser.consume().value;
-            Expr right = MemberExpr.parseCall(parser);
+            Expr right = BinaryExpr.parseAdditive(parser);
             left = BinaryExpr.create(left, right, operator);
         }
 

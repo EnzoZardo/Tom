@@ -4,34 +4,44 @@ public class ContextMemory
 {
     private int loopDepth;
     private int functionDepth;
-
-    public int enterLoop()
+    private ContextMemory()
     {
-        return ++loopDepth;
+        loopDepth = 0;
+        functionDepth = 0;
     }
 
-    public int outLoop()
+    public static ContextMemory create()
     {
-        return --loopDepth;
+        return new ContextMemory();
     }
 
-    public int enterFunction()
+    public void enterLoop()
     {
-        return ++functionDepth;
+        ++loopDepth;
     }
 
-    public int outFunction()
+    public void outLoop()
     {
-        return --functionDepth;
+         --loopDepth;
     }
 
-    public int function()
+    public void enterFunction()
     {
-        return functionDepth;
+        ++functionDepth;
     }
 
-    public int loop()
+    public void outFunction()
     {
-        return loopDepth;
+        --functionDepth;
+    }
+
+    public boolean inFunction()
+    {
+        return functionDepth > 0;
+    }
+
+    public boolean inLoop()
+    {
+        return loopDepth > 0;
     }
 }

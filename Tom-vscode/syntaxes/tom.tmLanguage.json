@@ -59,7 +59,7 @@
       "patterns": [
         {
           "name": "keyword.control.tom",
-          "match": "\\b(se|para|cada|em|enquanto|senao)\\b"
+          "match": "\\b(se|para|cada|em|enquanto|senao|retorne|continue|pare)\\b"
         },
         {
           "name": "keyword.declaration.tom",

@@ -53,7 +53,10 @@ public class ForEach extends Statement
                 "argumentos e nosso iterável.");
         Expr iterable = Expr.parse(parser);
         parser.expect(TokenType.CLOSE_PARENTHESIS, "Esperávamos ')' após a expressão de teste de um enquanto.");
+
+        parser.context.enterLoop();
         Statement consequent = Statement.parse(parser);
+        parser.context.outLoop();
 
         return ForEach.create(iterable, iterators, operator.value, consequent);
     }

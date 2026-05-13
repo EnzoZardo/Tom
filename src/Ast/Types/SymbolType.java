@@ -45,7 +45,6 @@ public class SymbolType extends Type
     {
         SymbolType symbol1 = (SymbolType) type1;
         SymbolType symbol2 = (SymbolType) type2;
-        ErrorOr<Void> teste = ErrorOr.Ok();
         if (symbol1.value.equals(symbol2.value))
         {
             return ErrorOr.Ok();
@@ -62,5 +61,11 @@ public class SymbolType extends Type
                 "\t".repeat(next) + "type: " + type.toString() + ",\n" +
                 "\t".repeat(next) + "symbol: " + value + ",\n" +
                 "\t".repeat(level) + "}";
+    }
+
+    @Override
+    public String toString()
+    {
+        return value;
     }
 }

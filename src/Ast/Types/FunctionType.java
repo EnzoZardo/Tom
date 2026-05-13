@@ -139,4 +139,18 @@ public class FunctionType extends Type
             "\t".repeat(next) + "parameters: " + printProps(next) + ",\n" +
             "\t".repeat(level) + "}";
     }
+
+    @Override
+    public String toString()
+    {
+        StringBuilder params = new StringBuilder();
+        for (int i = 0; i < parameters.size(); i++)
+        {
+            params.append(parameters.get(i));
+            if (i < parameters.size() - 1) {
+                params.append(", ");
+            }
+        }
+        return "(" +  params + "): " + returnType;
+    }
 }

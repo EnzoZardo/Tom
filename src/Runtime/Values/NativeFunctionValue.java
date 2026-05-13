@@ -43,4 +43,10 @@ public class NativeFunctionValue extends RuntimeValue
     {
         throw new InvalidBinaryOperation("Não se pode testar a igualdade entre uma função nativa e outro valor.");
     }
+
+    @Override
+    public String toString()
+    {
+        return "função nativa";
+    }
 }

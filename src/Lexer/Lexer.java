@@ -138,8 +138,8 @@ public class Lexer
     }
 
     private void _nextLine() {
-        columnIndex++;
-        lineIndex = 0;
+        columnIndex = 0;
+        lineIndex++;
     }
 
     private void _eof()

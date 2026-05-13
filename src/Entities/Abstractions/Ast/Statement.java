@@ -19,10 +19,13 @@ public abstract class Statement
     {
         return switch (parser.peekType())
         {
+            case TokenType.BREAK -> Break.parse(parser);
             case TokenType.WHILE -> While.parse(parser);
             case TokenType.FOR -> ForEach.parse(parser);
-            case TokenType.IF ->  IfConditional.parse(parser);
-            case TokenType.TYPE ->  TypeDeclaration.parse(parser);
+            case TokenType.RETURN -> Return.parse(parser);
+            case TokenType.IF -> IfConditional.parse(parser);
+            case TokenType.CONTINUE -> Continue.parse(parser);
+            case TokenType.TYPE -> TypeDeclaration.parse(parser);
             case TokenType.OPEN_BRACE -> ScopeDeclaration.parse(parser);
             case TokenType.FUNCTION -> FunctionDeclaration.parse(parser);
             case TokenType.DECLARE, TokenType.CONSTANT -> VariableDeclaration.parse(parser);

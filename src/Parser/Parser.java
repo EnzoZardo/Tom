@@ -5,6 +5,7 @@ import Entities.Abstractions.Ast.Statement;
 import Entities.Exceptions.*;
 import Entities.Exceptions.Parser.AlreadyParsedException;
 import Entities.Exceptions.Parser.InvalidTokenException;
+import Entities.Parsing.ContextMemory;
 import Lexer.Lexer;
 import Entities.Enums.Lexer.TokenType;
 import Lexer.Tokens.Token;
@@ -14,11 +15,13 @@ import java.util.ArrayList;
 public class Parser
 {
     public final ArrayList<Token> tokens;
+    public final ContextMemory context;
     public int tokenIndex = 0;
 
     public Parser(char[] content) throws AlreadyParsedException, InvalidTokenException
     {
         Lexer lexer = Lexer.create(content);
+        context = ContextMemory.create();
         tokens = lexer.tokenize();
     }
 

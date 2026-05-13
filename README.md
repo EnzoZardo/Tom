@@ -62,3 +62,6 @@ Agora é necessário:
 ### Atualizações 10.5.26
 - Adição de operador unário "congele"
 - Alteração de result para melhores mensagens de erro.
+
+### Atualizações 13.5.26
+- Adição de retorne, continue e pare

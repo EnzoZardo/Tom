@@ -3,7 +3,10 @@ package Entities.Enums.Ast;
 public enum NodeType
 {
     // These are statements
+    Break,
+    Return,
     Program,
+    Continue,
     IfStatement,
     WhileStatement,
     TypeDeclaration,

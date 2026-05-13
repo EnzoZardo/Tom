@@ -139,4 +139,18 @@ public class ObjectType extends Type
                 "\t".repeat(next) + "properties: " + printProps(next) + ",\n" +
                 "\t".repeat(level) + "}";
     }
+
+    @Override
+    public String toString()
+    {
+        StringBuilder params = new StringBuilder();
+        for (int i = 0; i < properties.size(); i++)
+        {
+            params.append(properties.get(i));
+            if (i < properties.size() - 1) {
+                params.append(", ");
+            }
+        }
+        return "{ " +  params + " }";
+    }
 }

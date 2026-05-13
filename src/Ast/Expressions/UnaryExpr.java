@@ -32,7 +32,7 @@ public class UnaryExpr extends Expr
             return UnaryExpr.create(right, operator);
         }
 
-        return BinaryExpr.parseBoolean(parser);
+        return MemberExpr.parseCall(parser);
     }
 
     @Override

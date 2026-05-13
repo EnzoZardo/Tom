@@ -36,6 +36,8 @@ public record ReservedKeys()
     public static final String Type = "tipo";
     public static final String True = "verdadeiro";
     public static final String False = "falso";
+    public static final String Break = "pare";
+    public static final String Continue = "continue";
 
     // Native Functions
     public static final String Print = "escreva";

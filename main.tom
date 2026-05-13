@@ -1,8 +1,31 @@
-con objetoCongelado: objeto = congele 
-{ 
-    chave: leia("Me diga a chave: ")
+fun fibonacci(n: inteiro): inteiro {
+    se (n <= 1) retorne n
+    retorne fibonacci(n - 1) + fibonacci(n - 2)
+} 
+
+escreva(fibonacci(inteiro.dez))
+
+escreva("=" * inteiro.dez)
+
+para cada (x em intervalo(inteiro.zero, inteiro.dez)) {
+    se (x == 2) continue
+    se (x == 9) pare
+    escreva(x)
 }
 
-escreva(texto.vazioOuEspaco(objetoCongelado.chave))
+escreva("=" * inteiro.dez)
 
+var x: inteiro = inteiro.zero
+
+enquanto (x < inteiro.dez) {
+    se (x == 9) pare
+    se (x == 2) 
+    {
+        x = x + 1
+        continue
+    }
+
+    escreva(x)
+    x = x + 1
+}
 

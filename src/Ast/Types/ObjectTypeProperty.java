@@ -31,4 +31,10 @@ public class ObjectTypeProperty extends Type
             "\t".repeat(next) + "value: " + type.print(next) + ",\n" +
             "\t".repeat(level) + "}";
     }
+
+    @Override
+    public String toString()
+    {
+        return key + ": " + type;
+    }
 }

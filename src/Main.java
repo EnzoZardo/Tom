@@ -11,17 +11,17 @@ void main(String[] args) throws AlreadyParsedException, IOException, InvalidToke
 {
     IO.println("Tom v1.0");
 
-    if (args.length == 0)
-    {
-        REPL.run();
-    }
+//    if (args.length == 0)
+//    {
+//        REPL.run();
+//    }
 
     if (args.length > 1)
     {
-        throw new InvalidArgumentException("Número incorreto de argumentos informado");
+        throw new InvalidArgumentException("Número incorreto de argumentos informado.");
     }
 
-    final String fileName = args[0];
+    final String fileName = "./main.tom"; // args[0];
     String content;
 
     {

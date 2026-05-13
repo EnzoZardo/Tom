@@ -17,9 +17,11 @@ public record ReservedWords()
         put(ReservedKeys.In, TokenType.BINARY_OPERATOR);
         put(ReservedKeys.Constant, TokenType.CONSTANT);
         put(ReservedKeys.Function, TokenType.FUNCTION);
+        put(ReservedKeys.Continue, TokenType.CONTINUE);
         put(ReservedKeys.Variable, TokenType.DECLARE);
         put(ReservedKeys.Return, TokenType.RETURN);
         put(ReservedKeys.While, TokenType.WHILE);
+        put(ReservedKeys.Break, TokenType.BREAK);
         put(ReservedKeys.Type, TokenType.TYPE);
         put(ReservedKeys.Each, TokenType.EACH);
         put(ReservedKeys.Else, TokenType.ELSE);

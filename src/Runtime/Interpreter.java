@@ -14,15 +14,6 @@ import Runtime.Values.StringValue;
 
 public class Interpreter
 {
-    private Interpreter()
-    {
-    }
-
-    public static Interpreter create()
-    {
-        return new Interpreter();
-    }
-
     public static RuntimeValue evaluate(Statement node, Environment env) throws AlreadyDeclaredVariableException
     {
         return switch (node.type)
@@ -50,6 +41,9 @@ public class Interpreter
                     Statements.evaluateTypeDeclaration((TypeDeclaration) node, env);
             case NodeType.ScopeDeclaration ->
                     Statements.evaluateScopeDeclaration((ScopeDeclaration) node, env);
+            case NodeType.Return -> Statements.evaluateReturnStatement((Return) node, env);
+            case NodeType.Continue -> Statements.evaluateContinue();
+            case NodeType.Break -> Statements.evaluateBreak();
             default -> throw new RuntimeException("This AST Node was not recognized yet." + node.print(0));
         };
     }

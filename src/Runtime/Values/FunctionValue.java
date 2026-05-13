@@ -9,6 +9,7 @@ import Entities.Enums.Runtime.ValueType;
 import Entities.Abstractions.Runtime.RuntimeValue;
 
 import java.util.ArrayList;
+import java.util.stream.Collectors;
 
 import Runtime.Environment;
 import Entities.Metadata.ArgumentMetadata;
@@ -52,7 +53,9 @@ public class FunctionValue extends RuntimeValue
     }
 
     public Type type() {
-        return FunctionType.create((ArrayList<Type>) parameters.stream().map(ArgumentMetadata::getType).toList(), returnType);
+        return FunctionType.create(
+            parameters.stream().map(ArgumentMetadata::getType).collect(Collectors.toCollection(ArrayList::new)),
+            returnType);
     }
 
     @Override
@@ -98,9 +101,18 @@ public class FunctionValue extends RuntimeValue
         return true;
     }
 
+
     @Override
     public String toString()
     {
-        return ReservedKeys.Null;
+        StringBuilder params = new StringBuilder();
+        for (int i = 0; i < parameters.size(); i++)
+        {
+            params.append(parameters.get(i));
+            if (i < parameters.size() - 1) {
+                params.append(", ");
+            }
+        }
+        return ReservedKeys.Function + " " + name + " (" +  params + "): " + returnType;
     }
 }

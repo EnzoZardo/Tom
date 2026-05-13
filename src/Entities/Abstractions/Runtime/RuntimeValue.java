@@ -6,7 +6,7 @@ import Entities.Exceptions.NotIterableException;
 public abstract class RuntimeValue
 {
     public final ValueType type;
-    public boolean freezable;
+    protected boolean freezable;
 
     protected RuntimeValue(ValueType type)
     {
@@ -18,6 +18,7 @@ public abstract class RuntimeValue
     public abstract boolean equals(RuntimeValue that);
     public abstract boolean bool();
 
+    public boolean isFreezable() { return freezable; }
     public boolean not()
     {
         return !bool();

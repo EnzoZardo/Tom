@@ -73,12 +73,14 @@ public class FunctionDeclaration extends Statement
         parser.expect(TokenType.OPEN_BRACE, "Esperávamos '{' para analisarmos o corpo da função.");
         ArrayList<Statement> body = new ArrayList<>();
 
+        parser.context.enterFunction();
         while (parser.notEof() && !parser.peekIs(TokenType.CLOSE_BRACE))
         {
             body.add(Statement.parse(parser));
         }
+        parser.context.outFunction();
 
-        parser.expect(TokenType.CLOSE_BRACE, "Esperávamos '}' para fecharmos o corpo dee uma função.");
+        parser.expect(TokenType.CLOSE_BRACE, "Esperávamos '}' para fecharmos o corpo de uma função.");
         return FunctionDeclaration.create(name, parameters, body, type);
     }
 

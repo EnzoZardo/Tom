@@ -68,7 +68,7 @@ public class TypeChecker
                 {
                     yield ErrorOr.Ok();
                 }
-                yield ErrorOr.Fail("O valor informado não é um inteiro válido.");
+                yield ErrorOr.Fail(String.format("O valor '%s' informado não é um inteiro válido.", value));
             }
             case ReservedKeys.Float ->
             {
@@ -76,7 +76,7 @@ public class TypeChecker
                 {
                     yield ErrorOr.Ok();
                 }
-                yield ErrorOr.Fail("O valor informado não é um real válido.");
+                yield ErrorOr.Fail(String.format("O valor '%s' informado não é um real válido.", value));
             }
             case ReservedKeys.Boolean ->
             {
@@ -84,7 +84,7 @@ public class TypeChecker
                 {
                     yield ErrorOr.Ok();
                 }
-                yield ErrorOr.Fail("O valor informado não é um lógico válido.");
+                yield ErrorOr.Fail(String.format("O valor '%s' informado não é um lógico válido.", value));
             }
             case ReservedKeys.String ->
             {
@@ -92,7 +92,7 @@ public class TypeChecker
                 {
                     yield ErrorOr.Ok();
                 }
-                yield ErrorOr.Fail("O valor informado não é um texto válido.");
+                yield ErrorOr.Fail(String.format("O valor '%s' informado não é um texto válido.", value));
             }
             case ReservedKeys.Object ->
             {
@@ -100,14 +100,14 @@ public class TypeChecker
                 {
                     yield ErrorOr.Ok();
                 }
-                yield ErrorOr.Fail("O valor informado não é um objeto válido.");
+                yield ErrorOr.Fail(String.format("O valor '%s' informado não é um objeto válido.", value));
             }
             case ReservedKeys.Null -> {
                 if (value.type == ValueType.Null)
                 {
                     yield ErrorOr.Ok();
                 }
-                yield ErrorOr.Fail("O valor informado não é um nulo válido.");
+                yield ErrorOr.Fail(String.format("O valor '%s' informado não é um nulo válido.", value));
             }
             default -> ErrorOr.Fail("Tipo " + symbol + " desconhecido.");
         };
