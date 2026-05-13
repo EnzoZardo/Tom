@@ -38,31 +38,44 @@ public class MemberExpr extends Expr
     {
         Expr object = PrimaryExpr.parse(parser);
 
-        while (MemberExpr.isParsingMemberChaining(parser))
+        while (true)
         {
-            Token operator = parser.consume();
-            boolean computed;
-            Expr property;
-
-            if (operator.type == TokenType.DOT)
+            if (parser.peekIs(TokenType.OPEN_PARENTHESIS))
             {
-                computed = false;
-                property = PrimaryExpr.parse(parser);
+                object = CallExpr.parse(parser, object);
+            }
+            else if (parser.peekIs(TokenType.DOT))
+            {
+                parser.consume();
+
+                Expr property = PrimaryExpr.parse(parser);
 
                 if (property.type != NodeType.Identifier)
                 {
-                    throw new InvalidNodeException("Esperávamos um identificador depois de um '.'");
+                    throw new InvalidNodeException(
+                            "Esperávamos um identificador depois de um '.'."
+                    );
                 }
+
+                object = MemberExpr.create(object, property, false);
+            }
+            else if (parser.peekIs(TokenType.OPEN_BRACKETS))
+            {
+                parser.consume();
+
+                Expr property = Expr.parse(parser);
+
+                parser.expect(
+                        TokenType.CLOSE_BRACKETS,
+                        "Esperávamos um ']' após acesso indexado."
+                );
+
+                object = MemberExpr.create(object, property, true);
             }
             else
             {
-                computed = true;
-                property = Expr.parse(parser);
-                parser.expect(TokenType.CLOSE_BRACKETS, "Esperávamos um ']' após uma expressão de " +
-                    "membro personalizada.");
+                break;
             }
-
-            object = MemberExpr.create(object, property, computed);
         }
 
         return object;

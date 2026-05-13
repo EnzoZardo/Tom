@@ -113,6 +113,6 @@ public class FunctionValue extends RuntimeValue
                 params.append(", ");
             }
         }
-        return ReservedKeys.Function + " " + name + " (" +  params + "): " + returnType;
+        return ReservedKeys.Function + " " + name + "(" +  params + "): " + returnType;
     }
 }

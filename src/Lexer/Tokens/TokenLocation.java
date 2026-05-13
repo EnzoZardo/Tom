@@ -25,6 +25,6 @@ public class TokenLocation
     @Override
     public String toString()
     {
-        return "{\n" + "start = " + start + ",\nend = " + end + "\n}";
+        return "{ start: " + start + ", end: " + end + " }";
     }
 }

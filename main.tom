@@ -1,31 +1,12 @@
-fun fibonacci(n: inteiro): inteiro {
-    se (n <= 1) retorne n
-    retorne fibonacci(n - 1) + fibonacci(n - 2)
-} 
+tipo wrapping = { value: inteiro; wrap: (inteiro): objeto  } 
 
-escreva(fibonacci(inteiro.dez))
-
-escreva("=" * inteiro.dez)
-
-para cada (x em intervalo(inteiro.zero, inteiro.dez)) {
-    se (x == 2) continue
-    se (x == 9) pare
-    escreva(x)
-}
-
-escreva("=" * inteiro.dez)
-
-var x: inteiro = inteiro.zero
-
-enquanto (x < inteiro.dez) {
-    se (x == 9) pare
-    se (x == 2) 
-    {
-        x = x + 1
-        continue
+fun wrap(n: inteiro): wrapping
+{
+    fun w(x: inteiro): wrapping {
+        retorne wrap(n + x)
     }
 
-    escreva(x)
-    x = x + 1
+    retorne { value: n, wrap: w(1) }
 }
 
+escreva(wrap(2))

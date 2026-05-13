@@ -76,7 +76,7 @@ public class Token
     {
         if (value != null)
         {
-            return "{ " + type.name() + " = " + value + ", localização = " + location + " }";
+            return "{ " + type.name() + ": " + value + ", localização: " + location + " }";
         }
 
         return type.name();

@@ -127,10 +127,6 @@ public class TypeChecker
             return ErrorOr.Fail("O número de parâmetros informados está incorreto.");
         }
 
-        if (function.returnType.type != type.returnType.type) {
-            return ErrorOr.Fail("O tipo de retorno está incorreto.");
-        }
-
         Type currentReturn = Type.reduce(env, function.returnType);
         Type expectedReturn = Type.reduce(env, type.returnType);
         ErrorOr<Void> equality = Type.equals(currentReturn, expectedReturn);

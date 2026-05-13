@@ -25,7 +25,7 @@ public class Lexer
     {
         this.content = content;
         this.tokens = new ArrayList<>();
-        this.lineIndex = 0;
+        this.lineIndex = 1;
         this.tokenIndex = 0;
         this.columnIndex = 0;
     }

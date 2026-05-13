@@ -133,11 +133,16 @@ public class ObjectValue extends FreezableValue
     {
         StringBuilder ret = new StringBuilder("{ ");
 
+        int index = 0;
         for (Map.Entry<String, RuntimeValue> entry : properties.entrySet())
         {
-            ret.append(entry.getKey()).append(": ").append(entry.getValue()).append(", ");
+            ret.append(entry.getKey()).append(": ").append(entry.getValue());
+            if (index < properties.size() - 1) {
+                ret.append(", ");
+            }
+            index++;
         }
 
-        return ret.append("}").toString();
+        return ret.append(" }").toString();
     }
 }

@@ -21,6 +21,6 @@ public class TokenFileLocation
     @Override
     public String toString()
     {
-        return "{ line = " + line + ", column = " + column + ", index = " + index + " }";
+        return "{ line: " + line + ", column: " + column + ", index: " + index + " }";
     }
 }
