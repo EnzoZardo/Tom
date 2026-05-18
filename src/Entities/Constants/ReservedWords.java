@@ -3,8 +3,6 @@ package Entities.Constants;
 import Entities.Enums.Lexer.TokenType;
 import Lexer.Tokens.Token;
 import Lexer.Tokens.TokenFileLocation;
-import Lexer.Tokens.TokenLocation;
-
 import java.util.HashMap;
 import java.util.Map;
 

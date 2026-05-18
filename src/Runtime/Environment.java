@@ -58,7 +58,8 @@ public class Environment
         return new Environment(parentEnv);
     }
 
-    public RuntimeValue declareVariable(String name, RuntimeValue value, Type type, boolean constant) throws AlreadyDeclaredVariableException
+    public RuntimeValue declareVariable(String name, RuntimeValue value, Type type, boolean constant)
+        throws AlreadyDeclaredVariableException
     {
         if (variables.containsKey(name) || constants.containsKey(name))
         {
@@ -75,7 +76,8 @@ public class Environment
         return value;
     }
 
-    public RuntimeValue declareConstant(String name, RuntimeValue value, Type type) throws AlreadyDeclaredVariableException
+    public RuntimeValue declareConstant(String name, RuntimeValue value, Type type)
+        throws AlreadyDeclaredVariableException
     {
         if (variables.containsKey(name) || constants.containsKey(name))
         {
@@ -259,22 +261,25 @@ public class Environment
 
     private void setupScope() throws AlreadyDeclaredVariableException
     {
-        Type nullType = declareType(ReservedKeys.Null, NullType.create());
         Type stringType = declareType(ReservedKeys.String, StringType.create());
         Type boolType = declareType(ReservedKeys.Boolean, BooleanType.create());
         Type intType = declareType(ReservedKeys.Integer, IntegerType.create());
+        Type nullType = declareType(ReservedKeys.Null, NullType.create());
 
         declareConstant(ReservedKeys.Integer, IntegerObject.create(), IntegerObject.type());
         declareConstant(ReservedKeys.String, StringObject.create(), StringObject.type());
-
-        declareConstant(ReservedKeys.Null, NullValue.create(), nullType);
-        declareConstant(ReservedKeys.True, BooleanValue.create(true), boolType);
         declareConstant(ReservedKeys.False, BooleanValue.create(false), boolType);
+        declareConstant(ReservedKeys.True, BooleanValue.create(true), boolType);
+        declareConstant(ReservedKeys.Null, NullValue.create(), nullType);
+
         declareConstant(ReservedKeys.Print,
             NativeFunctionValue.create(Print::call),
             NativeFunctionType.create(nullType));
-        declareConstant(ReservedKeys.Interval, NativeFunctionValue.create(Interval::call),
+
+        declareConstant(ReservedKeys.Interval,
+            NativeFunctionValue.create(Interval::call),
             NativeFunctionType.create(ArrayType.create(intType)));
+
         declareConstant(ReservedKeys.Read, NativeFunctionValue.create(x ->
         {
             try
