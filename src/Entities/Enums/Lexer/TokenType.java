@@ -13,6 +13,7 @@ public enum TokenType
     WHILE,
     COLON,
     COMMA,
+    CLASS,
     EQUALS,
     RETURN,
     DECLARE,
@@ -30,5 +31,6 @@ public enum TokenType
     INTEGER_LITERAL,
     BINARY_OPERATOR,
     OPEN_PARENTHESIS,
+    PROTECTION_MARKER,
     CLOSE_PARENTHESIS,
 }

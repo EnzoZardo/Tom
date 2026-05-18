@@ -33,7 +33,7 @@ public class Continue extends Statement
     {
         final int next = level + 1;
         return "\n" + "\t".repeat(level) + "{\n" +
-                "\t".repeat(next) + "type: " + type.toString() + ",\n" +
+                "\t".repeat(next) + "type: " + type.toString() + "\n" +
                 "\t".repeat(level) + "}";
     }
 }

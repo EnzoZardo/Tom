@@ -69,7 +69,7 @@ public class ScopeDeclaration extends Statement
         return "\n" +
                 "\t".repeat(level) + "{\n" +
                 "\t".repeat(next) + "type: " + type.toString() + ",\n" +
-                "\t".repeat(next) + "body: " + printBody(next) + ",\n" +
+                "\t".repeat(next) + "body: " + printBody(next) + "\n" +
                 "\t".repeat(level) + "}";
     }
 }

@@ -66,7 +66,7 @@ public class IfConditional extends Statement
                 "\t".repeat(next) + "type: " + type.toString() + ",\n" +
                 "\t".repeat(next) + "test: " + test.print(next) + ",\n" +
                 "\t".repeat(next) + "consequent: " + consequent.print(next) + ",\n" +
-                "\t".repeat(next) + "alternate: " + (alternate == null ? null : alternate.print(next)) + ",\n" +
+                "\t".repeat(next) + "alternate: " + (alternate == null ? null : alternate.print(next)) + "\n" +
                 "\t".repeat(level) + "}";
     }
 }

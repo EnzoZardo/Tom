@@ -74,7 +74,7 @@ public class VariableDeclaration extends Statement
             "\t".repeat(next) + "value: " + (value == null ?  ReservedKeys.Null : value.print(next)) + ",\n" +
             "\t".repeat(next) + "constant: " + constant + ",\n" +
             "\t".repeat(next) + "identifier: " + identifier + ",\n" +
-            "\t".repeat(next) + "expectedType: " + expectedType.print(next) + ",\n" +
+            "\t".repeat(next) + "expectedType: " + expectedType.print(next) + "\n" +
             "\t".repeat(level) + "}";
 }
 }
