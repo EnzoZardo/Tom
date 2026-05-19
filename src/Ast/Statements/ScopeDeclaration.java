@@ -50,11 +50,16 @@ public class ScopeDeclaration extends Statement
                 .repeat("\t", level)
                 .append("[");
 
+        int index = 0;
         for (Statement statement : body)
         {
-            ret.repeat("\t", next)
-                    .append(statement.print(next))
-                    .append(',');
+            ret.repeat("\t", next).append(statement.print(next));
+
+            if (index < body.size() - 1)
+            {
+                ret.append(", ");
+            }
+            index++;
         }
         return ret.append("\n")
                 .repeat("\t", level)

@@ -76,5 +76,5 @@ public class VariableDeclaration extends Statement
             "\t".repeat(next) + "identifier: " + identifier + ",\n" +
             "\t".repeat(next) + "expectedType: " + expectedType.print(next) + "\n" +
             "\t".repeat(level) + "}";
-}
+    }
 }

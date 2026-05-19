@@ -2,6 +2,10 @@ package Ast.Statements;
 
 import Entities.Abstractions.Ast.Statement;
 import Entities.Enums.Ast.NodeType;
+import Entities.Enums.Lexer.TokenType;
+import Entities.Exceptions.InvalidArgumentException;
+import Entities.Exceptions.Parser.InvalidTokenException;
+import Lexer.Tokens.Token;
 import Parser.Parser;
 
 public class ClassMemberDeclaration extends Statement
@@ -25,9 +29,24 @@ public class ClassMemberDeclaration extends Statement
         return new ClassMemberDeclaration(protectionMarker, consequent);
     }
 
-    public static ClassMemberDeclaration parse(Parser parser)
+    public static ClassMemberDeclaration parse(Parser parser) throws InvalidArgumentException
     {
-        return null;
+        // TODO: create constructor logic
+        Token protectionMarker = parser.expect(TokenType.PROTECTION_MARKER, "Esperávamos um nível de proteção "
+            + "para o membro da classe declarada.");
+
+        if (!parser.peekIs(TokenType.DECLARE) &&
+            !parser.peekIs(TokenType.CONSTANT) &&
+            !parser.peekIs(TokenType.FUNCTION) &&
+            !parser.peekIs(TokenType.CLASS))
+        // TODO: && is not the class name, that will be passed with the parameters
+        {
+            throw new InvalidTokenException("Declaração inválida de membro de classe.");
+        }
+
+        Statement consequent = Statement.parse(parser);
+
+        return ClassMemberDeclaration.create(protectionMarker.value, consequent);
     }
 
     @Override

@@ -187,24 +187,21 @@ public class TypeChecker
 
         ObjectValue object = (ObjectValue) value;
 
-        if (object.properties.size() != type.properties.size())
-        {
-            return ErrorOr.Fail("O número de chaves informadas está incorreto.");
-        }
-
         for (ObjectTypeProperty prop : type.properties)
         {
-            if (object.properties.containsKey(prop.key))
+            if (!object.properties.containsKey(prop.key))
             {
-                RuntimeValue property = object.properties.get(prop.key);
-                ErrorOr<Void> equality = check(env, property, prop.type);
-
-                if (equality.isError())
-                {
-                    return equality;
-                }
+                return ErrorOr.Fail("A propriedade '" + prop.key + "' não foi informada.");
             }
 
+            RuntimeValue property = object.properties.get(prop.key);
+
+            ErrorOr<Void> equality = check(env, property, prop.type);
+
+            if (equality.isError())
+            {
+                return equality;
+            }
         }
 
         return ErrorOr.Ok();

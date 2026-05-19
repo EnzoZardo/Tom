@@ -6,6 +6,7 @@
     { "include": "#strings" },
     { "include": "#numbers" },
     { "include": "#keywords" },
+    { "include": "#classes" },
     { "include": "#declarations" },
     { "include": "#functions" },
     { "include": "#function-call" },
@@ -63,7 +64,32 @@
         },
         {
           "name": "keyword.declaration.tom",
-          "match": "\\b(tipo|var|fun|con)\\b"
+          "match": "\\b(tipo|var|fun|con|classe|novo)\\b"
+        },
+        {
+          "name": "storage.modifier.access.tom",
+          "match": "\\b(publico|protegido|privado)\\b"
+        }
+      ]
+    },
+
+    "classes": {
+      "patterns": [
+        {
+          "name": "meta.class.definition.tom",
+          "match": "\\b(classe)\\s+([A-Z][a-zA-Z0-9_]*)",
+          "captures": {
+            "1": { "name": "keyword.declaration.class.tom" },
+            "2": { "name": "entity.name.type.class.tom" }
+          }
+        },
+        {
+          "name": "meta.class.instantiation.tom",
+          "match": "\\b(novo)\\s+([A-Z][a-zA-Z0-9_]*)",
+          "captures": {
+            "1": { "name": "keyword.operator.new.tom" },
+            "2": { "name": "entity.name.type.class.tom" }
+          }
         }
       ]
     },
@@ -101,7 +127,7 @@
         },
         {
           "name": "variable.parameter.tom",
-          "match": "\\b([a-zA-Z_][a-zA-Z0-9_]*)\\s*(?=:\\s*[a-zA-Z_\\[] )"
+          "match": "\\b([a-zA-Z_][a-zA-Z0-9_]*)\\s*(?=:\\s*[a-zA-Z_\\[]+)"
         }
       ]
     },
