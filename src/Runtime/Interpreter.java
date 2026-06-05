@@ -41,6 +41,8 @@ public class Interpreter
                     Statements.evaluateTypeDeclaration((TypeDeclaration) node, env);
             case NodeType.ScopeDeclaration ->
                     Statements.evaluateScopeDeclaration((ScopeDeclaration) node, env);
+            case NodeType.ClassDeclaration ->
+                    Statements.evaluateClassDeclaration((ClassDeclaration) node, env);
             case NodeType.Return -> Statements.evaluateReturnStatement((Return) node, env);
             case NodeType.Continue -> Statements.evaluateContinue();
             case NodeType.Break -> Statements.evaluateBreak();

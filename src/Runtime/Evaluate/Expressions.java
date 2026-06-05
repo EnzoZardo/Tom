@@ -2,10 +2,10 @@ package Runtime.Evaluate;
 
 import Ast.Expressions.*;
 import Ast.Expressions.Literals.ArrayLiteral;
+import Entities.Abstractions.Evaluate.Strategies.BinaryExprStrategy;
 import Entities.Abstractions.Runtime.FreezableValue;
 import Entities.Common.Result.ErrorOr;
 import Entities.Constants.ReservedKeys;
-import Entities.Constants.ReservedOperators;
 import Entities.Enums.Ast.NodeType;
 import Ast.Expressions.Literals.ObjectLiteral;
 import Entities.Abstractions.Ast.Expr;
@@ -17,6 +17,7 @@ import Entities.Exceptions.InvalidCallException;
 import Entities.Exceptions.Parser.InvalidNodeException;
 import Entities.Metadata.ParameterMetadata;
 import Runtime.Environment;
+import Runtime.Evaluate.Factory.BInaryExpr.BinaryExprFactory;
 import Runtime.Interpreter;
 import Entities.Enums.Runtime.ValueType;
 import Entities.Abstractions.Runtime.RuntimeValue;
@@ -27,247 +28,12 @@ import Runtime.Values.FlowControl.ReturnFlow;
 
 
 import java.util.ArrayList;
-import java.util.HashMap;
 
 public class Expressions
 {
-    public static float evaluateDivision(Number left, Number right)
-    {
-        ZeroDivisionException.ThrowIfZero(left);
-        return left.floatValue() / right.floatValue();
-    }
-
     public static RuntimeValue evaluateIdentifier(Identifier identifier, Environment env)
     {
         return env.lookupVariable(identifier.value);
-    }
-
-    public static NumericValue evaluateNumericAdditiveExpr(NumericValue left, NumericValue right, String operator)
-    {
-        float result = switch (operator)
-        {
-            case ReservedKeys.IntegerDivision -> (int) evaluateDivision(left.value, right.value);
-            case ReservedKeys.Division -> evaluateDivision(left.value, right.value);
-            case ReservedKeys.Multiplication -> left.value * right.value;
-            case ReservedKeys.Minus -> left.value - right.value;
-            case ReservedKeys.Plus -> left.value + right.value;
-            case ReservedKeys.Mod -> left.value % right.value;
-            default -> throw new InvalidOperatorException(operator);
-        };
-
-        boolean isFloat = !operator.equals(ReservedKeys.IntegerDivision);
-        return NumericValue.create(result, left.isInteger && right.isInteger && isFloat);
-    }
-
-    public static BooleanValue evaluateSizeOperator(RuntimeValue left, RuntimeValue right, String operator)
-    {
-        if (left.type != ValueType.Numeric || right.type != ValueType.Numeric)
-        {
-            throw new InvalidBinaryOperation(String.format("A operação %s só é permitida entre valores numéricos.",
-                    operator));
-        }
-
-        NumericValue rightValue = (NumericValue) right;
-        NumericValue leftValue = (NumericValue) left;
-
-        boolean result = switch (operator)
-        {
-            case ReservedKeys.Minor -> leftValue.value < rightValue.value;
-            case ReservedKeys.Greater -> leftValue.value > rightValue.value;
-            case ReservedKeys.MinorOrEqual -> leftValue.value <= rightValue.value;
-            case ReservedKeys.GreaterOrEqual -> leftValue.value >= rightValue.value;
-            default -> throw new InvalidOperatorException(operator);
-        };
-
-        return BooleanValue.create(result);
-    }
-
-    public static RuntimeValue evaluateInOperator(RuntimeValue left, RuntimeValue right) {
-        if (right.type == ValueType.Array)
-        {
-            ArrayValue arrayValue = (ArrayValue) right;
-            boolean contained = switch (left.type) {
-                case ValueType.Numeric ->
-                {
-                    NumericValue value = (NumericValue)left;
-                    yield arrayValue.items.values().stream().anyMatch(x -> x.type == ValueType.Numeric && value.equals(x));
-                }
-                case ValueType.String ->
-                {
-                    StringValue value = (StringValue)left;
-                    yield arrayValue.items.values().stream().anyMatch(x -> x.type == ValueType.String && value.equals(x));
-                }
-                case ValueType.Object ->
-                {
-                    ObjectValue value = (ObjectValue)left;
-                    yield arrayValue.items.values().stream().anyMatch(x -> x.type == ValueType.Object && value.equals(x));
-                }
-                case ValueType.Array ->
-                {
-                    ArrayValue value = (ArrayValue)left;
-                    yield arrayValue.items.values().stream().anyMatch(x -> x.type == ValueType.Array && value.equals(x));
-                }
-                case ValueType.Boolean ->
-                {
-                    BooleanValue value = (BooleanValue)left;
-                    yield arrayValue.items.values().stream().anyMatch(x -> x.type == ValueType.Boolean && value.equals(x));
-                }
-                case ValueType.Null -> arrayValue.items.values().stream().anyMatch(x -> x.type == ValueType.Null);
-                default -> throw new InvalidBinaryOperation("Valor não permitido para ser verificado se está em lista.");
-            };
-
-            return BooleanValue.create(contained);
-        }
-
-        if (right.type == ValueType.String)
-        {
-            StringValue stringValue = (StringValue) right;
-
-            if (left.type != ValueType.String)
-            {
-                throw new InvalidBinaryOperation("Somente textos podem ser usados para testar se estão em textos.");
-            }
-
-            return BooleanValue.create(stringValue.value.contains(((StringValue)left).value));
-        }
-
-        if (right.type == ValueType.Object) {
-            ObjectValue objectValue = (ObjectValue) right;
-            boolean contained = switch (left.type) {
-                case ValueType.String ->
-                {
-                    StringValue value = (StringValue)left;
-                    yield objectValue.properties.keySet().stream().anyMatch(value.value::equals);
-                }
-                case ValueType.Array ->
-                {
-                    ArrayValue value = (ArrayValue)left;
-                    if (value.items.size() > 2)
-                    {
-                        yield false;
-                    }
-
-                    for (int i = 0; i < objectValue.iteratorSize(); i++)
-                    {
-                        ArrayValue entry = (ArrayValue) objectValue.iterate(i);
-                        if (value.equals(entry))
-                        {
-                            yield true;
-                        }
-                    }
-
-                    yield false;
-                }
-                default -> throw new InvalidBinaryOperation("Valor não permitido para ser verificado se está em objeto.");
-            };
-
-            return BooleanValue.create(contained);
-        }
-
-        throw new InvalidBinaryOperation("Só é permitido verificar se um valor está presente em listas, objetos ou textos.");
-    }
-
-    public static RuntimeValue evaluateBooleanBinaryExpr(RuntimeValue left, RuntimeValue right, String operator)
-    {
-        return switch (operator)
-        {
-            case ReservedKeys.In -> evaluateInOperator(left, right);
-            case ReservedKeys.Or -> BooleanValue.create(left.bool() || right.bool());
-            case ReservedKeys.And -> BooleanValue.create(left.bool() && right.bool());
-            case ReservedKeys.Equality -> BooleanValue.create(left.equals(right));
-            case ReservedKeys.Difference -> BooleanValue.create(!left.equals(right));
-            case ReservedKeys.Minor,
-                 ReservedKeys.Greater,
-                 ReservedKeys.MinorOrEqual,
-                 ReservedKeys.GreaterOrEqual -> evaluateSizeOperator(left, right, operator);
-            default -> throw new InvalidOperatorException(operator);
-        };
-    }
-
-    public static RuntimeValue evaluateStringAdditiveExpr(RuntimeValue left, RuntimeValue right, String operator)
-    {
-        if (ReservedKeys.Plus.equals(operator))
-        {
-            return StringValue.create(left.toString() + right.toString());
-        };
-
-        if (ReservedKeys.Multiplication.equals(operator))
-        {
-            final String message = "Não se pode multiplicar um texto por um valor não inteiro";
-            if (left.type == ValueType.Numeric)
-            {
-                StringValue rightValue = (StringValue) right;
-                NumericValue leftValue = (NumericValue) left;
-
-                if (!leftValue.isInteger)
-                {
-                    throw new InvalidStringOperation(message);
-                }
-
-                return StringValue.create(rightValue.value.repeat((int) leftValue.value));
-            }
-
-            if (right.type == ValueType.Numeric)
-            {
-                NumericValue rightValue = (NumericValue) right;
-                StringValue leftValue = (StringValue) left;
-
-                if (!rightValue.isInteger)
-                {
-                    throw new InvalidStringOperation(message);
-                }
-
-                return StringValue.create(leftValue.value.repeat((int) rightValue.value));
-            }
-        }
-
-        if (ReservedKeys.Division.equals(operator) || ReservedKeys.IntegerDivision.equals(operator))
-        {
-            final String error = "Operação de divisão só é permitida entre texto e inteiro.";
-            if (left.type != ValueType.String || right.type != ValueType.Numeric)
-            {
-                throw new InvalidStringOperation(error);
-            }
-
-            StringValue leftValue  = (StringValue) left;
-            NumericValue rightValue = (NumericValue) right;
-
-            if (!rightValue.isInteger)
-            {
-                throw new InvalidStringOperation(error);
-            }
-
-            int divisor = (int) rightValue.value;
-            ZeroDivisionException.ThrowIfZero(divisor);
-
-            String target = leftValue.value;
-
-            if (divisor > target.length())
-            {
-                throw new InvalidStringOperation("Não se pode dividir um texto por um tamanho maior do que o seu.");
-            }
-
-            HashMap<Integer, RuntimeValue> items = new HashMap<>();
-            int len = target.length();
-            int size = Math.floorDiv(len, divisor);
-            int res = len % divisor;
-
-            int start = 0, index = 0;
-
-            for (int i = 0; i < divisor; i++) {
-                int partSize = size + (i < res ? 1 : 0);
-                int end = start + partSize;
-                String value = target.substring(start, end);
-                items.put(index, StringValue.create(value));
-                start = end;
-                index++;
-            }
-
-            return ArrayValue.create(items);
-        }
-
-        throw new InvalidStringOperation(String.format("Operação '%s' não permitida para valores do tipo texto.",
-                operator));
     }
 
     public static RuntimeValue evaluateUnaryExpr(UnaryExpr expr, Environment env)
@@ -310,28 +76,9 @@ public class Expressions
         RuntimeValue leftHandSide = Interpreter.evaluate(expr.left, env);
         RuntimeValue rightHandSide = Interpreter.evaluate(expr.right, env);
 
-        if (ReservedOperators.isNumericOperator(expr.operator))
-        {
-            if (leftHandSide.type == ValueType.Numeric && rightHandSide.type == ValueType.Numeric)
-            {
-                return evaluateNumericAdditiveExpr(
-                    (NumericValue) leftHandSide,
-                    (NumericValue) rightHandSide,
-                    expr.operator);
-            }
+        BinaryExprStrategy strategy = BinaryExprFactory.build(expr, env);
 
-            if (leftHandSide.type == ValueType.String || rightHandSide.type == ValueType.String)
-            {
-                return evaluateStringAdditiveExpr(leftHandSide, rightHandSide, expr.operator);
-            }
-        }
-
-        if (ReservedOperators.isBooleanOperator(expr.operator))
-        {
-            return evaluateBooleanBinaryExpr(leftHandSide, rightHandSide, expr.operator);
-        }
-
-        throw new InvalidBinaryOperation();
+        return strategy.evaluate(leftHandSide, rightHandSide, expr.operator);
     }
 
     public static RuntimeValue evaluateVariableAssignment(

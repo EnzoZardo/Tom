@@ -44,14 +44,14 @@ public class REPL
                 }
             }
 
-            if (isCommentOpen && PonctuationToken.isAsterisc(c)) {
+            if (isCommentOpen && PonctuationToken.isAsterisk(c)) {
                 isClosingComments = true;
                 continue;
             }
 
             if (isOpeningComments) {
                 isOpeningComments = false;
-                if (PonctuationToken.isAsterisc(c))
+                if (PonctuationToken.isAsterisk(c))
                 {
                     isCommentOpen = true;
                 }

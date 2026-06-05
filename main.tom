@@ -1,11 +1,13 @@
-classe Humano {
-    privado var idade: inteiro = 1
+classe Humano 
+{
+    priv var idade: inteiro ?
+    prot var teste: inteiro ?
 
-    publico fun minhaIdade(): inteiro
+    publ fun minhaIdade(): inteiro
     {
         escreva("Estamos buscando a idade")
-        retorne isto.idade
+        retorne isso.idade
     }
 }
 
-# var a: BomDia = novo BomDia();
+escreva(Humano)

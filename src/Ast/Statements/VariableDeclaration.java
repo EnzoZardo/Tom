@@ -54,7 +54,7 @@ public class VariableDeclaration extends Statement
         parser.expect(TokenType.COLON, "Esperávamos ':' depois do nome de uma variável para conseguirmos o seu tipo.");
         Type type = Type.parse(parser);
 
-        if (parser.peekIs(TokenType.SEMICOLON))
+        if (parser.peekIs(TokenType.INTERROGATION))
         {
             parser.consume();
             NullConstantException.ThrowIf(isConstant);

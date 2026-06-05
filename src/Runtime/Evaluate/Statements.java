@@ -4,6 +4,7 @@ import Ast.Expressions.Identifier;
 import Ast.Expressions.Property;
 import Ast.Statements.*;
 import Ast.Types.ArrayType;
+import Ast.Types.ClassType;
 import Ast.Types.Primitive.IntegerType;
 import Entities.Abstractions.Runtime.RuntimeException;
 import Entities.Abstractions.Type;
@@ -11,6 +12,7 @@ import Entities.Abstractions.Ast.Statement;
 import Entities.Common.Result.ErrorOr;
 import Entities.Constants.ReservedKeys;
 import Entities.Enums.Ast.NodeType;
+import Entities.Enums.Runtime.ProtectionLevel;
 import Entities.Enums.Runtime.ValueType;
 import Entities.Exceptions.AlreadyDeclaredVariableException;
 import Entities.Exceptions.Evaluate.IncorrectNumberOfArgumentsException;
@@ -23,6 +25,7 @@ import Runtime.Interpreter;
 import Entities.Abstractions.Runtime.RuntimeValue;
 import Runtime.Values.*;
 import Runtime.TypeChecker;
+import Runtime.Values.ClassValue;
 import Runtime.Values.FlowControl.BreakFlow;
 import Runtime.Values.FlowControl.ContinueFlow;
 import Runtime.Values.FlowControl.ReturnFlow;
@@ -62,6 +65,23 @@ public class Statements
         }
 
         return env.declareVariable(declaration.identifier, value, declaration.expectedType, declaration.constant);
+    }
+
+    public static RuntimeValue evaluateClassDeclaration(
+        ClassDeclaration declaration, Environment env) throws AlreadyDeclaredVariableException
+    {
+        HashMap<String, ClassAttributeValue> members = new HashMap<>();
+        Environment classEnv = Environment.create(env);
+
+        for (ClassMemberDeclaration member : declaration.members)
+        {
+            RuntimeValue value = Interpreter.evaluate(member.consequent, classEnv);
+            members.put(member.getMemberName(), ClassAttributeValue.create(member.protectionMarker, value));
+        }
+
+        Type type = ClassType.create(declaration.name);
+
+        return env.declareClass(declaration.name, ClassValue.create(declaration.name, members), type);
     }
 
     public static RuntimeValue evaluateTypeDeclaration(

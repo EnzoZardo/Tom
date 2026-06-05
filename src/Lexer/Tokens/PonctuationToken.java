@@ -25,6 +25,11 @@ public class PonctuationToken extends Token
         return ReservedKeys.CloseParenthesis == c;
     }
 
+    public static boolean isInterrogation(char c)
+    {
+        return ReservedKeys.Interrogation == c;
+    }
+
     public static boolean isOpenBrackets(char c)
     {
         return ReservedKeys.OpenBrackets == c;
@@ -75,7 +80,7 @@ public class PonctuationToken extends Token
         return ReservedKeys.Division.equals(Character.toString(c));
     }
 
-    public static boolean isAsterisc(char c)
+    public static boolean isAsterisk(char c)
     {
         return ReservedKeys.Multiplication.equals(Character.toString(c));
     }

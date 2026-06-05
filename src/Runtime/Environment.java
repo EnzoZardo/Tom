@@ -22,6 +22,7 @@ import Runtime.Values.*;
 import Entities.Metadata.ValueMetadata;
 
 import java.io.IOException;
+import java.lang.ClassValue;
 import java.util.HashMap;
 
 public class Environment
@@ -56,6 +57,14 @@ public class Environment
     public static Environment create(Environment parentEnv) throws AlreadyDeclaredVariableException
     {
         return new Environment(parentEnv);
+    }
+
+    public RuntimeValue declareClass(String name, RuntimeValue classValue, Type classType)
+        throws AlreadyDeclaredVariableException
+    {
+        declareType(name, classType);
+        declareConstant(name, classValue, classType);
+        return classValue;
     }
 
     public RuntimeValue declareVariable(String name, RuntimeValue value, Type type, boolean constant)

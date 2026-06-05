@@ -1,8 +1,10 @@
 package Ast.Statements;
 
 import Entities.Abstractions.Ast.Statement;
+import Entities.Constants.ReservedKeys;
 import Entities.Enums.Ast.NodeType;
 import Entities.Enums.Lexer.TokenType;
+import Entities.Enums.Runtime.ProtectionLevel;
 import Entities.Exceptions.InvalidArgumentException;
 import Entities.Exceptions.Parser.InvalidTokenException;
 import Lexer.Tokens.Token;
@@ -10,11 +12,11 @@ import Parser.Parser;
 
 public class ClassMemberDeclaration extends Statement
 {
-    public String protectionMarker;
+    public ProtectionLevel protectionMarker;
     public Statement consequent;
 
     protected ClassMemberDeclaration(
-        String protectionMarker,
+        ProtectionLevel protectionMarker,
         Statement consequent)
     {
         super(NodeType.ClassMemberDeclaration);
@@ -23,10 +25,19 @@ public class ClassMemberDeclaration extends Statement
     }
 
     public static ClassMemberDeclaration create(
-        String protectionMarker,
+        ProtectionLevel protectionMarker,
         Statement consequent)
     {
         return new ClassMemberDeclaration(protectionMarker, consequent);
+    }
+
+    public static ProtectionLevel getProtectionLevel(String protectionMarker) {
+        return switch (protectionMarker) {
+            case ReservedKeys.Protected -> ProtectionLevel.Protected;
+            case ReservedKeys.Private -> ProtectionLevel.Private;
+            case ReservedKeys.Public -> ProtectionLevel.Public;
+            default -> throw new InvalidTokenException("Marcador de nível de proteção inválido: " + protectionMarker);
+        };
     }
 
     public static ClassMemberDeclaration parse(Parser parser) throws InvalidArgumentException
@@ -46,8 +57,21 @@ public class ClassMemberDeclaration extends Statement
 
         Statement consequent = Statement.parse(parser);
 
-        return ClassMemberDeclaration.create(protectionMarker.value, consequent);
+        return ClassMemberDeclaration.create(
+            getProtectionLevel(protectionMarker.value),
+            consequent);
     }
+
+    public String getMemberName()
+    {
+        return switch (consequent.type) {
+            case NodeType.VariableDeclaration -> ((VariableDeclaration) consequent).identifier;
+            case NodeType.FunctionDeclaration -> ((FunctionDeclaration) consequent).identifier;
+            case NodeType.ClassDeclaration -> ((ClassDeclaration) consequent).name;
+            default -> throw new InvalidTokenException("Declaração inválida de membro de classe.");
+        };
+    }
+
 
     @Override
     public String print(int level)
