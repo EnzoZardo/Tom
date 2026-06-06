@@ -19,6 +19,16 @@ public class BooleanValue extends RuntimeValue
         return new BooleanValue(value);
     }
 
+    public static BooleanValue createFalse()
+    {
+        return new BooleanValue(false);
+    }
+
+    public static BooleanValue createTrue()
+    {
+        return new BooleanValue(true);
+    }
+
     @Override
     public String print(int level)
     {

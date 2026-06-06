@@ -1,4 +1,4 @@
-package Runtime.Evaluate.Strategies;
+package Runtime.Evaluate.Strategies.BinaryExpr;
 
 import Entities.Abstractions.Evaluate.Strategies.BinaryExprStrategy;
 import Entities.Abstractions.Runtime.RuntimeValue;

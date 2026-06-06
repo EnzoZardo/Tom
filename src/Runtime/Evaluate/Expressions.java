@@ -3,6 +3,7 @@ package Runtime.Evaluate;
 import Ast.Expressions.*;
 import Ast.Expressions.Literals.ArrayLiteral;
 import Entities.Abstractions.Evaluate.Strategies.BinaryExprStrategy;
+import Entities.Abstractions.Evaluate.Strategies.UnaryExprStrategy;
 import Entities.Abstractions.Runtime.FreezableValue;
 import Entities.Common.Result.ErrorOr;
 import Entities.Constants.ReservedKeys;
@@ -17,7 +18,8 @@ import Entities.Exceptions.InvalidCallException;
 import Entities.Exceptions.Parser.InvalidNodeException;
 import Entities.Metadata.ParameterMetadata;
 import Runtime.Environment;
-import Runtime.Evaluate.Factory.BInaryExpr.BinaryExprFactory;
+import Runtime.Evaluate.Factory.BinaryExpr.BinaryExprFactory;
+import Runtime.Evaluate.Factory.UnaryExpr.UnaryExprFactory;
 import Runtime.Interpreter;
 import Entities.Enums.Runtime.ValueType;
 import Entities.Abstractions.Runtime.RuntimeValue;
@@ -39,46 +41,21 @@ public class Expressions
     public static RuntimeValue evaluateUnaryExpr(UnaryExpr expr, Environment env)
             throws AlreadyDeclaredVariableException
     {
-        RuntimeValue rightHandSide = Interpreter.evaluate(expr.right, env);
+        UnaryExprStrategy strategy = UnaryExprFactory.build(expr);
 
-        if (ReservedKeys.Not.equals(expr.operator))
-        {
-            return BooleanValue.create(rightHandSide.not());
-        }
+        RuntimeValue right = Interpreter.evaluate(expr.right, env);
 
-        if (ReservedKeys.Freeze.equals(expr.operator))
-        {
-            if (!rightHandSide.isFreezable())
-            {
-                throw new InvalidUnaryExpression("Valor do tipo informado não pode ser congelado.");
-            }
-
-            return ((FreezableValue) rightHandSide).freezeMe();
-        }
-
-        if (ReservedKeys.Minus.equals(expr.operator) || ReservedKeys.Plus.equals(expr.operator)
-            && rightHandSide.type == ValueType.Numeric)
-        {
-            NumericValue val = (NumericValue) rightHandSide;
-
-            if (ReservedKeys.Minus.equals(expr.operator)) {
-                return val.opposite();
-            }
-
-            return val;
-        }
-
-        throw new InvalidUnaryExpression();
+        return strategy.evaluate(right, expr.operator);
     }
 
     public static RuntimeValue evaluateBinaryExpr(BinaryExpr expr, Environment env) throws AlreadyDeclaredVariableException
     {
-        RuntimeValue leftHandSide = Interpreter.evaluate(expr.left, env);
-        RuntimeValue rightHandSide = Interpreter.evaluate(expr.right, env);
-
         BinaryExprStrategy strategy = BinaryExprFactory.build(expr, env);
 
-        return strategy.evaluate(leftHandSide, rightHandSide, expr.operator);
+        RuntimeValue left = Interpreter.evaluate(expr.left, env);
+        RuntimeValue right = Interpreter.evaluate(expr.right, env);
+
+        return strategy.evaluate(left, right, expr.operator);
     }
 
     public static RuntimeValue evaluateVariableAssignment(

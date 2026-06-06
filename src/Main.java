@@ -11,10 +11,10 @@ void main(String[] args) throws AlreadyParsedException, IOException, InvalidToke
 {
     IO.println("Tom v1.0");
 
-//    if (args.length == 0)
-//    {
-//        REPL.run();
-//    }
+    if (args.length == 0)
+    {
+        REPL.run();
+    }
 
     if (args.length > 1)
     {

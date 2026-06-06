@@ -1,13 +1,13 @@
-package Runtime.Evaluate.Factory.BInaryExpr;
+package Runtime.Evaluate.Factory.BinaryExpr;
 
 import Ast.Expressions.BinaryExpr;
 import Entities.Abstractions.Evaluate.Strategies.BinaryExprStrategy;
 import Entities.Abstractions.Runtime.RuntimeValue;
 import Entities.Exceptions.AlreadyDeclaredVariableException;
 import Entities.Exceptions.Evaluate.InvalidBinaryOperation;
-import Runtime.Evaluate.Strategies.BooleanBinaryStrategy;
-import Runtime.Evaluate.Strategies.NumericBinaryStrategy;
-import Runtime.Evaluate.Strategies.StringBinaryStrategy;
+import Runtime.Evaluate.Strategies.BinaryExpr.BooleanBinaryStrategy;
+import Runtime.Evaluate.Strategies.BinaryExpr.NumericBinaryStrategy;
+import Runtime.Evaluate.Strategies.BinaryExpr.StringBinaryStrategy;
 import Runtime.Interpreter;
 import Runtime.Environment;
 

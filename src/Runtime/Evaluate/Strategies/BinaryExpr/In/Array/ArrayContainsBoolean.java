@@ -1,19 +1,18 @@
-package Runtime.Evaluate.Strategies.Operators.In.Array;
+package Runtime.Evaluate.Strategies.BinaryExpr.In.Array;
 
-import Entities.Abstractions.Runtime.RuntimeValue;
 import Entities.Enums.Runtime.ValueType;
 import Runtime.Values.ArrayValue;
 import Runtime.Values.BooleanValue;
 
-public class InArrayBoolean extends InArrayBase
+public class ArrayContainsBoolean extends ArrayContains<BooleanValue>
 {
-    public InArrayBoolean(ArrayValue right)
+    public ArrayContainsBoolean(ArrayValue right, BooleanValue left)
     {
-        super(right);
+        super(right, left);
     }
 
     @Override
-    public BooleanValue evaluate(RuntimeValue left)
+    public BooleanValue has()
     {
         BooleanValue value = (BooleanValue) left;
         return BooleanValue.create(
