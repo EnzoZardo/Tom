@@ -24,6 +24,7 @@ public class Interpreter
             case NodeType.Identifier -> Expressions.evaluateIdentifier((Identifier) node, env);
             case NodeType.ArrayLiteral -> Expressions.evaluateArrayExpression((ArrayLiteral) node, env);
             case NodeType.ObjectLiteral -> Expressions.evaluateObjectExpression((ObjectLiteral) node, env);
+            case NodeType.ClassLiteral -> Expressions.evaluateInstantiationExpression((ClassLiteral) node, env);
             case NodeType.CallExpression -> Expressions.evaluateCallExpression((CallExpr) node, env);
             case NodeType.MemberExpression -> Expressions.evaluateMemberExpression((MemberExpr) node, env);
             case NodeType.AssignmentExpression -> Expressions.evaluateVariableAssignment((AssignmentExpr) node, env);

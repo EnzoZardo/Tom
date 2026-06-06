@@ -6,7 +6,7 @@ import Runtime.Values.NullValue;
 
 import java.util.ArrayList;
 
-public class Print
+public abstract class Print
 {
     public static NullValue call(ParameterMetadata args) {
         ArrayList<RuntimeValue> values = args.getValues();

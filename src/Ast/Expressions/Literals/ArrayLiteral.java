@@ -27,10 +27,11 @@ public class ArrayLiteral extends Expr
 
     public static Expr parse(Parser parser) throws InvalidTokenException, InvalidArgumentException
     {
-        if (!parser.peekIs(TokenType.OPEN_BRACKETS))
-        {
-            return BinaryExpr.parseAdditive(parser);
-        }
+//        TODO: maybe uncomment
+//        if (!parser.peekIs(TokenType.OPEN_BRACKETS))
+//        {
+//            return BinaryExpr.parseAdditive(parser);
+//        }
 
         parser.consume();
 

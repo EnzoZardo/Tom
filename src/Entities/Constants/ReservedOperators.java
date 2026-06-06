@@ -34,8 +34,8 @@ public record ReservedOperators()
     public static boolean isUnary(String operator)
     {
         return ReservedKeys.Not.equals(operator)
-            || ReservedKeys.Minus.equals(operator)
             || ReservedKeys.Plus.equals(operator)
+            || ReservedKeys.Minus.equals(operator)
             || ReservedKeys.Freeze.equals(operator);
     }
 
@@ -56,15 +56,15 @@ public record ReservedOperators()
 
     public static boolean isBooleanOperator(String operator)
     {
-        return ReservedKeys.GreaterOrEqual.equals(operator)
-            || ReservedKeys.MinorOrEqual.equals(operator)
-            || ReservedKeys.Difference.equals(operator)
-            || ReservedKeys.Equality.equals(operator)
-            || ReservedKeys.Greater.equals(operator)
-            || ReservedKeys.Minor.equals(operator)
+        return ReservedKeys.Or.equals(operator)
+            || ReservedKeys.In.equals(operator)
             || ReservedKeys.And.equals(operator)
-            || ReservedKeys.Or.equals(operator)
-            || ReservedKeys.In.equals(operator);
+            || ReservedKeys.Minor.equals(operator)
+            || ReservedKeys.Greater.equals(operator)
+            || ReservedKeys.Equality.equals(operator)
+            || ReservedKeys.Difference.equals(operator)
+            || ReservedKeys.MinorOrEqual.equals(operator)
+            || ReservedKeys.GreaterOrEqual.equals(operator);
     }
 
     public static Token token(String value, TokenFileLocation start, TokenFileLocation end)

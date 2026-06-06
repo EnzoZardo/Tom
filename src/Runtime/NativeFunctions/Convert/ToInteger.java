@@ -8,7 +8,7 @@ import Entities.Metadata.ParameterMetadata;
 import Runtime.Values.NumericValue;
 import Runtime.Values.StringValue;
 
-public class ToInteger
+public abstract class ToInteger
 {
     private static final int MAX_ARGUMENTS_SIZE = 1;
     public static NumericValue call(ParameterMetadata args)

@@ -83,6 +83,11 @@ public class Parser
         return peek().value;
     }
 
+    public String peekValue(int offset)
+    {
+        return peek(offset).value;
+    }
+
     public TokenType peekType(int offset)
     {
         return peek(offset).type;

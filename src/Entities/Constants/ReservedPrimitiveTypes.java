@@ -14,7 +14,6 @@ public record ReservedPrimitiveTypes()
         put(ReservedKeys.String, ValueType.String);
         put(ReservedKeys.Float, ValueType.Numeric);
         put(ReservedKeys.Null, ValueType.Null);
-        put(ReservedKeys.Char, null);
     }};
 
     public static boolean isReserved(String value)

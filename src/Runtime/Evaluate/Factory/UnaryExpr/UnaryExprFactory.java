@@ -27,6 +27,7 @@ public abstract class UnaryExprFactory
             return new AdditiveUnaryStrategy();
         }
 
+
         throw new InvalidUnaryExpression();
     }
 }

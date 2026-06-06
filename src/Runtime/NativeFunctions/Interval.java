@@ -11,7 +11,7 @@ import Runtime.Values.NumericValue;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class Interval
+public abstract class Interval
 {
     private static final int MAX_ARGUMENTS = 3;
     private static final int START_END_ARGUMENTS = 2;

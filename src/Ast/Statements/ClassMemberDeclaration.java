@@ -1,5 +1,6 @@
 package Ast.Statements;
 
+import Ast.Expressions.Identifier;
 import Entities.Abstractions.Ast.Statement;
 import Entities.Constants.ReservedKeys;
 import Entities.Enums.Ast.NodeType;
@@ -42,7 +43,6 @@ public class ClassMemberDeclaration extends Statement
 
     public static ClassMemberDeclaration parse(Parser parser) throws InvalidArgumentException
     {
-        // TODO: create constructor logic
         Token protectionMarker = parser.expect(TokenType.PROTECTION_MARKER, "Esperávamos um nível de proteção "
             + "para o membro da classe declarada.");
 
@@ -50,7 +50,6 @@ public class ClassMemberDeclaration extends Statement
             !parser.peekIs(TokenType.CONSTANT) &&
             !parser.peekIs(TokenType.FUNCTION) &&
             !parser.peekIs(TokenType.CLASS))
-        // TODO: && is not the class name, that will be passed with the parameters
         {
             throw new InvalidTokenException("Declaração inválida de membro de classe.");
         }

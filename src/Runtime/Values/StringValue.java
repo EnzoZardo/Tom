@@ -9,6 +9,7 @@ import java.util.Map;
 
 public class StringValue extends RuntimeValue
 {
+    private static final String EMPTY = "";
     public final String value;
 
     protected StringValue(String value)
@@ -20,6 +21,11 @@ public class StringValue extends RuntimeValue
     public static StringValue create(String text)
     {
         return new StringValue(text);
+    }
+
+    public static StringValue createEmpty()
+    {
+        return new StringValue(EMPTY);
     }
 
     public static StringValue create(char text)

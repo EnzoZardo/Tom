@@ -41,14 +41,15 @@ public class ClassDeclaration extends Statement
 
         parser.expect(TokenType.OPEN_BRACE, "Esperávamos um '{' para a abertura de uma classe.");
         ArrayList<ClassMemberDeclaration> members = new ArrayList<>();
+
         parser.context.enterClass();
         while (parser.notEof() && !parser.peekIs(TokenType.CLOSE_BRACE))
         {
             members.add(ClassMemberDeclaration.parse(parser));
         }
         parser.context.outClass();
-        parser.consume();
 
+        parser.consume();
         return ClassDeclaration.create(identifier.value, members);
     }
 

@@ -3,6 +3,7 @@ package Entities.Enums.Lexer;
 public enum TokenType
 {
     IF,
+    NEW,
     DOT,
     EOF,
     FOR,

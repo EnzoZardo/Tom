@@ -28,6 +28,7 @@ public record ReservedWords()
         put(ReservedKeys.Each, TokenType.EACH);
         put(ReservedKeys.Else, TokenType.ELSE);
         put(ReservedKeys.For, TokenType.FOR);
+        put(ReservedKeys.New, TokenType.NEW);
         put(ReservedKeys.If, TokenType.IF);
     }};
 

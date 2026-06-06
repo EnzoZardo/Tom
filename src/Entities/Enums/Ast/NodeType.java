@@ -29,6 +29,7 @@ public enum NodeType
     /* #region Literals */
     Property,
     Identifier,
+    ClassLiteral,
     FloatLiteral,
     ArrayLiteral,
     StringLiteral,

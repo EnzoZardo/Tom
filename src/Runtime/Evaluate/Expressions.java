@@ -2,11 +2,10 @@ package Runtime.Evaluate;
 
 import Ast.Expressions.*;
 import Ast.Expressions.Literals.ArrayLiteral;
+import Ast.Expressions.Literals.ClassLiteral;
 import Entities.Abstractions.Evaluate.Strategies.BinaryExprStrategy;
 import Entities.Abstractions.Evaluate.Strategies.UnaryExprStrategy;
-import Entities.Abstractions.Runtime.FreezableValue;
 import Entities.Common.Result.ErrorOr;
-import Entities.Constants.ReservedKeys;
 import Entities.Enums.Ast.NodeType;
 import Ast.Expressions.Literals.ObjectLiteral;
 import Entities.Abstractions.Ast.Expr;
@@ -26,6 +25,7 @@ import Entities.Abstractions.Runtime.RuntimeValue;
 import Runtime.Values.*;
 import Runtime.TypeChecker;
 import Entities.Metadata.ArgumentMetadata;
+import Runtime.Values.ClassValue;
 import Runtime.Values.FlowControl.ReturnFlow;
 
 
@@ -121,7 +121,7 @@ public class Expressions
     }
 
     public static RuntimeValue evaluateObjectExpression(
-            ObjectLiteral object, Environment env) throws AlreadyDeclaredVariableException
+        ObjectLiteral object, Environment env) throws AlreadyDeclaredVariableException
     {
         ObjectValue value = ObjectValue.create();
 
@@ -246,6 +246,98 @@ public class Expressions
         }
 
         throw new InvalidNodeException("Esperávamos um objeto ou lista para buscarmos uma chave dele.");
+    }
+
+    public static RuntimeValue evaluateInstantiationExpression(
+        ClassLiteral classLiteral, Environment env) throws AlreadyDeclaredVariableException
+    {
+        Environment declarationEnv = env.resolve(classLiteral.className);
+        RuntimeValue declarationValue = declarationEnv.lookupVariable(classLiteral.className);
+
+        if (declarationValue.type != ValueType.Class)
+        {
+            throw new InvalidNodeException("Esperávamos um o nome de uma classe para instanciar.");
+        }
+
+        ClassValue value = (ClassValue) declarationValue;
+
+        if (!value.members.containsKey(classLiteral.className))
+        {
+            if (classLiteral.arguments.isEmpty())
+            {
+                return value;
+            }
+
+            throw new InvalidCallException("Não foi encontrado nenhum construtor " +
+                    "com esse número de argumentos para esta classe.");
+        }
+
+        ArrayList<RuntimeValue> args = new ArrayList<>();
+
+        for (Expr expr : classLiteral.arguments)
+        {
+            args.add(Interpreter.evaluate(expr, env));
+        }
+
+        ClassAttributeValue constructor = value.members.get(classLiteral.className);
+
+        if (constructor.value.type != ValueType.Function)
+        {
+            throw new InvalidCallException("Valor informado não permite ser chamado como um construtor.");
+        }
+
+        FunctionValue function = (FunctionValue) constructor.value;
+        Environment scope = Environment.create(function.declarationEnv);
+
+        if (function.parameters.size() != classLiteral.arguments.size())
+        {
+            throw new IncorrectNumberOfArgumentsException(String.format(
+                    "A função %s esperava %d argumento(s), mas recebeu %d.",
+                    function.name,
+                    function.parameters.size(),
+                    classLiteral.arguments.size()));
+        }
+
+        for (int i = 0; i < function.parameters.size(); i++)
+        {
+            ArgumentMetadata param = function.parameters.get(i);
+            String name = param.getName();
+
+            ErrorOr<Void> equality = TypeChecker.check(env, args.get(i), param.getType());
+            if (equality.isError()) {
+                throw new RuntimeException(String.format(
+                        "Tipo incorreto informado para o argumento '%s'. %s",
+                        name,
+                        equality.error.getMessage()));
+            }
+
+            scope.declareVariable(name, args.get(i), param.getType(), false);
+        }
+
+        RuntimeValue result = NullValue.create();
+        for (Statement statement : function.body)
+        {
+            result = Interpreter.evaluate(statement, scope);
+
+            if (result.type == ValueType.Return)
+            {
+                break;
+            }
+        }
+
+        RuntimeValue ret = result.type == ValueType.Return
+                ? ((ReturnFlow) result).value
+                : NullValue.create();
+
+        ErrorOr<Void> equality = TypeChecker.check(env, ret, function.returnType);
+
+        if (equality.isError()) {
+            throw new ExpectedTypeNotMatch(String.format(
+                    "Tipo de retorno não condiz com o tipo esperado. %s",
+                    equality.error.getMessage()));
+        }
+
+        return ret;
     }
 
     public static RuntimeValue evaluateCallExpression(

@@ -43,8 +43,10 @@ public record ReservedKeys()
     public static final String Else = "senao";
     public static final String Break = "pare";
     public static final String Each = "cada";
+    public static final String This = "isso";
     public static final String Type = "tipo";
     public static final String For = "para";
+    public static final String New = "novo";
     public static final String If = "se";
     /* #endregion */
 
@@ -79,7 +81,6 @@ public record ReservedKeys()
     /* #region Primitive Types */
     public static final String Integer = "inteiro";
     public static final String Boolean = "logico";
-    public static final String Char = "caractere";
     public static final String Object = "objeto";
     public static final String String = "texto";
     public static final String Float = "real";
