@@ -47,7 +47,7 @@ public class TypeDeclaration extends Statement
         return "\n" + "\t".repeat(level) + "{\n" +
                 "\t".repeat(next) + "type: " + type.toString() + ",\n" +
                 "\t".repeat(next) + "identifier: " + identifier + ",\n" +
-                "\t".repeat(next) + "value: " + value.print(next) + ",\n" +
+                "\t".repeat(next) + "value: " + value.print(next) + "\n" +
                 "\t".repeat(level) + "}";
     }
 }

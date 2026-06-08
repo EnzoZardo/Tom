@@ -5,6 +5,7 @@ public enum ValueType
     Type,
     Null,
     Array,
+    Class,
     Break,
     Object,
     String,
@@ -13,5 +14,6 @@ public enum ValueType
     Boolean,
     Function,
     Continue,
+    ClassMember,
     NativeFunction,
 }

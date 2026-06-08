@@ -21,6 +21,11 @@ public class NumericValue extends RuntimeValue
         return new NumericValue(number, isInteger);
     }
 
+    public static NumericValue createInteger(float number)
+    {
+        return new NumericValue(number, true);
+    }
+
     public NumericValue opposite()
     {
         value = -value;

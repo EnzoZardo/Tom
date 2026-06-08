@@ -1,12 +1,22 @@
-tipo wrapping = { value: inteiro; wrap: (inteiro): objeto  } 
+tipo int = inteiro
+tipo nil = nulo
 
-fun wrap(n: inteiro): wrapping
-{
-    fun w(x: inteiro): wrapping {
-        retorne wrap(n + x)
+classe Humano {
+    publ var idade: int = 1
+
+    publ fun minhaIdade() : int {
+        escreva("Estamos buscando a idade")
+        retorne isso.idade
     }
 
-    retorne { value: n, wrap: w(1) }
+    publ fun mudaIdade() : nil {
+        isso.idade = 2
+        retorne nulo
+    }
 }
 
-escreva(wrap(2))
+var humanos: Humano = novo Humano()
+
+escreva(Humano.minhaIdade())
+humanos.mudaIdade()
+escreva(Humano.minhaIdade())

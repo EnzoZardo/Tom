@@ -2,7 +2,7 @@ package Entities.Enums.Ast;
 
 public enum NodeType
 {
-    // These are statements
+    /* #region Statements */
     Break,
     Return,
     Program,
@@ -10,24 +10,30 @@ public enum NodeType
     IfStatement,
     WhileStatement,
     TypeDeclaration,
+    ClassDeclaration,
     ScopeDeclaration,
     ForEachStatement,
     VariableDeclaration,
     FunctionDeclaration,
+    ClassMemberDeclaration,
+    /* #endregion */
 
-    // These are expressions
+    /* #region Expressions */
     UnaryExpr,
     BinaryExpr,
     CallExpression,
     MemberExpression,
     AssignmentExpression,
+    /* #endregion */
 
-    // These are literals
+    /* #region Literals */
     Property,
-    FloatLiteral,
     Identifier,
+    ClassLiteral,
+    FloatLiteral,
     ArrayLiteral,
     StringLiteral,
-    IntegerLiteral,
     ObjectLiteral,
+    IntegerLiteral,
+    /* #endregion */
 }

@@ -20,6 +20,7 @@ import Runtime.NativeObjects.IntegerObject;
 import Runtime.NativeObjects.StringObject;
 import Runtime.Values.*;
 import Entities.Metadata.ValueMetadata;
+import Runtime.Values.ClassValue;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -56,6 +57,14 @@ public class Environment
     public static Environment create(Environment parentEnv) throws AlreadyDeclaredVariableException
     {
         return new Environment(parentEnv);
+    }
+
+    public RuntimeValue declareClass(String name, RuntimeValue classValue, Type classType)
+        throws AlreadyDeclaredVariableException
+    {
+        declareType(name, classType);
+        declareConstant(name, classValue, classType);
+        return classValue;
     }
 
     public RuntimeValue declareVariable(String name, RuntimeValue value, Type type, boolean constant)
@@ -194,6 +203,37 @@ public class Environment
         }
 
         throw new InvalidMemberAssignException("Não foi possível dar valor para a chave " +
+                keyName + " para este objeto.");
+    }
+
+    public RuntimeValue assignClassMember(String name, String keyName, RuntimeValue value)
+    {
+        Environment variableEnvironment = resolve(name);
+        ValueMetadata valueMetadata = variableEnvironment.constants.get(name);
+
+        if (variableEnvironment.variables.containsKey(name))
+        {
+            valueMetadata = variableEnvironment.variables.get(name);
+        }
+
+        if (valueMetadata.getValue().type != ValueType.Class)
+        {
+            throw new InvalidMemberAssignException("O valor para o qual está tentando dar um novo " +
+                    "valor não é do tipo objeto.");
+        }
+
+        ClassValue objectValue = (ClassValue) valueMetadata.getValue();
+
+        if (objectValue.members.containsKey(keyName))
+        {
+            //TODO: create type validations
+            ClassMemberValue val = objectValue.members.get(keyName);
+            val.value = value;
+            objectValue.members.put(keyName, val);
+            return objectValue;
+        }
+
+        throw new InvalidMemberAssignException("Não foi encontrada nenhuma chave com o nome " +
                 keyName + " para este objeto.");
     }
 

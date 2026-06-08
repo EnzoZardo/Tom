@@ -2,10 +2,12 @@ package Runtime.Evaluate;
 
 import Ast.Expressions.*;
 import Ast.Expressions.Literals.ArrayLiteral;
-import Entities.Abstractions.Runtime.FreezableValue;
+import Ast.Expressions.Literals.ClassLiteral;
+import Entities.Abstractions.Evaluate.Strategies.BinaryExprStrategy;
+import Entities.Abstractions.Evaluate.Strategies.UnaryExprStrategy;
+import Entities.Abstractions.Type;
 import Entities.Common.Result.ErrorOr;
 import Entities.Constants.ReservedKeys;
-import Entities.Constants.ReservedOperators;
 import Entities.Enums.Ast.NodeType;
 import Ast.Expressions.Literals.ObjectLiteral;
 import Entities.Abstractions.Ast.Expr;
@@ -15,323 +17,48 @@ import Entities.Exceptions.Evaluate.*;
 import Entities.Exceptions.ExpectedTypeNotMatch;
 import Entities.Exceptions.InvalidCallException;
 import Entities.Exceptions.Parser.InvalidNodeException;
+import Entities.Exceptions.Parser.InvalidStatementContextException;
 import Entities.Metadata.ParameterMetadata;
 import Runtime.Environment;
+import Runtime.Evaluate.Factory.BinaryExpr.BinaryExprFactory;
+import Runtime.Evaluate.Factory.UnaryExpr.UnaryExprFactory;
 import Runtime.Interpreter;
 import Entities.Enums.Runtime.ValueType;
 import Entities.Abstractions.Runtime.RuntimeValue;
 import Runtime.Values.*;
 import Runtime.TypeChecker;
 import Entities.Metadata.ArgumentMetadata;
+import Runtime.Values.ClassValue;
 import Runtime.Values.FlowControl.ReturnFlow;
 
 
 import java.util.ArrayList;
-import java.util.HashMap;
 
 public class Expressions
 {
-    public static float evaluateDivision(Number left, Number right)
-    {
-        ZeroDivisionException.ThrowIfZero(left);
-        return left.floatValue() / right.floatValue();
-    }
-
     public static RuntimeValue evaluateIdentifier(Identifier identifier, Environment env)
     {
         return env.lookupVariable(identifier.value);
     }
 
-    public static NumericValue evaluateNumericAdditiveExpr(NumericValue left, NumericValue right, String operator)
-    {
-        float result = switch (operator)
-        {
-            case ReservedKeys.IntegerDivision -> (int) evaluateDivision(left.value, right.value);
-            case ReservedKeys.Division -> evaluateDivision(left.value, right.value);
-            case ReservedKeys.Multiplication -> left.value * right.value;
-            case ReservedKeys.Minus -> left.value - right.value;
-            case ReservedKeys.Plus -> left.value + right.value;
-            case ReservedKeys.Mod -> left.value % right.value;
-            default -> throw new InvalidOperatorException(operator);
-        };
-
-        boolean isFloat = !operator.equals(ReservedKeys.IntegerDivision);
-        return NumericValue.create(result, left.isInteger && right.isInteger && isFloat);
-    }
-
-    public static BooleanValue evaluateSizeOperator(RuntimeValue left, RuntimeValue right, String operator)
-    {
-        if (left.type != ValueType.Numeric || right.type != ValueType.Numeric)
-        {
-            throw new InvalidBinaryOperation(String.format("A operação %s só é permitida entre valores numéricos.",
-                    operator));
-        }
-
-        NumericValue rightValue = (NumericValue) right;
-        NumericValue leftValue = (NumericValue) left;
-
-        boolean result = switch (operator)
-        {
-            case ReservedKeys.Minor -> leftValue.value < rightValue.value;
-            case ReservedKeys.Greater -> leftValue.value > rightValue.value;
-            case ReservedKeys.MinorOrEqual -> leftValue.value <= rightValue.value;
-            case ReservedKeys.GreaterOrEqual -> leftValue.value >= rightValue.value;
-            default -> throw new InvalidOperatorException(operator);
-        };
-
-        return BooleanValue.create(result);
-    }
-
-    public static RuntimeValue evaluateInOperator(RuntimeValue left, RuntimeValue right) {
-        if (right.type == ValueType.Array)
-        {
-            ArrayValue arrayValue = (ArrayValue) right;
-            boolean contained = switch (left.type) {
-                case ValueType.Numeric ->
-                {
-                    NumericValue value = (NumericValue)left;
-                    yield arrayValue.items.values().stream().anyMatch(x -> x.type == ValueType.Numeric && value.equals(x));
-                }
-                case ValueType.String ->
-                {
-                    StringValue value = (StringValue)left;
-                    yield arrayValue.items.values().stream().anyMatch(x -> x.type == ValueType.String && value.equals(x));
-                }
-                case ValueType.Object ->
-                {
-                    ObjectValue value = (ObjectValue)left;
-                    yield arrayValue.items.values().stream().anyMatch(x -> x.type == ValueType.Object && value.equals(x));
-                }
-                case ValueType.Array ->
-                {
-                    ArrayValue value = (ArrayValue)left;
-                    yield arrayValue.items.values().stream().anyMatch(x -> x.type == ValueType.Array && value.equals(x));
-                }
-                case ValueType.Boolean ->
-                {
-                    BooleanValue value = (BooleanValue)left;
-                    yield arrayValue.items.values().stream().anyMatch(x -> x.type == ValueType.Boolean && value.equals(x));
-                }
-                case ValueType.Null -> arrayValue.items.values().stream().anyMatch(x -> x.type == ValueType.Null);
-                default -> throw new InvalidBinaryOperation("Valor não permitido para ser verificado se está em lista.");
-            };
-
-            return BooleanValue.create(contained);
-        }
-
-        if (right.type == ValueType.String)
-        {
-            StringValue stringValue = (StringValue) right;
-
-            if (left.type != ValueType.String)
-            {
-                throw new InvalidBinaryOperation("Somente textos podem ser usados para testar se estão em textos.");
-            }
-
-            return BooleanValue.create(stringValue.value.contains(((StringValue)left).value));
-        }
-
-        if (right.type == ValueType.Object) {
-            ObjectValue objectValue = (ObjectValue) right;
-            boolean contained = switch (left.type) {
-                case ValueType.String ->
-                {
-                    StringValue value = (StringValue)left;
-                    yield objectValue.properties.keySet().stream().anyMatch(value.value::equals);
-                }
-                case ValueType.Array ->
-                {
-                    ArrayValue value = (ArrayValue)left;
-                    if (value.items.size() > 2)
-                    {
-                        yield false;
-                    }
-
-                    for (int i = 0; i < objectValue.iteratorSize(); i++)
-                    {
-                        ArrayValue entry = (ArrayValue) objectValue.iterate(i);
-                        if (value.equals(entry))
-                        {
-                            yield true;
-                        }
-                    }
-
-                    yield false;
-                }
-                default -> throw new InvalidBinaryOperation("Valor não permitido para ser verificado se está em objeto.");
-            };
-
-            return BooleanValue.create(contained);
-        }
-
-        throw new InvalidBinaryOperation("Só é permitido verificar se um valor está presente em listas, objetos ou textos.");
-    }
-
-    public static RuntimeValue evaluateBooleanBinaryExpr(RuntimeValue left, RuntimeValue right, String operator)
-    {
-        return switch (operator)
-        {
-            case ReservedKeys.In -> evaluateInOperator(left, right);
-            case ReservedKeys.Or -> BooleanValue.create(left.bool() || right.bool());
-            case ReservedKeys.And -> BooleanValue.create(left.bool() && right.bool());
-            case ReservedKeys.Equality -> BooleanValue.create(left.equals(right));
-            case ReservedKeys.Difference -> BooleanValue.create(!left.equals(right));
-            case ReservedKeys.Minor,
-                 ReservedKeys.Greater,
-                 ReservedKeys.MinorOrEqual,
-                 ReservedKeys.GreaterOrEqual -> evaluateSizeOperator(left, right, operator);
-            default -> throw new InvalidOperatorException(operator);
-        };
-    }
-
-    public static RuntimeValue evaluateStringAdditiveExpr(RuntimeValue left, RuntimeValue right, String operator)
-    {
-        if (ReservedKeys.Plus.equals(operator))
-        {
-            return StringValue.create(left.toString() + right.toString());
-        };
-
-        if (ReservedKeys.Multiplication.equals(operator))
-        {
-            final String message = "Não se pode multiplicar um texto por um valor não inteiro";
-            if (left.type == ValueType.Numeric)
-            {
-                StringValue rightValue = (StringValue) right;
-                NumericValue leftValue = (NumericValue) left;
-
-                if (!leftValue.isInteger)
-                {
-                    throw new InvalidStringOperation(message);
-                }
-
-                return StringValue.create(rightValue.value.repeat((int) leftValue.value));
-            }
-
-            if (right.type == ValueType.Numeric)
-            {
-                NumericValue rightValue = (NumericValue) right;
-                StringValue leftValue = (StringValue) left;
-
-                if (!rightValue.isInteger)
-                {
-                    throw new InvalidStringOperation(message);
-                }
-
-                return StringValue.create(leftValue.value.repeat((int) rightValue.value));
-            }
-        }
-
-        if (ReservedKeys.Division.equals(operator) || ReservedKeys.IntegerDivision.equals(operator))
-        {
-            final String error = "Operação de divisão só é permitida entre texto e inteiro.";
-            if (left.type != ValueType.String || right.type != ValueType.Numeric)
-            {
-                throw new InvalidStringOperation(error);
-            }
-
-            StringValue leftValue  = (StringValue) left;
-            NumericValue rightValue = (NumericValue) right;
-
-            if (!rightValue.isInteger)
-            {
-                throw new InvalidStringOperation(error);
-            }
-
-            int divisor = (int) rightValue.value;
-            ZeroDivisionException.ThrowIfZero(divisor);
-
-            String target = leftValue.value;
-
-            if (divisor > target.length())
-            {
-                throw new InvalidStringOperation("Não se pode dividir um texto por um tamanho maior do que o seu.");
-            }
-
-            HashMap<Integer, RuntimeValue> items = new HashMap<>();
-            int len = target.length();
-            int size = Math.floorDiv(len, divisor);
-            int res = len % divisor;
-
-            int start = 0, index = 0;
-
-            for (int i = 0; i < divisor; i++) {
-                int partSize = size + (i < res ? 1 : 0);
-                int end = start + partSize;
-                String value = target.substring(start, end);
-                items.put(index, StringValue.create(value));
-                start = end;
-                index++;
-            }
-
-            return ArrayValue.create(items);
-        }
-
-        throw new InvalidStringOperation(String.format("Operação '%s' não permitida para valores do tipo texto.",
-                operator));
-    }
-
     public static RuntimeValue evaluateUnaryExpr(UnaryExpr expr, Environment env)
             throws AlreadyDeclaredVariableException
     {
-        RuntimeValue rightHandSide = Interpreter.evaluate(expr.right, env);
+        UnaryExprStrategy strategy = UnaryExprFactory.build(expr);
 
-        if (ReservedKeys.Not.equals(expr.operator))
-        {
-            return BooleanValue.create(rightHandSide.not());
-        }
+        RuntimeValue right = Interpreter.evaluate(expr.right, env);
 
-        if (ReservedKeys.Freeze.equals(expr.operator))
-        {
-            if (!rightHandSide.isFreezable())
-            {
-                throw new InvalidUnaryExpression("Valor do tipo informado não pode ser congelado.");
-            }
-
-            return ((FreezableValue) rightHandSide).freezeMe();
-        }
-
-        if (ReservedKeys.Minus.equals(expr.operator) || ReservedKeys.Plus.equals(expr.operator)
-            && rightHandSide.type == ValueType.Numeric)
-        {
-            NumericValue val = (NumericValue) rightHandSide;
-
-            if (ReservedKeys.Minus.equals(expr.operator)) {
-                return val.opposite();
-            }
-
-            return val;
-        }
-
-        throw new InvalidUnaryExpression();
+        return strategy.evaluate(right, expr.operator);
     }
 
     public static RuntimeValue evaluateBinaryExpr(BinaryExpr expr, Environment env) throws AlreadyDeclaredVariableException
     {
-        RuntimeValue leftHandSide = Interpreter.evaluate(expr.left, env);
-        RuntimeValue rightHandSide = Interpreter.evaluate(expr.right, env);
+        BinaryExprStrategy strategy = BinaryExprFactory.build(expr, env);
 
-        if (ReservedOperators.isNumericOperator(expr.operator))
-        {
-            if (leftHandSide.type == ValueType.Numeric && rightHandSide.type == ValueType.Numeric)
-            {
-                return evaluateNumericAdditiveExpr(
-                    (NumericValue) leftHandSide,
-                    (NumericValue) rightHandSide,
-                    expr.operator);
-            }
+        RuntimeValue left = Interpreter.evaluate(expr.left, env);
+        RuntimeValue right = Interpreter.evaluate(expr.right, env);
 
-            if (leftHandSide.type == ValueType.String || rightHandSide.type == ValueType.String)
-            {
-                return evaluateStringAdditiveExpr(leftHandSide, rightHandSide, expr.operator);
-            }
-        }
-
-        if (ReservedOperators.isBooleanOperator(expr.operator))
-        {
-            return evaluateBooleanBinaryExpr(leftHandSide, rightHandSide, expr.operator);
-        }
-
-        throw new InvalidBinaryOperation();
+        return strategy.evaluate(left, right, expr.operator);
     }
 
     public static RuntimeValue evaluateVariableAssignment(
@@ -358,6 +85,12 @@ public class Expressions
             {
                 Identifier objectIdentifier = (Identifier) memberExpr.object;
                 RuntimeValue variable = env.lookupVariable(objectIdentifier.value);
+
+                if (!memberExpr.computed && variable.type == ValueType.Class)
+                {
+                    Identifier memberIdentifier = (Identifier) memberExpr.property;
+                    return env.assignClassMember(objectIdentifier.value, memberIdentifier.value, value);
+                }
 
                 if (!memberExpr.computed && variable.type == ValueType.Object)
                 {
@@ -397,7 +130,7 @@ public class Expressions
     }
 
     public static RuntimeValue evaluateObjectExpression(
-            ObjectLiteral object, Environment env) throws AlreadyDeclaredVariableException
+        ObjectLiteral object, Environment env) throws AlreadyDeclaredVariableException
     {
         ObjectValue value = ObjectValue.create();
 
@@ -434,11 +167,33 @@ public class Expressions
     public static RuntimeValue evaluateMemberExpression(
             MemberExpr memberExpr, Environment env) throws AlreadyDeclaredVariableException
     {
-        RuntimeValue object = Interpreter.evaluate(memberExpr.object, env);
+        RuntimeValue entity = Interpreter.evaluate(memberExpr.object, env);
 
-        if (object.type == ValueType.Object)
+        if (entity.type == ValueType.Class)
         {
-            ObjectValue value = (ObjectValue) object;
+            ClassValue value = (ClassValue) entity;
+
+            if (memberExpr.computed)
+            {
+                //TODO: change this
+                throw new InvalidArrayIndexTypeException();
+            }
+
+            if (memberExpr.property.type == NodeType.Identifier)
+            {
+                Identifier id = (Identifier) memberExpr.property;
+                if (value.members.containsKey(id.value))
+                {
+                    return value.members.get(id.value);
+                }
+            }
+
+            return NullValue.create();
+        }
+
+        if (entity.type == ValueType.Object)
+        {
+            ObjectValue value = (ObjectValue) entity;
 
             if (memberExpr.property.type == NodeType.Identifier && !memberExpr.computed)
             {
@@ -467,9 +222,9 @@ public class Expressions
             return NullValue.create();
         }
 
-        if (object.type == ValueType.Array && memberExpr.computed)
+        if (entity.type == ValueType.Array && memberExpr.computed)
         {
-            ArrayValue value = (ArrayValue) object;
+            ArrayValue value = (ArrayValue) entity;
 
             RuntimeValue member = Interpreter.evaluate(memberExpr.property, env);
 
@@ -494,9 +249,9 @@ public class Expressions
             throw new InvalidArrayIndexTypeException();
         }
 
-        if (object.type == ValueType.String && memberExpr.computed)
+        if (entity.type == ValueType.String && memberExpr.computed)
         {
-            StringValue value = (StringValue) object;
+            StringValue value = (StringValue) entity;
 
             RuntimeValue member = Interpreter.evaluate(memberExpr.property, env);
 
@@ -524,6 +279,91 @@ public class Expressions
         throw new InvalidNodeException("Esperávamos um objeto ou lista para buscarmos uma chave dele.");
     }
 
+    public static RuntimeValue evaluateInstantiationExpression(
+        ClassLiteral classLiteral, Environment env) throws AlreadyDeclaredVariableException
+    {
+        Environment declarationEnv = env.resolve(classLiteral.className);
+        RuntimeValue declarationValue = declarationEnv.lookupVariable(classLiteral.className);
+
+        if (declarationValue.type != ValueType.Class)
+        {
+            throw new InvalidNodeException("Esperávamos um o nome de uma classe para instanciar.");
+        }
+
+        ClassValue value = (ClassValue) declarationValue;
+
+        if (!value.members.containsKey(classLiteral.className))
+        {
+            if (classLiteral.arguments.isEmpty())
+            {
+                return value;
+            }
+
+            throw new InvalidCallException("Não foi encontrado nenhum construtor " +
+                    "com esse número de argumentos para esta classe.");
+        }
+
+        ArrayList<RuntimeValue> args = new ArrayList<>();
+
+        for (Expr expr : classLiteral.arguments)
+        {
+            args.add(Interpreter.evaluate(expr, env));
+        }
+
+        ClassMemberValue constructor = value.members.get(classLiteral.className);
+
+        if (constructor.value.type != ValueType.Function)
+        {
+            throw new InvalidCallException("Valor informado não permite ser chamado como um construtor.");
+        }
+
+        FunctionValue function = (FunctionValue) constructor.value;
+        Environment scope = Environment.create(function.declarationEnv);
+
+        if (function.parameters.size() != classLiteral.arguments.size())
+        {
+            throw new IncorrectNumberOfArgumentsException(String.format(
+                    "A função %s esperava %d argumento(s), mas recebeu %d.",
+                    function.name,
+                    function.parameters.size(),
+                    classLiteral.arguments.size()));
+        }
+
+        Environment typeEnv = env.resolveType(value.className);
+        Type type = typeEnv.lookupType(value.className);
+
+        scope.declareVariable(ReservedKeys.This, value, type, false);
+
+        for (int i = 0; i < function.parameters.size(); i++)
+        {
+            ArgumentMetadata param = function.parameters.get(i);
+            String name = param.getName();
+
+            ErrorOr<Void> equality = TypeChecker.check(env, args.get(i), param.getType());
+            if (equality.isError()) {
+                throw new RuntimeException(String.format(
+                        "Tipo incorreto informado para o argumento '%s'. %s",
+                        name,
+                        equality.error.getMessage()));
+            }
+
+            scope.declareVariable(name, args.get(i), param.getType(), false);
+        }
+
+        RuntimeValue result;
+        for (Statement statement : function.body)
+        {
+            result = Interpreter.evaluate(statement, scope);
+
+            if (result.type == ValueType.Return)
+            {
+                throw new InvalidStatementContextException("Não se pode haver um retorno em um construtor.");
+            }
+        }
+
+        return value;
+    }
+
     public static RuntimeValue evaluateCallExpression(
         CallExpr call, Environment env) throws AlreadyDeclaredVariableException
     {
@@ -535,6 +375,84 @@ public class Expressions
         }
 
         RuntimeValue caller = Interpreter.evaluate(call.caller, env);
+
+        if (caller.type == ValueType.ClassMember)
+        {
+            ClassMemberValue member = (ClassMemberValue) caller;
+            if (member.value.type != ValueType.Function)
+            {
+                throw new InvalidCallException("Valor informado não permite ser chamado como uma função.");
+            }
+
+            FunctionValue function = (FunctionValue) member.value;
+            //TODO: discover if this works, function has declarationenv
+            Environment scope = Environment.create(function.declarationEnv);
+
+            if (function.parameters.size() != call.arguments.size())
+            {
+                throw new IncorrectNumberOfArgumentsException(String.format(
+                        "A função %s esperava %d argumento(s), mas recebeu %d.",
+                        function.name,
+                        function.parameters.size(),
+                        call.arguments.size()));
+            }
+
+            for (int i = 0; i < function.parameters.size(); i++)
+            {
+                ArgumentMetadata param = function.parameters.get(i);
+                String name = param.getName();
+
+                ErrorOr<Void> equality = TypeChecker.check(env, args.get(i), param.getType());
+                if (equality.isError()) {
+                    throw new RuntimeException(String.format(
+                            "Tipo incorreto informado para o argumento '%s'. %s",
+                            name,
+                            equality.error.getMessage()));
+                }
+
+                scope.declareVariable(name, args.get(i), param.getType(), false);
+            }
+
+            Environment declarationEnv = env.resolve(member.className);
+            RuntimeValue declarationValue = declarationEnv.lookupVariable(member.className);
+
+            Environment typeEnv = env.resolveType(member.className);
+            Type type = typeEnv.lookupType(member.className);
+
+            scope.declareVariable(ReservedKeys.This, declarationValue, type, false);
+
+            RuntimeValue result = NullValue.create();
+            for (Statement statement : function.body)
+            {
+                result = Interpreter.evaluate(statement, scope);
+
+                if (result.type == ValueType.Return)
+                {
+                    break;
+                }
+            }
+
+            RuntimeValue ret = result.type == ValueType.Return
+                    ? ((ReturnFlow) result).value
+                    : NullValue.create();
+
+            if (ret.type == ValueType.ClassMember)
+            {
+                //TODO: ver um jeito de tirar isso
+                assert ret instanceof ClassMemberValue;
+                ret = ((ClassMemberValue) ret).value;
+            }
+
+            ErrorOr<Void> equality = TypeChecker.check(env, ret, function.returnType);
+
+            if (equality.isError()) {
+                throw new ExpectedTypeNotMatch(String.format(
+                        "Tipo de retorno não condiz com o tipo esperado. %s",
+                        equality.error.getMessage()));
+            }
+
+            return ret;
+        }
 
         if (caller.type == ValueType.Function)
         {

@@ -39,7 +39,7 @@ public class Return extends Statement
         final int next = level + 1;
         return "\n" + "\t".repeat(level) + "{\n" +
                 "\t".repeat(next) + "type: " + type.toString() + ",\n" +
-                "\t".repeat(next) + "value: " + value.print(next) + ",\n" +
+                "\t".repeat(next) + "value: " + value.print(next) + "\n" +
                 "\t".repeat(level) + "}";
     }
 }

@@ -26,6 +26,7 @@ public abstract class Statement
             case TokenType.IF -> IfConditional.parse(parser);
             case TokenType.CONTINUE -> Continue.parse(parser);
             case TokenType.TYPE -> TypeDeclaration.parse(parser);
+            case TokenType.CLASS -> ClassDeclaration.parse(parser);
             case TokenType.OPEN_BRACE -> ScopeDeclaration.parse(parser);
             case TokenType.FUNCTION -> FunctionDeclaration.parse(parser);
             case TokenType.DECLARE, TokenType.CONSTANT -> VariableDeclaration.parse(parser);

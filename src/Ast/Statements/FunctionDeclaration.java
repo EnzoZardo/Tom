@@ -135,7 +135,7 @@ public class FunctionDeclaration extends Statement
             "\t".repeat(next) + "type: " + type.toString() + ",\n" +
             "\t".repeat(next) + "identifier: " + identifier + ",\n" +
             "\t".repeat(next) + "parameters: " + printParams(next) + ",\n" +
-            "\t".repeat(next) + "body: " + printBody(next) + ",\n" +
+            "\t".repeat(next) + "body: " + printBody(next) + "\n" +
             "\t".repeat(level) + "}";
     }
 }

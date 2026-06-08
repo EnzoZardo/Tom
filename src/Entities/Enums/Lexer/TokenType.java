@@ -3,6 +3,7 @@ package Entities.Enums.Lexer;
 public enum TokenType
 {
     IF,
+    NEW,
     DOT,
     EOF,
     FOR,
@@ -13,6 +14,7 @@ public enum TokenType
     WHILE,
     COLON,
     COMMA,
+    CLASS,
     EQUALS,
     RETURN,
     DECLARE,
@@ -24,11 +26,13 @@ public enum TokenType
     OPEN_BRACE,
     CLOSE_BRACE,
     OPEN_BRACKETS,
+    INTERROGATION,
     FLOAT_LITERAL,
     CLOSE_BRACKETS,
     STRING_LITERAL,
     INTEGER_LITERAL,
     BINARY_OPERATOR,
     OPEN_PARENTHESIS,
+    PROTECTION_MARKER,
     CLOSE_PARENTHESIS,
 }

@@ -13,13 +13,14 @@ public class PrimaryExpr
     {
         return switch (parser.peekType())
         {
-            case TokenType.IDENTIFIER -> Identifier.create(parser.consume());
-            case TokenType.FLOAT_LITERAL -> FloatLiteral.create(parser.consume());
-            case TokenType.OPEN_PARENTHESIS -> PrimaryExpr.parseParenthesis(parser);
-            case TokenType.STRING_LITERAL -> StringLiteral.create(parser.consume());
-            case TokenType.INTEGER_LITERAL -> IntegerLiteral.create(parser.consume());
+            case TokenType.NEW -> ClassLiteral.parse(parser);
             case TokenType.OPEN_BRACE -> ObjectLiteral.parse(parser);
             case TokenType.OPEN_BRACKETS -> ArrayLiteral.parse(parser);
+            case TokenType.IDENTIFIER -> Identifier.create(parser.consume());
+            case TokenType.FLOAT_LITERAL -> FloatLiteral.create(parser.consume());
+            case TokenType.STRING_LITERAL -> StringLiteral.create(parser.consume());
+            case TokenType.OPEN_PARENTHESIS -> PrimaryExpr.parseParenthesis(parser);
+            case TokenType.INTEGER_LITERAL -> IntegerLiteral.create(parser.consume());
             default -> throw new InvalidTokenException(String.format("Símbolo inesperado '%s'", parser.peekValue()));
         };
     }

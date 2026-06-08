@@ -65,3 +65,7 @@ Agora é necessário:
 
 ### Atualizações 13.5.26
 - Adição de retorne, continue e pare
+
+### Atualizações 7.6.26
+- Adição de operações básicas de classes, como declarações, intancias, etc
+- É necessário verificar os níveis de proteção de cada membro ao executar funções e também não se pode alterar para todas as classes quando se altera uma (não entendi o pq isso aconteceu)

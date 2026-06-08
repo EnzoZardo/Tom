@@ -9,7 +9,7 @@ import Runtime.NativeObjects.StringObject;
 import Runtime.Values.BooleanValue;
 import Runtime.Values.StringValue;
 
-public class IsEmptyOrSpace
+public abstract class IsEmptyOrSpace
 {
     private static final int MAX_ARGUMENTS_SIZE = 1;
     public static BooleanValue call(ParameterMetadata args)

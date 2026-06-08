@@ -50,11 +50,16 @@ public class ScopeDeclaration extends Statement
                 .repeat("\t", level)
                 .append("[");
 
+        int index = 0;
         for (Statement statement : body)
         {
-            ret.repeat("\t", next)
-                    .append(statement.print(next))
-                    .append(',');
+            ret.repeat("\t", next).append(statement.print(next));
+
+            if (index < body.size() - 1)
+            {
+                ret.append(", ");
+            }
+            index++;
         }
         return ret.append("\n")
                 .repeat("\t", level)
@@ -69,7 +74,7 @@ public class ScopeDeclaration extends Statement
         return "\n" +
                 "\t".repeat(level) + "{\n" +
                 "\t".repeat(next) + "type: " + type.toString() + ",\n" +
-                "\t".repeat(next) + "body: " + printBody(next) + ",\n" +
+                "\t".repeat(next) + "body: " + printBody(next) + "\n" +
                 "\t".repeat(level) + "}";
     }
 }

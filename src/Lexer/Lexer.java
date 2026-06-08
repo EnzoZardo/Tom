@@ -61,6 +61,10 @@ public class Lexer
             {
                 _consumeAndAdd(TokenType.CLOSE_PARENTHESIS, current);
             }
+            else if (PonctuationToken.isInterrogation(current))
+            {
+                _consumeAndAdd(TokenType.INTERROGATION, current);
+            }
             else if (PonctuationToken.isOpenBrace(current))
             {
                 _consumeAndAdd(TokenType.OPEN_BRACE, current);

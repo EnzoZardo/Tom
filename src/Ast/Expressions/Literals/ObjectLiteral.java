@@ -30,10 +30,11 @@ public class ObjectLiteral extends Expr
 
     public static Expr parse(Parser parser) throws InvalidTokenException, InvalidArgumentException
     {
-        if (!parser.peekIs(TokenType.OPEN_BRACE))
-        {
-            return BinaryExpr.parseAdditive(parser);
-        }
+//        TODO: maybe uncomment
+//        if (!parser.peekIs(TokenType.OPEN_BRACE))
+//        {
+//            return BinaryExpr.parseAdditive(parser);
+//        }
 
         parser.consume();
 

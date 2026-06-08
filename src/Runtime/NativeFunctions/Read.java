@@ -9,7 +9,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 
-public class Read
+public abstract class Read
 {
     private static final BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
 
@@ -31,7 +31,7 @@ public class Read
         }
         catch (IOException _)
         {
-            return StringValue.create("");
+            return StringValue.createEmpty();
         }
     }
 }

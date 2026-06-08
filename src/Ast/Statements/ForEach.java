@@ -83,7 +83,7 @@ public class ForEach extends Statement
         return "\n" +
                 "\t".repeat(level) + "{\n" +
                 "\t".repeat(next) + "type: " + type.toString() + ",\n" +
-                "\t".repeat(next) + "consequent: " + consequent.print(next) + ",\n" +
+                "\t".repeat(next) + "consequent: " + consequent.print(next) + "\n" +
                 "\t".repeat(level) + "}";
     }
 }
