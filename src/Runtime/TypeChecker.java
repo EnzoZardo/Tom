@@ -9,6 +9,7 @@ import Entities.Abstractions.Type;
 import Entities.Enums.Runtime.ValueType;
 import Entities.Abstractions.Runtime.RuntimeValue;
 import Runtime.Values.ArrayValue;
+import Runtime.Values.ClassValue;
 import Runtime.Values.FunctionValue;
 import Runtime.Values.NumericValue;
 import Runtime.Values.ObjectValue;
@@ -40,6 +41,11 @@ public class TypeChecker
             {
                 FunctionType function = (FunctionType) expected;
                 yield checkFunction(env, function, value);
+            }
+            case TypeKind.ClassType ->
+            {
+                ClassType classType = (ClassType) expected;
+                yield checkClass(classType, value);
             }
             default -> ErrorOr.Fail("Tipo informado é desconhecido.");
         };
@@ -150,6 +156,24 @@ public class TypeChecker
 
         return ErrorOr.Ok();
     }
+
+    private static ErrorOr<Void> checkClass(ClassType type, RuntimeValue value)
+    {
+        if (value.type != ValueType.Class)
+        {
+            return ErrorOr.Fail("O valor informado não é uma classe.");
+        }
+
+        ClassValue classValue = (ClassValue) value;
+
+        if (!classValue.className.equals(type.name))
+        {
+            return ErrorOr.Fail("Classes diferentes.");
+        }
+
+        return ErrorOr.Ok();
+    }
+
 
     private static ErrorOr<Void> checkArray(Environment env, ArrayType type, RuntimeValue value)
     {

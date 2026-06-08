@@ -1,13 +1,22 @@
-classe Humano 
-{
-    priv var idade: inteiro ?
-    prot var teste: inteiro ?
+tipo int = inteiro
+tipo nil = nulo
 
-    publ fun minhaIdade(): inteiro
-    {
+classe Humano {
+    publ var idade: int = 1
+
+    publ fun minhaIdade() : int {
         escreva("Estamos buscando a idade")
         retorne isso.idade
     }
+
+    publ fun mudaIdade() : nil {
+        isso.idade = 2
+        retorne nulo
+    }
 }
 
-escreva(Humano)
+var humanos: Humano = novo Humano()
+
+escreva(Humano.minhaIdade())
+humanos.mudaIdade()
+escreva(Humano.minhaIdade())

@@ -5,7 +5,9 @@ import Ast.Expressions.Literals.ArrayLiteral;
 import Ast.Expressions.Literals.ClassLiteral;
 import Entities.Abstractions.Evaluate.Strategies.BinaryExprStrategy;
 import Entities.Abstractions.Evaluate.Strategies.UnaryExprStrategy;
+import Entities.Abstractions.Type;
 import Entities.Common.Result.ErrorOr;
+import Entities.Constants.ReservedKeys;
 import Entities.Enums.Ast.NodeType;
 import Ast.Expressions.Literals.ObjectLiteral;
 import Entities.Abstractions.Ast.Expr;
@@ -15,6 +17,7 @@ import Entities.Exceptions.Evaluate.*;
 import Entities.Exceptions.ExpectedTypeNotMatch;
 import Entities.Exceptions.InvalidCallException;
 import Entities.Exceptions.Parser.InvalidNodeException;
+import Entities.Exceptions.Parser.InvalidStatementContextException;
 import Entities.Metadata.ParameterMetadata;
 import Runtime.Environment;
 import Runtime.Evaluate.Factory.BinaryExpr.BinaryExprFactory;
@@ -82,6 +85,12 @@ public class Expressions
             {
                 Identifier objectIdentifier = (Identifier) memberExpr.object;
                 RuntimeValue variable = env.lookupVariable(objectIdentifier.value);
+
+                if (!memberExpr.computed && variable.type == ValueType.Class)
+                {
+                    Identifier memberIdentifier = (Identifier) memberExpr.property;
+                    return env.assignClassMember(objectIdentifier.value, memberIdentifier.value, value);
+                }
 
                 if (!memberExpr.computed && variable.type == ValueType.Object)
                 {
@@ -158,11 +167,33 @@ public class Expressions
     public static RuntimeValue evaluateMemberExpression(
             MemberExpr memberExpr, Environment env) throws AlreadyDeclaredVariableException
     {
-        RuntimeValue object = Interpreter.evaluate(memberExpr.object, env);
+        RuntimeValue entity = Interpreter.evaluate(memberExpr.object, env);
 
-        if (object.type == ValueType.Object)
+        if (entity.type == ValueType.Class)
         {
-            ObjectValue value = (ObjectValue) object;
+            ClassValue value = (ClassValue) entity;
+
+            if (memberExpr.computed)
+            {
+                //TODO: change this
+                throw new InvalidArrayIndexTypeException();
+            }
+
+            if (memberExpr.property.type == NodeType.Identifier)
+            {
+                Identifier id = (Identifier) memberExpr.property;
+                if (value.members.containsKey(id.value))
+                {
+                    return value.members.get(id.value);
+                }
+            }
+
+            return NullValue.create();
+        }
+
+        if (entity.type == ValueType.Object)
+        {
+            ObjectValue value = (ObjectValue) entity;
 
             if (memberExpr.property.type == NodeType.Identifier && !memberExpr.computed)
             {
@@ -191,9 +222,9 @@ public class Expressions
             return NullValue.create();
         }
 
-        if (object.type == ValueType.Array && memberExpr.computed)
+        if (entity.type == ValueType.Array && memberExpr.computed)
         {
-            ArrayValue value = (ArrayValue) object;
+            ArrayValue value = (ArrayValue) entity;
 
             RuntimeValue member = Interpreter.evaluate(memberExpr.property, env);
 
@@ -218,9 +249,9 @@ public class Expressions
             throw new InvalidArrayIndexTypeException();
         }
 
-        if (object.type == ValueType.String && memberExpr.computed)
+        if (entity.type == ValueType.String && memberExpr.computed)
         {
-            StringValue value = (StringValue) object;
+            StringValue value = (StringValue) entity;
 
             RuntimeValue member = Interpreter.evaluate(memberExpr.property, env);
 
@@ -279,7 +310,7 @@ public class Expressions
             args.add(Interpreter.evaluate(expr, env));
         }
 
-        ClassAttributeValue constructor = value.members.get(classLiteral.className);
+        ClassMemberValue constructor = value.members.get(classLiteral.className);
 
         if (constructor.value.type != ValueType.Function)
         {
@@ -298,6 +329,11 @@ public class Expressions
                     classLiteral.arguments.size()));
         }
 
+        Environment typeEnv = env.resolveType(value.className);
+        Type type = typeEnv.lookupType(value.className);
+
+        scope.declareVariable(ReservedKeys.This, value, type, false);
+
         for (int i = 0; i < function.parameters.size(); i++)
         {
             ArgumentMetadata param = function.parameters.get(i);
@@ -314,30 +350,18 @@ public class Expressions
             scope.declareVariable(name, args.get(i), param.getType(), false);
         }
 
-        RuntimeValue result = NullValue.create();
+        RuntimeValue result;
         for (Statement statement : function.body)
         {
             result = Interpreter.evaluate(statement, scope);
 
             if (result.type == ValueType.Return)
             {
-                break;
+                throw new InvalidStatementContextException("Não se pode haver um retorno em um construtor.");
             }
         }
 
-        RuntimeValue ret = result.type == ValueType.Return
-                ? ((ReturnFlow) result).value
-                : NullValue.create();
-
-        ErrorOr<Void> equality = TypeChecker.check(env, ret, function.returnType);
-
-        if (equality.isError()) {
-            throw new ExpectedTypeNotMatch(String.format(
-                    "Tipo de retorno não condiz com o tipo esperado. %s",
-                    equality.error.getMessage()));
-        }
-
-        return ret;
+        return value;
     }
 
     public static RuntimeValue evaluateCallExpression(
@@ -351,6 +375,84 @@ public class Expressions
         }
 
         RuntimeValue caller = Interpreter.evaluate(call.caller, env);
+
+        if (caller.type == ValueType.ClassMember)
+        {
+            ClassMemberValue member = (ClassMemberValue) caller;
+            if (member.value.type != ValueType.Function)
+            {
+                throw new InvalidCallException("Valor informado não permite ser chamado como uma função.");
+            }
+
+            FunctionValue function = (FunctionValue) member.value;
+            //TODO: discover if this works, function has declarationenv
+            Environment scope = Environment.create(function.declarationEnv);
+
+            if (function.parameters.size() != call.arguments.size())
+            {
+                throw new IncorrectNumberOfArgumentsException(String.format(
+                        "A função %s esperava %d argumento(s), mas recebeu %d.",
+                        function.name,
+                        function.parameters.size(),
+                        call.arguments.size()));
+            }
+
+            for (int i = 0; i < function.parameters.size(); i++)
+            {
+                ArgumentMetadata param = function.parameters.get(i);
+                String name = param.getName();
+
+                ErrorOr<Void> equality = TypeChecker.check(env, args.get(i), param.getType());
+                if (equality.isError()) {
+                    throw new RuntimeException(String.format(
+                            "Tipo incorreto informado para o argumento '%s'. %s",
+                            name,
+                            equality.error.getMessage()));
+                }
+
+                scope.declareVariable(name, args.get(i), param.getType(), false);
+            }
+
+            Environment declarationEnv = env.resolve(member.className);
+            RuntimeValue declarationValue = declarationEnv.lookupVariable(member.className);
+
+            Environment typeEnv = env.resolveType(member.className);
+            Type type = typeEnv.lookupType(member.className);
+
+            scope.declareVariable(ReservedKeys.This, declarationValue, type, false);
+
+            RuntimeValue result = NullValue.create();
+            for (Statement statement : function.body)
+            {
+                result = Interpreter.evaluate(statement, scope);
+
+                if (result.type == ValueType.Return)
+                {
+                    break;
+                }
+            }
+
+            RuntimeValue ret = result.type == ValueType.Return
+                    ? ((ReturnFlow) result).value
+                    : NullValue.create();
+
+            if (ret.type == ValueType.ClassMember)
+            {
+                //TODO: ver um jeito de tirar isso
+                assert ret instanceof ClassMemberValue;
+                ret = ((ClassMemberValue) ret).value;
+            }
+
+            ErrorOr<Void> equality = TypeChecker.check(env, ret, function.returnType);
+
+            if (equality.isError()) {
+                throw new ExpectedTypeNotMatch(String.format(
+                        "Tipo de retorno não condiz com o tipo esperado. %s",
+                        equality.error.getMessage()));
+            }
+
+            return ret;
+        }
 
         if (caller.type == ValueType.Function)
         {

@@ -1,9 +1,7 @@
 package Runtime.Evaluate;
 
 import Ast.Expressions.Identifier;
-import Ast.Expressions.Property;
 import Ast.Statements.*;
-import Ast.Types.ArrayType;
 import Ast.Types.ClassType;
 import Ast.Types.Primitive.IntegerType;
 import Entities.Abstractions.Runtime.RuntimeException;
@@ -12,14 +10,12 @@ import Entities.Abstractions.Ast.Statement;
 import Entities.Common.Result.ErrorOr;
 import Entities.Constants.ReservedKeys;
 import Entities.Enums.Ast.NodeType;
-import Entities.Enums.Runtime.ProtectionLevel;
 import Entities.Enums.Runtime.ValueType;
 import Entities.Exceptions.AlreadyDeclaredVariableException;
 import Entities.Exceptions.Evaluate.IncorrectNumberOfArgumentsException;
 import Entities.Exceptions.Evaluate.InvalidBinaryOperation;
 import Entities.Exceptions.ExpectedTypeNotMatch;
 import Entities.Exceptions.Parser.InvalidNodeException;
-import Entities.Metadata.ArgumentMetadata;
 import Runtime.Environment;
 import Runtime.Interpreter;
 import Entities.Abstractions.Runtime.RuntimeValue;
@@ -30,10 +26,8 @@ import Runtime.Values.FlowControl.BreakFlow;
 import Runtime.Values.FlowControl.ContinueFlow;
 import Runtime.Values.FlowControl.ReturnFlow;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class Statements
 {
@@ -70,13 +64,15 @@ public class Statements
     public static RuntimeValue evaluateClassDeclaration(
         ClassDeclaration declaration, Environment env) throws AlreadyDeclaredVariableException
     {
-        HashMap<String, ClassAttributeValue> members = new HashMap<>();
+        HashMap<String, ClassMemberValue> members = new HashMap<>();
         Environment classEnv = Environment.create(env);
 
         for (ClassMemberDeclaration member : declaration.members)
         {
             RuntimeValue value = Interpreter.evaluate(member.consequent, classEnv);
-            members.put(member.getMemberName(), ClassAttributeValue.create(member.protectionMarker, value));
+            members.put(
+                member.getMemberName(),
+                ClassMemberValue.create(member.protectionMarker, value, declaration.name));
         }
 
         Type type = ClassType.create(declaration.name);

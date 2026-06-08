@@ -9,12 +9,12 @@ import java.util.Map;
 public class ClassValue extends RuntimeValue
 {
     public final String className;
-    public HashMap<String, ClassAttributeValue> members;
+    public HashMap<String, ClassMemberValue> members;
     public ClassValue parent;
 
     protected ClassValue(
         ClassValue parent,
-        HashMap<String, ClassAttributeValue> members,
+        HashMap<String, ClassMemberValue> members,
         String className)
     {
         super(ValueType.Class);
@@ -26,12 +26,12 @@ public class ClassValue extends RuntimeValue
     public static ClassValue create(
         String className,
         ClassValue parent,
-        HashMap<String, ClassAttributeValue> members)
+        HashMap<String, ClassMemberValue> members)
     {
         return new ClassValue(parent, members, className);
     }
 
-    public static ClassValue create(String className, HashMap<String, ClassAttributeValue> members)
+    public static ClassValue create(String className, HashMap<String, ClassMemberValue> members)
     {
         return new ClassValue(null, members, className);
     }
@@ -42,7 +42,7 @@ public class ClassValue extends RuntimeValue
         StringBuilder ret = new StringBuilder("\n")
                 .repeat("\t", level)
                 .append("[\n");
-        for (Map.Entry<String, ClassAttributeValue> entry : members.entrySet())
+        for (Map.Entry<String, ClassMemberValue> entry : members.entrySet())
         {
             ret.repeat("\t", next)
                     .append(entry.getKey())

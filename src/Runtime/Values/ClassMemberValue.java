@@ -4,31 +4,36 @@ import Entities.Abstractions.Runtime.RuntimeValue;
 import Entities.Enums.Runtime.ProtectionLevel;
 import Entities.Enums.Runtime.ValueType;
 
-public class ClassAttributeValue extends RuntimeValue
+public class ClassMemberValue extends RuntimeValue
 {
-    public ProtectionLevel protectionLevel;
+    public final ProtectionLevel protectionLevel;
+    public final String className;
     public RuntimeValue value;
 
-    protected ClassAttributeValue(
+    protected ClassMemberValue(
         ProtectionLevel protectionLevel,
-        RuntimeValue value)
+        RuntimeValue value,
+        String className)
     {
         super(ValueType.ClassMember);
         this.protectionLevel = protectionLevel;
+        this.className = className;
         this.value = value;
     }
 
-    public static ClassAttributeValue create(
+    public static ClassMemberValue create(
         ProtectionLevel protectionLevel,
-        RuntimeValue value)
+        RuntimeValue value,
+        String className)
     {
-        return new ClassAttributeValue(protectionLevel, value);
+        return new ClassMemberValue(protectionLevel, value, className);
     }
 
-    public static ClassAttributeValue create(
-        ProtectionLevel protectionLevel)
+    public static ClassMemberValue create(
+        ProtectionLevel protectionLevel,
+        String classValue)
     {
-        return new ClassAttributeValue(protectionLevel, null);
+        return new ClassMemberValue(protectionLevel, null, classValue);
     }
 
     public boolean isPublic()
