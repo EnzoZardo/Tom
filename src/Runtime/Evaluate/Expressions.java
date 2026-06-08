@@ -88,17 +88,17 @@ public abstract class Expressions {
                 Identifier objectIdentifier = (Identifier) memberExpr.object;
                 RuntimeValue variable = env.lookupVariable(objectIdentifier.value);
 
-                if (!memberExpr.computed && variable.type == ValueType.Class)
-                {
-                    Identifier memberIdentifier = (Identifier) memberExpr.property;
-                    return env.assignClassMember(objectIdentifier.value, memberIdentifier.value, value);
-                }
+//                if (!memberExpr.computed && variable.type == ValueType.Class)
+//                {
+//                    Identifier memberIdentifier = (Identifier) memberExpr.property;
+//                    return env.assignClassMember(objectIdentifier.value, memberIdentifier.value, value);
+//                }
 
-                if (!memberExpr.computed && variable.type == ValueType.Object)
-                {
-                    Identifier memberIdentifier = (Identifier) memberExpr.property;
-                    return env.assignMember(objectIdentifier.value, memberIdentifier.value, value);
-                }
+//                if (!memberExpr.computed && variable.type == ValueType.Object)
+//                {
+//                    Identifier memberIdentifier = (Identifier) memberExpr.property;
+//                    return env.assignMember(objectIdentifier.value, memberIdentifier.value, value);
+//                }
 
                 RuntimeValue propValue = Interpreter.evaluate(memberExpr.property, env);
 
