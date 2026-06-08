@@ -145,4 +145,20 @@ public class ObjectValue extends FreezableValue
 
         return ret.append(" }").toString();
     }
+
+    @Override
+    public RuntimeValue copy()
+    {
+        HashMap<String, RuntimeValue> copiedProperties = new HashMap<>();
+
+        for (Map.Entry<String, RuntimeValue> entry : properties.entrySet())
+        {
+            copiedProperties.put(
+                    entry.getKey(),
+                    entry.getValue().copy()
+            );
+        }
+
+        return new ObjectValue(copiedProperties, frozen);
+    }
 }

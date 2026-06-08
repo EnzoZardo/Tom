@@ -72,7 +72,7 @@ public class TypeChecker
             {
                 if (value.type == ValueType.Numeric && ((NumericValue) value).isInteger)
                 {
-                    yield ErrorOr.Ok();
+                    yield ErrorOr.Success();
                 }
                 yield ErrorOr.Fail(String.format("O valor '%s' informado não é um inteiro válido.", value));
             }
@@ -80,7 +80,7 @@ public class TypeChecker
             {
                 if (value.type == ValueType.Numeric && !((NumericValue) value).isInteger)
                 {
-                    yield ErrorOr.Ok();
+                    yield ErrorOr.Success();
                 }
                 yield ErrorOr.Fail(String.format("O valor '%s' informado não é um real válido.", value));
             }
@@ -88,7 +88,7 @@ public class TypeChecker
             {
                 if (value.type == ValueType.Boolean)
                 {
-                    yield ErrorOr.Ok();
+                    yield ErrorOr.Success();
                 }
                 yield ErrorOr.Fail(String.format("O valor '%s' informado não é um lógico válido.", value));
             }
@@ -96,7 +96,7 @@ public class TypeChecker
             {
                 if (value.type == ValueType.String)
                 {
-                    yield ErrorOr.Ok();
+                    yield ErrorOr.Success();
                 }
                 yield ErrorOr.Fail(String.format("O valor '%s' informado não é um texto válido.", value));
             }
@@ -104,14 +104,14 @@ public class TypeChecker
             {
                 if (value.type == ValueType.Object)
                 {
-                    yield ErrorOr.Ok();
+                    yield ErrorOr.Success();
                 }
                 yield ErrorOr.Fail(String.format("O valor '%s' informado não é um objeto válido.", value));
             }
             case ReservedKeys.Null -> {
                 if (value.type == ValueType.Null)
                 {
-                    yield ErrorOr.Ok();
+                    yield ErrorOr.Success();
                 }
                 yield ErrorOr.Fail(String.format("O valor '%s' informado não é um nulo válido.", value));
             }
@@ -154,7 +154,7 @@ public class TypeChecker
             }
         }
 
-        return ErrorOr.Ok();
+        return ErrorOr.Success();
     }
 
     private static ErrorOr<Void> checkClass(ClassType type, RuntimeValue value)
@@ -171,7 +171,7 @@ public class TypeChecker
             return ErrorOr.Fail("Classes diferentes.");
         }
 
-        return ErrorOr.Ok();
+        return ErrorOr.Success();
     }
 
 
@@ -186,7 +186,7 @@ public class TypeChecker
 
         if (array.items.isEmpty())
         {
-            return ErrorOr.Ok();
+            return ErrorOr.Success();
         }
 
         for (RuntimeValue item : array.items.values())
@@ -199,7 +199,7 @@ public class TypeChecker
             }
         }
 
-        return ErrorOr.Ok();
+        return ErrorOr.Success();
     }
 
     private static ErrorOr<Void> checkObject(Environment env, ObjectType type, RuntimeValue value)
@@ -228,6 +228,6 @@ public class TypeChecker
             }
         }
 
-        return ErrorOr.Ok();
+        return ErrorOr.Success();
     }
 }

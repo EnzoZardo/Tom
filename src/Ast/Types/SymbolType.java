@@ -47,7 +47,7 @@ public class SymbolType extends Type
         SymbolType symbol2 = (SymbolType) type2;
         if (symbol1.value.equals(symbol2.value))
         {
-            return ErrorOr.Ok();
+            return ErrorOr.Success();
         }
 
         return ErrorOr.Fail("Os símbolos dos tipos diferem.");

@@ -1,6 +1,7 @@
 package Entities.Abstractions.Runtime;
 
 import Entities.Enums.Runtime.ValueType;
+import Entities.Exceptions.Evaluate.NotCopiableException;
 import Entities.Exceptions.NotIterableException;
 
 public abstract class RuntimeValue
@@ -27,6 +28,10 @@ public abstract class RuntimeValue
     public RuntimeValue iterate(int index)
     {
         throw new NotIterableException("Tipo de valor não iterável.");
+    }
+    public RuntimeValue copy()
+    {
+        throw new NotCopiableException("Tipo de valor não copiável.");
     }
 
     public int iteratorSize()

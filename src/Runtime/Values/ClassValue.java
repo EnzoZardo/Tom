@@ -6,8 +6,7 @@ import Entities.Enums.Runtime.ValueType;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ClassValue extends RuntimeValue
-{
+public class ClassValue extends RuntimeValue {
     public final String className;
     public HashMap<String, ClassMemberValue> members;
     public ClassValue parent;
@@ -77,5 +76,27 @@ public class ClassValue extends RuntimeValue
     public boolean bool()
     {
         return true;
+    }
+
+    @Override
+    public ClassValue copy()
+    {
+        HashMap<String, ClassMemberValue> copiedMembers = new HashMap<>();
+
+        for (Map.Entry<String, ClassMemberValue> entry : members.entrySet())
+        {
+            copiedMembers.put(
+                entry.getKey(),
+                (ClassMemberValue) entry.getValue().copy()
+            );
+        }
+
+        return new ClassValue(
+                parent == null
+                        ? null
+                        : parent.copy(),
+                copiedMembers,
+                className
+        );
     }
 }

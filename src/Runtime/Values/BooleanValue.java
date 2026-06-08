@@ -60,4 +60,10 @@ public class BooleanValue extends RuntimeValue
     {
         return value ? ReservedKeys.True : ReservedKeys.False;
     }
+
+    @Override
+    public RuntimeValue copy()
+    {
+        return new BooleanValue(value);
+    }
 }

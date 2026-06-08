@@ -11,21 +11,18 @@ import Runtime.Values.NumericValue;
 
 public class NumericBinaryStrategy implements BinaryExprStrategy
 {
-    public static boolean canEvaluate(RuntimeValue right, RuntimeValue left, String operator)
-    {
+    public static boolean canEvaluate(RuntimeValue right, RuntimeValue left, String operator) {
         return ReservedOperators.isNumericOperator(operator)
             && left.type == ValueType.Numeric
             && right.type == ValueType.Numeric;
     }
 
     @Override
-    public RuntimeValue evaluate(RuntimeValue right, RuntimeValue left, String operator)
-    {
+    public RuntimeValue evaluate(RuntimeValue right, RuntimeValue left, String operator) {
         NumericValue rightNumeric = (NumericValue) right;
         NumericValue leftNumeric = (NumericValue) left;
 
-        float result = switch (operator)
-        {
+        float result = switch (operator) {
             case ReservedKeys.IntegerDivision -> (int) evaluateDivision(leftNumeric.value, rightNumeric.value);
             case ReservedKeys.Division -> evaluateDivision(leftNumeric.value, rightNumeric.value);
             case ReservedKeys.Multiplication -> leftNumeric.value * rightNumeric.value;
@@ -39,8 +36,7 @@ public class NumericBinaryStrategy implements BinaryExprStrategy
         return NumericValue.create(result, leftNumeric.isInteger && rightNumeric.isInteger && isFloat);
     }
 
-    private static float evaluateDivision(Number left, Number right)
-    {
+    private static float evaluateDivision(Number left, Number right) {
         ZeroDivisionException.ThrowIfZero(left);
         return left.floatValue() / right.floatValue();
     }

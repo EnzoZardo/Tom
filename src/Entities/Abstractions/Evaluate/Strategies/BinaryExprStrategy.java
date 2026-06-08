@@ -5,5 +5,5 @@ import Entities.Exceptions.AlreadyDeclaredVariableException;
 
 public interface BinaryExprStrategy
 {
-    RuntimeValue evaluate(RuntimeValue right, RuntimeValue left, String operator) throws AlreadyDeclaredVariableException;
+    RuntimeValue evaluate(RuntimeValue right, RuntimeValue left, String operator);
 }

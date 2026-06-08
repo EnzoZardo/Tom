@@ -54,7 +54,7 @@ public class FunctionType extends Type
             }
         }
 
-        return ErrorOr.Ok();
+        return ErrorOr.Success();
     }
 
     public static Type reduce(Environment env, Type type)

@@ -32,11 +32,11 @@ public class ErrorOr<T>
         this.error = error;
     }
 
-    public static <T> ErrorOr<T> Ok(T value)
+    public static <T> ErrorOr<T> Success(T value)
     {
         return new ErrorOr<>(value);
     }
-    public static ErrorOr<Void> Ok()
+    public static ErrorOr<Void> Success()
     {
         return new ErrorOr<>(null, true);
     }
@@ -55,6 +55,6 @@ public class ErrorOr<T>
         {
             return ErrorOr.Fail(error);
         }
-        return ErrorOr.Ok(null);
+        return ErrorOr.Success(null);
     }
 }

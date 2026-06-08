@@ -83,4 +83,9 @@ public class StringValue extends RuntimeValue
     {
         return value;
     }
+
+    @Override
+    public RuntimeValue copy() {
+        return new StringValue(value);
+    }
 }

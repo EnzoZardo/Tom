@@ -11,14 +11,11 @@ import Runtime.Values.StringValue;
 
 import java.util.HashMap;
 
-public class StringDivisionStrategy implements StringBinaryExprStrategy
-{
+public class StringDivisionStrategy implements StringBinaryExprStrategy {
     @Override
-    public RuntimeValue evaluate(RuntimeValue right, RuntimeValue left)
-    {
+    public RuntimeValue evaluate(RuntimeValue right, RuntimeValue left) {
         final String error = "Operação de divisão só é permitida entre texto e inteiro.";
-        if (left.type != ValueType.String || right.type != ValueType.Numeric)
-        {
+        if (left.type != ValueType.String || right.type != ValueType.Numeric) {
             throw new InvalidStringOperation(error);
         }
 

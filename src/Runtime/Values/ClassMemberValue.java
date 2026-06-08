@@ -7,33 +7,39 @@ import Entities.Enums.Runtime.ValueType;
 public class ClassMemberValue extends RuntimeValue
 {
     public final ProtectionLevel protectionLevel;
-    public final String className;
+    public ClassValue owner;
     public RuntimeValue value;
 
     protected ClassMemberValue(
         ProtectionLevel protectionLevel,
         RuntimeValue value,
-        String className)
+        ClassValue owner)
     {
         super(ValueType.ClassMember);
         this.protectionLevel = protectionLevel;
-        this.className = className;
+        this.owner = owner;
         this.value = value;
     }
 
     public static ClassMemberValue create(
         ProtectionLevel protectionLevel,
         RuntimeValue value,
-        String className)
+        ClassValue owner)
     {
-        return new ClassMemberValue(protectionLevel, value, className);
+        return new ClassMemberValue(protectionLevel, value, owner);
     }
 
     public static ClassMemberValue create(
         ProtectionLevel protectionLevel,
-        String classValue)
+        ClassValue owner)
     {
-        return new ClassMemberValue(protectionLevel, null, classValue);
+        return new ClassMemberValue(protectionLevel, null, owner);
+    }
+
+    @Override
+    public RuntimeValue copy()
+    {
+        return new ClassMemberValue(protectionLevel, value.copy(), owner);
     }
 
     public boolean isPublic()

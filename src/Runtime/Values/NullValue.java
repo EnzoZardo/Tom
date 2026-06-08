@@ -45,4 +45,10 @@ public class NullValue extends RuntimeValue
     {
         return ReservedKeys.Null;
     }
+
+    @Override
+    public RuntimeValue copy()
+    {
+        return new NullValue();
+    }
 }

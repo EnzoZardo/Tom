@@ -29,14 +29,11 @@ import Runtime.Values.FlowControl.ReturnFlow;
 import java.util.HashMap;
 import java.util.List;
 
-public class Statements
-{
-    public static RuntimeValue evaluateProgram(Program program, Environment env) throws AlreadyDeclaredVariableException
-    {
+public class Statements {
+    public static RuntimeValue evaluateProgram(Program program, Environment env) throws AlreadyDeclaredVariableException {
         RuntimeValue lastEvaluated = NullValue.create();
 
-        for (Statement stmt : program.body)
-        {
+        for (Statement stmt : program.body) {
             lastEvaluated = Interpreter.evaluate(stmt, env);
         }
 
@@ -44,8 +41,7 @@ public class Statements
     }
 
     public static RuntimeValue evaluateVariableDeclaration(
-        VariableDeclaration declaration, Environment env) throws AlreadyDeclaredVariableException
-    {
+        VariableDeclaration declaration, Environment env) throws AlreadyDeclaredVariableException {
         RuntimeValue value = declaration.value == null
                 ? NullValue.create()
                 : Interpreter.evaluate(declaration.value, env);
@@ -65,6 +61,7 @@ public class Statements
         ClassDeclaration declaration, Environment env) throws AlreadyDeclaredVariableException
     {
         HashMap<String, ClassMemberValue> members = new HashMap<>();
+        ClassValue classValue = ClassValue.create(declaration.name, members);
         Environment classEnv = Environment.create(env);
 
         for (ClassMemberDeclaration member : declaration.members)
@@ -72,12 +69,12 @@ public class Statements
             RuntimeValue value = Interpreter.evaluate(member.consequent, classEnv);
             members.put(
                 member.getMemberName(),
-                ClassMemberValue.create(member.protectionMarker, value, declaration.name));
+                ClassMemberValue.create(member.protectionMarker, value, classValue));
         }
 
         Type type = ClassType.create(declaration.name);
 
-        return env.declareClass(declaration.name, ClassValue.create(declaration.name, members), type);
+        return env.declareClass(declaration.name, classValue, type);
     }
 
     public static RuntimeValue evaluateTypeDeclaration(

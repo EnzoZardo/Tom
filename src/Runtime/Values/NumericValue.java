@@ -70,4 +70,9 @@ public class NumericValue extends RuntimeValue
         return String.valueOf(value);
     }
 
+    @Override
+    public RuntimeValue copy()
+    {
+        return new NumericValue(value, isInteger);
+    }
 }

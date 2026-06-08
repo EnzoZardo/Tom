@@ -115,4 +115,16 @@ public class FunctionValue extends RuntimeValue
         }
         return ReservedKeys.Function + " " + name + "(" +  params + "): " + returnType;
     }
+
+    @Override
+    public RuntimeValue copy()
+    {
+        return new FunctionValue(
+            name,
+            body,
+            parameters,
+            returnType,
+            declarationEnv
+        );
+    }
 }

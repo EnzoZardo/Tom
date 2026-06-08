@@ -128,4 +128,20 @@ public class ArrayValue extends FreezableValue
 
         return ret.append("]").toString();
     }
+
+    @Override
+    public RuntimeValue copy()
+    {
+        HashMap<Integer, RuntimeValue> copiedItems = new HashMap<>();
+
+        for (Map.Entry<Integer, RuntimeValue> entry : items.entrySet())
+        {
+            copiedItems.put(
+                    entry.getKey(),
+                    entry.getValue().copy()
+            );
+        }
+
+        return ArrayValue.create(copiedItems, frozen);
+    }
 }

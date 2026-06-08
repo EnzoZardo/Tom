@@ -34,41 +34,43 @@ import Runtime.Values.FlowControl.ReturnFlow;
 
 import java.util.ArrayList;
 
-public class Expressions
-{
-    public static RuntimeValue evaluateIdentifier(Identifier identifier, Environment env)
-    {
+public abstract class Expressions {
+    public static RuntimeValue evaluateIdentifier(Identifier identifier, Environment env) {
         return env.lookupVariable(identifier.value);
     }
 
     public static RuntimeValue evaluateUnaryExpr(UnaryExpr expr, Environment env)
-            throws AlreadyDeclaredVariableException
-    {
-        UnaryExprStrategy strategy = UnaryExprFactory.build(expr);
+        throws AlreadyDeclaredVariableException {
+        ErrorOr<UnaryExprStrategy> result = UnaryExprFactory.build(expr);
+
+        if (result.isError()) {
+            throw new InvalidUnaryExpression(result.error.getMessage());
+        }
 
         RuntimeValue right = Interpreter.evaluate(expr.right, env);
+        UnaryExprStrategy strategy = result.value;
 
         return strategy.evaluate(right, expr.operator);
     }
 
-    public static RuntimeValue evaluateBinaryExpr(BinaryExpr expr, Environment env) throws AlreadyDeclaredVariableException
-    {
-        BinaryExprStrategy strategy = BinaryExprFactory.build(expr, env);
+    public static RuntimeValue evaluateBinaryExpr(BinaryExpr expr, Environment env)
+        throws AlreadyDeclaredVariableException {
+        ErrorOr<BinaryExprStrategy> result = BinaryExprFactory.build(expr, env);
 
+        if (result.isError())
+        {
+            throw new InvalidBinaryOperation(result.error.getMessage());
+        }
+
+        BinaryExprStrategy strategy = result.value;
         RuntimeValue left = Interpreter.evaluate(expr.left, env);
         RuntimeValue right = Interpreter.evaluate(expr.right, env);
 
         return strategy.evaluate(left, right, expr.operator);
     }
 
-    public static RuntimeValue evaluateVariableAssignment(
-            AssignmentExpr assignment, Environment env) throws AlreadyDeclaredVariableException
-    {
-        if (assignment.type != NodeType.AssignmentExpression)
-        {
-            throw new InvalidNodeException("O nome da variável é esperado para atribuirmos ela.");
-        }
-
+    public static RuntimeValue evaluateVariableAssignment(AssignmentExpr assignment, Environment env)
+        throws AlreadyDeclaredVariableException {
         if (assignment.assigned.type == NodeType.Identifier)
         {
             String name = ((Identifier) assignment.assigned).value;
@@ -129,9 +131,8 @@ public class Expressions
             "darmos um novo valor para ela.");
     }
 
-    public static RuntimeValue evaluateObjectExpression(
-        ObjectLiteral object, Environment env) throws AlreadyDeclaredVariableException
-    {
+    public static RuntimeValue evaluateObjectExpression(ObjectLiteral object, Environment env)
+        throws AlreadyDeclaredVariableException {
         ObjectValue value = ObjectValue.create();
 
         for (Property prop : object.properties)
@@ -148,13 +149,11 @@ public class Expressions
         return value;
     }
 
-    public static RuntimeValue evaluateArrayExpression(
-            ArrayLiteral array, Environment env) throws AlreadyDeclaredVariableException
-    {
+    public static RuntimeValue evaluateArrayExpression(ArrayLiteral array, Environment env)
+        throws AlreadyDeclaredVariableException {
         ArrayValue value = ArrayValue.create();
 
-        for (int i = 0; i < array.items.size(); i++)
-        {
+        for (int i = 0; i < array.items.size(); i++) {
             Expr item = array.items.get(i);
             RuntimeValue evaluated = Interpreter.evaluate(item, env);
             value.items.put(i, evaluated);
@@ -164,54 +163,46 @@ public class Expressions
     }
 
 
-    public static RuntimeValue evaluateMemberExpression(
-            MemberExpr memberExpr, Environment env) throws AlreadyDeclaredVariableException
-    {
+    public static RuntimeValue evaluateMemberExpression(MemberExpr memberExpr, Environment env)
+        throws AlreadyDeclaredVariableException {
         RuntimeValue entity = Interpreter.evaluate(memberExpr.object, env);
 
-        if (entity.type == ValueType.Class)
-        {
+        if (entity.type == ValueType.Class) {
             ClassValue value = (ClassValue) entity;
 
-            if (memberExpr.computed)
-            {
+            if (memberExpr.computed) {
                 //TODO: change this
                 throw new InvalidArrayIndexTypeException();
             }
 
-            if (memberExpr.property.type == NodeType.Identifier)
-            {
-                Identifier id = (Identifier) memberExpr.property;
-                if (value.members.containsKey(id.value))
-                {
-                    return value.members.get(id.value);
-                }
+            if (memberExpr.property.type == NodeType.Identifier) {
+                Identifier identifier = (Identifier) memberExpr.property;
+                ClassMemberValue member = value.members.get(identifier.value);
+                ClassMemberValue bound = (ClassMemberValue) member.copy();
+
+                bound.owner = value;
+                return bound;
             }
 
             return NullValue.create();
         }
 
-        if (entity.type == ValueType.Object)
-        {
+        if (entity.type == ValueType.Object) {
             ObjectValue value = (ObjectValue) entity;
 
-            if (memberExpr.property.type == NodeType.Identifier && !memberExpr.computed)
-            {
+            if (memberExpr.property.type == NodeType.Identifier && !memberExpr.computed) {
                 Identifier id = (Identifier) memberExpr.property;
-                if (value.properties.containsKey(id.value))
-                {
+
+                if (value.properties.containsKey(id.value)) {
                     return value.properties.get(id.value);
                 }
-            }
-            else
-            {
+            } else {
                 RuntimeValue member = Interpreter.evaluate(memberExpr.property, env);
 
-                if (member.type == ValueType.String)
-                {
+                if (member.type == ValueType.String) {
                     StringValue id = (StringValue) member;
-                    if (value.properties.containsKey(id.value))
-                    {
+
+                    if (value.properties.containsKey(id.value)) {
                         return value.properties.get(id.value);
                     }
                 }
@@ -280,22 +271,19 @@ public class Expressions
     }
 
     public static RuntimeValue evaluateInstantiationExpression(
-        ClassLiteral classLiteral, Environment env) throws AlreadyDeclaredVariableException
-    {
+        ClassLiteral classLiteral, Environment env)
+        throws AlreadyDeclaredVariableException {
         Environment declarationEnv = env.resolve(classLiteral.className);
         RuntimeValue declarationValue = declarationEnv.lookupVariable(classLiteral.className);
 
-        if (declarationValue.type != ValueType.Class)
-        {
+        if (declarationValue.type != ValueType.Class) {
             throw new InvalidNodeException("Esperávamos um o nome de uma classe para instanciar.");
         }
 
-        ClassValue value = (ClassValue) declarationValue;
+        ClassValue value = ((ClassValue) declarationValue).copy();
 
-        if (!value.members.containsKey(classLiteral.className))
-        {
-            if (classLiteral.arguments.isEmpty())
-            {
+        if (!value.members.containsKey(classLiteral.className)) {
+            if (classLiteral.arguments.isEmpty()) {
                 return value;
             }
 
@@ -305,23 +293,20 @@ public class Expressions
 
         ArrayList<RuntimeValue> args = new ArrayList<>();
 
-        for (Expr expr : classLiteral.arguments)
-        {
+        for (Expr expr : classLiteral.arguments) {
             args.add(Interpreter.evaluate(expr, env));
         }
 
         ClassMemberValue constructor = value.members.get(classLiteral.className);
 
-        if (constructor.value.type != ValueType.Function)
-        {
+        if (constructor.value.type != ValueType.Function) {
             throw new InvalidCallException("Valor informado não permite ser chamado como um construtor.");
         }
 
         FunctionValue function = (FunctionValue) constructor.value;
         Environment scope = Environment.create(function.declarationEnv);
 
-        if (function.parameters.size() != classLiteral.arguments.size())
-        {
+        if (function.parameters.size() != classLiteral.arguments.size()) {
             throw new IncorrectNumberOfArgumentsException(String.format(
                     "A função %s esperava %d argumento(s), mas recebeu %d.",
                     function.name,
@@ -334,8 +319,7 @@ public class Expressions
 
         scope.declareVariable(ReservedKeys.This, value, type, false);
 
-        for (int i = 0; i < function.parameters.size(); i++)
-        {
+        for (int i = 0; i < function.parameters.size(); i++) {
             ArgumentMetadata param = function.parameters.get(i);
             String name = param.getName();
 
@@ -413,13 +397,14 @@ public class Expressions
                 scope.declareVariable(name, args.get(i), param.getType(), false);
             }
 
-            Environment declarationEnv = env.resolve(member.className);
-            RuntimeValue declarationValue = declarationEnv.lookupVariable(member.className);
+            Environment typeEnv = env.resolveType(member.owner.className);
+            Type type = typeEnv.lookupType(member.owner.className);
 
-            Environment typeEnv = env.resolveType(member.className);
-            Type type = typeEnv.lookupType(member.className);
-
-            scope.declareVariable(ReservedKeys.This, declarationValue, type, false);
+            scope.declareVariable(
+                ReservedKeys.This,
+                member.owner,
+                type,
+                false);
 
             RuntimeValue result = NullValue.create();
             for (Statement statement : function.body)

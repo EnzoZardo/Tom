@@ -7,8 +7,12 @@ import Entities.Exceptions.Parser.InvalidTokenException;
 import Parser.Parser;
 import Runtime.*;
 
-void main(String[] args) throws AlreadyParsedException, IOException, InvalidTokenException, InvalidArgumentException, AlreadyDeclaredVariableException
-{
+void main(String[] args)
+    throws AlreadyParsedException,
+        IOException,
+        InvalidTokenException,
+        InvalidArgumentException,
+        AlreadyDeclaredVariableException {
     IO.println("Tom v1.0");
 
 //    if (args.length == 0)

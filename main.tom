@@ -17,6 +17,7 @@ classe Humano {
 
 var humanos: Humano = novo Humano()
 
-escreva(Humano.minhaIdade())
+escreva(humanos.minhaIdade())
 humanos.mudaIdade()
+escreva(humanos.minhaIdade())
 escreva(Humano.minhaIdade())
