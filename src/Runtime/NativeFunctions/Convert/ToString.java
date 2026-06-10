@@ -20,11 +20,6 @@ public abstract class ToString
 
         RuntimeValue arg = args.getValues().getFirst();
 
-        if (arg.type == ValueType.ClassMember)
-        {
-            arg = ((ClassMemberValue) arg).value;
-        }
-
         return StringValue.create(arg.toString());
     }
 }

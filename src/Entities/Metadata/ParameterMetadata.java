@@ -2,23 +2,31 @@ package Entities.Metadata;
 
 import Entities.Common.Pair;
 import Entities.Abstractions.Runtime.RuntimeValue;
+import Entities.Enums.Runtime.ValueType;
 import Runtime.Environment;
+import Runtime.Values.ClassMemberValue;
 
 import java.util.ArrayList;
+import java.util.List;
 
-public class ParameterMetadata extends Pair<ArrayList<RuntimeValue>, Environment>
+public class ParameterMetadata extends Pair<List<RuntimeValue>, Environment>
 {
-    protected ParameterMetadata(ArrayList<RuntimeValue> type, Environment expr)
+    protected ParameterMetadata(List<RuntimeValue> values, Environment expr)
     {
-        super(type, expr);
+        super(values, expr);
     }
 
-    public static ParameterMetadata create(ArrayList<RuntimeValue> type, Environment expr)
+    public static ParameterMetadata create(ArrayList<RuntimeValue> values, Environment expr)
     {
-        return new ParameterMetadata(type, expr);
+        return new ParameterMetadata(
+            values
+                .stream()
+                .map(ClassMemberValue::mapToValue)
+                .toList(),
+            expr);
     }
 
-    public ArrayList<RuntimeValue> getValues()
+    public List<RuntimeValue> getValues()
     {
         return get0();
     }

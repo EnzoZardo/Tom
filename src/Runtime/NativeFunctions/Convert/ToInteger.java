@@ -22,11 +22,6 @@ public abstract class ToInteger
 
         RuntimeValue arg = args.getValues().getFirst();
 
-        if (arg.type == ValueType.ClassMember)
-        {
-            arg = ((ClassMemberValue) arg).value;
-        }
-
         if (arg.type != ValueType.String)
         {
             throw new ExpectedTypeNotMatch("Esperávamos um texto para converter para inteiro.");

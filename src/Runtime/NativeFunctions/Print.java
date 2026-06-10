@@ -5,11 +5,12 @@ import Entities.Abstractions.Runtime.RuntimeValue;
 import Runtime.Values.NullValue;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public abstract class Print
 {
     public static NullValue call(ParameterMetadata args) {
-        ArrayList<RuntimeValue> values = args.getValues();
+        List<RuntimeValue> values = args.getValues();
         for (int i = 0; i < values.size(); i++)
         {
             IO.print(values.get(i).toString());

@@ -12,6 +12,7 @@ import Entities.Enums.TypeKind;
 import Entities.Exceptions.*;
 import Entities.Exceptions.Evaluate.InvalidAssignmentExpression;
 import Entities.Exceptions.Evaluate.InvalidMemberAssignException;
+import Entities.Metadata.ParameterMetadata;
 import Runtime.NativeFunctions.Interval;
 import Runtime.NativeFunctions.Print;
 import Entities.Abstractions.Runtime.RuntimeValue;
@@ -24,6 +25,7 @@ import Runtime.Values.ClassValue;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.function.Function;
 
 public class Environment
 {
@@ -67,7 +69,21 @@ public class Environment
         return classValue;
     }
 
-    public RuntimeValue declareVariable(String name, RuntimeValue value, Type type, boolean constant)
+    public RuntimeValue declareVariable(
+        String name,
+        RuntimeValue value,
+        Type type,
+        boolean constant,
+        Function<RuntimeValue, RuntimeValue> mapper) throws AlreadyDeclaredVariableException
+    {
+        return declareVariable(name, mapper.apply(value), type, constant);
+    }
+
+    public RuntimeValue declareVariable(
+        String name,
+        RuntimeValue value,
+        Type type,
+        boolean constant)
         throws AlreadyDeclaredVariableException
     {
         if (variables.containsKey(name) || constants.containsKey(name))
@@ -83,6 +99,15 @@ public class Environment
 
         variables.put(name, ValueMetadata.create(type, value));
         return value;
+    }
+
+    public RuntimeValue declareConstant(
+        String name,
+        RuntimeValue value,
+        Type type,
+        Function<RuntimeValue, RuntimeValue> mapper) throws AlreadyDeclaredVariableException
+    {
+        return declareConstant(name, mapper.apply(value), type);
     }
 
     public RuntimeValue declareConstant(String name, RuntimeValue value, Type type)

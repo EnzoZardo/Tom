@@ -36,6 +36,17 @@ public class ClassMemberValue extends RuntimeValue
         return new ClassMemberValue(protectionLevel, null, owner);
     }
 
+    public static RuntimeValue mapToValue(RuntimeValue value)
+    {
+        if (value.type == ValueType.ClassMember)
+        {
+            ClassMemberValue member = (ClassMemberValue) value;
+            return member.value;
+        }
+
+        return value;
+    }
+
     @Override
     public RuntimeValue copy()
     {

@@ -332,16 +332,15 @@ public abstract class Expressions {
             }
 
             FunctionValue function = (FunctionValue) member.value;
-            //TODO: discover if this works, function has declarationenv
             Environment scope = Environment.create(function.declarationEnv);
 
             if (function.parameters.size() != call.arguments.size())
             {
                 throw new IncorrectNumberOfArgumentsException(String.format(
-                        "A função %s esperava %d argumento(s), mas recebeu %d.",
-                        function.name,
-                        function.parameters.size(),
-                        call.arguments.size()));
+                    "A função %s esperava %d argumento(s), mas recebeu %d.",
+                    function.name,
+                    function.parameters.size(),
+                    call.arguments.size()));
             }
 
             for (int i = 0; i < function.parameters.size(); i++)
@@ -352,21 +351,14 @@ public abstract class Expressions {
                 ErrorOr<Void> equality = TypeChecker.check(env, args.get(i), param.getType());
                 if (equality.isError()) {
                     throw new RuntimeException(String.format(
-                            "Tipo incorreto informado para o argumento '%s'. %s",
-                            name,
-                            equality.error.getMessage()));
+                        "Tipo incorreto informado para o argumento '%s'. %s",
+                        name,
+                        equality.error.getMessage()));
                 }
 
                 RuntimeValue value = args.get(i);
 
-                if (value.type == ValueType.ClassMember)
-                {
-                    ClassMemberValue prop = (ClassMemberValue) value;
-                    scope.declareVariable(name, prop.value, param.getType(), false);
-                    continue;
-                }
-
-                scope.declareVariable(name, value, param.getType(), false);
+                scope.declareVariable(name, value, param.getType(), false, ClassMemberValue::mapToValue);
             }
 
             Environment typeEnv = env.resolveType(member.owner.className);
@@ -393,19 +385,13 @@ public abstract class Expressions {
                     ? ((ReturnFlow) result).value
                     : NullValue.create();
 
-            if (ret.type == ValueType.ClassMember)
-            {
-                //TODO: ver um jeito de tirar isso
-                assert ret instanceof ClassMemberValue;
-                ret = ((ClassMemberValue) ret).value;
-            }
-
+            ret = ClassMemberValue.mapToValue(ret);
             ErrorOr<Void> equality = TypeChecker.check(env, ret, function.returnType);
 
             if (equality.isError()) {
                 throw new ExpectedTypeNotMatch(String.format(
-                        "Tipo de retorno não condiz com o tipo esperado. %s",
-                        equality.error.getMessage()));
+                    "Tipo de retorno não condiz com o tipo esperado. %s",
+                    equality.error.getMessage()));
             }
 
             return ret;
@@ -438,16 +424,7 @@ public abstract class Expressions {
                         equality.error.getMessage()));
                 }
 
-                RuntimeValue value = args.get(i);
-
-                if (value.type == ValueType.ClassMember)
-                {
-                    ClassMemberValue prop = (ClassMemberValue) value;
-                    scope.declareVariable(name, prop.value, param.getType(), false);
-                    continue;
-                }
-
-                scope.declareVariable(name, value, param.getType(), false);
+                scope.declareVariable(name, args.get(i), param.getType(), false, ClassMemberValue::mapToValue);
             }
 
             RuntimeValue result = NullValue.create();

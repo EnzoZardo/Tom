@@ -11,6 +11,7 @@ import Runtime.Values.NumericValue;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 public abstract class Interval
 {
@@ -40,29 +41,6 @@ public abstract class Interval
         return ArrayValue.create(interval);
     }
 
-    private static boolean validateArg(RuntimeValue value)
-    {
-        if (value.type == ValueType.ClassMember)
-        {
-            ClassMemberValue member = (ClassMemberValue) value;
-
-            return validateArgSource(member.value);
-        }
-
-        return validateArgSource(value);
-    }
-
-    private static boolean validateArgSource(RuntimeValue value)
-    {
-        if (value.type != ValueType.Numeric)
-        {
-            return true;
-        }
-
-        NumericValue numeric = (NumericValue) value;
-        return !numeric.isInteger;
-    }
-
     public static ArrayValue call(ParameterMetadata args)
     {
         //TODO: verify
@@ -72,72 +50,35 @@ public abstract class Interval
                     "função de intervalo.");
         }
 
-        if (args
-            .getValues()
+        if (args.getValues()
             .stream()
-            .anyMatch(Interval::validateArg))
+            .anyMatch(value -> value.type != ValueType.Numeric || !((NumericValue) value).isInteger))
         {
-            throw new ExpectedTypeNotMatch("Apenas números inteiros são permitidos para a função de intervalo.");
+            throw new ExpectedTypeNotMatch("Somente números inteiros são aceitos para a função de intervalo.");
         }
 
-        ArrayList<RuntimeValue> values = args.getValues();
+        List<RuntimeValue> values = args.getValues();
 
         if (values.size() == MIN_ARGUMENTS)
         {
-            RuntimeValue arg = values.getFirst();
-            if (arg.type == ValueType.ClassMember)
-            {
-                arg = ((ClassMemberValue) arg).value;
-            }
-
-            NumericValue value = (NumericValue) arg;
+            NumericValue value = (NumericValue) values.getFirst();
 
             return range(0, (int) value.value, 1);
         }
 
         if (values.size() == START_END_ARGUMENTS)
         {
-            RuntimeValue arg1 = values.getFirst();
-            if (arg1.type == ValueType.ClassMember)
-            {
-                arg1 = ((ClassMemberValue) arg1).value;
-            }
-
-            RuntimeValue arg2 = values.getFirst();
-            if (arg2.type == ValueType.ClassMember)
-            {
-                arg2 = ((ClassMemberValue) arg2).value;
-            }
-
-            NumericValue start = (NumericValue) arg1;
-            NumericValue end = (NumericValue) arg2;
+            NumericValue start = (NumericValue) values.getFirst();
+            NumericValue end = (NumericValue) values.getLast();
 
             return range((int) start.value, (int) end.value, 1);
         }
 
         if (values.size() == MAX_ARGUMENTS)
         {
-            RuntimeValue arg1 = values.getFirst();
-            if (arg1.type == ValueType.ClassMember)
-            {
-                arg1 = ((ClassMemberValue) arg1).value;
-            }
-
-            RuntimeValue arg2 = values.get(1);
-            if (arg2.type == ValueType.ClassMember)
-            {
-                arg2 = ((ClassMemberValue) arg2).value;
-            }
-
-            RuntimeValue arg3 = values.getLast();
-            if (arg3.type == ValueType.ClassMember)
-            {
-                arg3 = ((ClassMemberValue) arg3).value;
-            }
-
-            NumericValue start = (NumericValue) arg1;
-            NumericValue end = (NumericValue) arg2;
-            NumericValue step = (NumericValue) arg3;
+            NumericValue start = (NumericValue) values.getFirst();
+            NumericValue end = (NumericValue) values.get(1);
+            NumericValue step = (NumericValue) values.getLast();
 
             if (start.value < end.value
                 && start.value < 0
