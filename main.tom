@@ -1,23 +1,38 @@
+# types
 tipo int = inteiro
 tipo nil = nulo
 
-classe Humano {
-    publ var idade: int = 1
+# constants
+con nil: nil = nulo
 
-    publ fun minhaIdade() : int {
-        escreva("Estamos buscando a idade")
-        retorne isso.idade
+# classes
+classe Age
+{
+    priv var age: int = 2
+
+    publ fun getAge() : int 
+    { 
+        retorne isso.age 
     }
 
-    publ fun mudaIdade() : nil {
-        isso.idade = 2
-        retorne nulo
+    publ fun setAge() : int 
+    { 
+        isso.age = inteiro.dez
+        retorne isso.age 
+    }
+
+    publ fun writeToAge() : nil 
+    {
+        para cada (age em intervalo(isso.age)) escreva(age)
+        retorne nil
     }
 }
 
-var humanos: Humano = novo Humano()
+# instantiation
+var age: Age = novo Age()
 
-escreva(humanos.minhaIdade())
-humanos.mudaIdade()
-escreva(humanos.minhaIdade())
-escreva(Humano.minhaIdade())
+# asserts
+age.setAge()
+escreva("must be 1:", age.getAge())
+escreva("must be 2:", Age.getAge())
+age.writeToAge()

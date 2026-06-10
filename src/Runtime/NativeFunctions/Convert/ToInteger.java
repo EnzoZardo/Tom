@@ -5,6 +5,7 @@ import Entities.Enums.Runtime.ValueType;
 import Entities.Exceptions.Evaluate.IncorrectNumberOfArgumentsException;
 import Entities.Exceptions.ExpectedTypeNotMatch;
 import Entities.Metadata.ParameterMetadata;
+import Runtime.Values.ClassMemberValue;
 import Runtime.Values.NumericValue;
 import Runtime.Values.StringValue;
 
@@ -20,6 +21,11 @@ public abstract class ToInteger
         }
 
         RuntimeValue arg = args.getValues().getFirst();
+
+        if (arg.type == ValueType.ClassMember)
+        {
+            arg = ((ClassMemberValue) arg).value;
+        }
 
         if (arg.type != ValueType.String)
         {

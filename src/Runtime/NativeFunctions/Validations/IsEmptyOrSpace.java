@@ -7,6 +7,7 @@ import Entities.Exceptions.ExpectedTypeNotMatch;
 import Entities.Metadata.ParameterMetadata;
 import Runtime.NativeObjects.StringObject;
 import Runtime.Values.BooleanValue;
+import Runtime.Values.ClassMemberValue;
 import Runtime.Values.StringValue;
 
 public abstract class IsEmptyOrSpace
@@ -21,6 +22,11 @@ public abstract class IsEmptyOrSpace
         }
 
         RuntimeValue arg = args.getValues().getFirst();
+
+        if (arg.type == ValueType.ClassMember)
+        {
+            arg = ((ClassMemberValue) arg).value;
+        }
 
         if (arg.type != ValueType.String)
         {

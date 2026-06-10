@@ -73,3 +73,6 @@ Agora é necessário:
 ### Atualizações 8.6.26
 - Adição de chamada com referência para classe mãe do método
 - Iniciando criação de strategies para assignment
+
+### Atualizações 9.6.26
+- Adição de chamadas com referência para o valor do membro da classe, não necessariamente seu valor "ClassMember"

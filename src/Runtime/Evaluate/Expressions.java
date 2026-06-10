@@ -3,7 +3,9 @@ package Runtime.Evaluate;
 import Ast.Expressions.*;
 import Ast.Expressions.Literals.ArrayLiteral;
 import Ast.Expressions.Literals.ClassLiteral;
+import Entities.Abstractions.Evaluate.Strategies.AssignmentExprStrategy;
 import Entities.Abstractions.Evaluate.Strategies.BinaryExprStrategy;
+import Entities.Abstractions.Evaluate.Strategies.MemberAssignmentExprStrategy;
 import Entities.Abstractions.Evaluate.Strategies.UnaryExprStrategy;
 import Entities.Abstractions.Type;
 import Entities.Common.Result.ErrorOr;
@@ -20,6 +22,8 @@ import Entities.Exceptions.Parser.InvalidNodeException;
 import Entities.Exceptions.Parser.InvalidStatementContextException;
 import Entities.Metadata.ParameterMetadata;
 import Runtime.Environment;
+import Runtime.Evaluate.Factory.AssignmentExpr.AssignmentExprFactory;
+import Runtime.Evaluate.Factory.AssignmentExpr.Member.MemberAssignmentExprFactory;
 import Runtime.Evaluate.Factory.BinaryExpr.BinaryExprFactory;
 import Runtime.Evaluate.Factory.UnaryExpr.UnaryExprFactory;
 import Runtime.Interpreter;
@@ -35,12 +39,14 @@ import Runtime.Values.FlowControl.ReturnFlow;
 import java.util.ArrayList;
 
 public abstract class Expressions {
-    public static RuntimeValue evaluateIdentifier(Identifier identifier, Environment env) {
+    public static RuntimeValue evaluateIdentifier(Identifier identifier, Environment env)
+    {
         return env.lookupVariable(identifier.value);
     }
 
     public static RuntimeValue evaluateUnaryExpr(UnaryExpr expr, Environment env)
-        throws AlreadyDeclaredVariableException {
+        throws AlreadyDeclaredVariableException
+    {
         ErrorOr<UnaryExprStrategy> result = UnaryExprFactory.build(expr);
 
         if (result.isError()) {
@@ -54,7 +60,8 @@ public abstract class Expressions {
     }
 
     public static RuntimeValue evaluateBinaryExpr(BinaryExpr expr, Environment env)
-        throws AlreadyDeclaredVariableException {
+        throws AlreadyDeclaredVariableException
+    {
         ErrorOr<BinaryExprStrategy> result = BinaryExprFactory.build(expr, env);
 
         if (result.isError())
@@ -70,69 +77,23 @@ public abstract class Expressions {
     }
 
     public static RuntimeValue evaluateVariableAssignment(AssignmentExpr assignment, Environment env)
-        throws AlreadyDeclaredVariableException {
-        if (assignment.assigned.type == NodeType.Identifier)
+        throws AlreadyDeclaredVariableException
+    {
+        ErrorOr<AssignmentExprStrategy> result = AssignmentExprFactory.build(assignment);
+
+        if (result.isError())
         {
-            String name = ((Identifier) assignment.assigned).value;
-            RuntimeValue value = Interpreter.evaluate(assignment.value, env);
-            return env.assignVariable(name, value);
+            throw new InvalidAssignmentExpression(result.error.getMessage());
         }
 
-        if (assignment.assigned.type == NodeType.MemberExpression)
-        {
-            MemberExpr memberExpr = ((MemberExpr) assignment.assigned);
-            RuntimeValue value = Interpreter.evaluate(assignment.value, env);
+        AssignmentExprStrategy strategy = result.value;
 
-            if (memberExpr.object.type == NodeType.Identifier)
-            {
-                Identifier objectIdentifier = (Identifier) memberExpr.object;
-                RuntimeValue variable = env.lookupVariable(objectIdentifier.value);
-
-//                if (!memberExpr.computed && variable.type == ValueType.Class)
-//                {
-//                    Identifier memberIdentifier = (Identifier) memberExpr.property;
-//                    return env.assignClassMember(objectIdentifier.value, memberIdentifier.value, value);
-//                }
-
-//                if (!memberExpr.computed && variable.type == ValueType.Object)
-//                {
-//                    Identifier memberIdentifier = (Identifier) memberExpr.property;
-//                    return env.assignMember(objectIdentifier.value, memberIdentifier.value, value);
-//                }
-
-                RuntimeValue propValue = Interpreter.evaluate(memberExpr.property, env);
-
-                if (propValue.type == ValueType.String && variable.type == ValueType.Object)
-                {
-                    StringValue memberIdentifier = (StringValue) propValue;
-                    return env.assignMember(objectIdentifier.value, memberIdentifier.value, value);
-                }
-
-                if (propValue.type == ValueType.Numeric && variable.type == ValueType.Array)
-                {
-                    NumericValue memberIdentifier = (NumericValue) propValue;
-
-                    if (!memberIdentifier.isInteger)
-                    {
-                        throw new ExpectedTypeNotMatch("Não se pode indexar uma lista com uma chave do tipo real.");
-                    }
-
-                    return env.assignIndex(objectIdentifier.value, (int) memberIdentifier.value, value);
-                }
-            }
-
-            if (memberExpr.object.type == NodeType.ObjectLiteral || memberExpr.object.type == NodeType.ArrayLiteral)
-            {
-                return value;
-            }
-        }
-
-        throw new InvalidNodeException("Esperávamos um membro de objeto ou uma variável para a expressão " +
-            "darmos um novo valor para ela.");
+        return strategy.evaluate(assignment, env);
     }
 
     public static RuntimeValue evaluateObjectExpression(ObjectLiteral object, Environment env)
-        throws AlreadyDeclaredVariableException {
+        throws AlreadyDeclaredVariableException
+    {
         ObjectValue value = ObjectValue.create();
 
         for (Property prop : object.properties)
@@ -150,7 +111,8 @@ public abstract class Expressions {
     }
 
     public static RuntimeValue evaluateArrayExpression(ArrayLiteral array, Environment env)
-        throws AlreadyDeclaredVariableException {
+        throws AlreadyDeclaredVariableException
+    {
         ArrayValue value = ArrayValue.create();
 
         for (int i = 0; i < array.items.size(); i++) {
@@ -164,7 +126,8 @@ public abstract class Expressions {
 
 
     public static RuntimeValue evaluateMemberExpression(MemberExpr memberExpr, Environment env)
-        throws AlreadyDeclaredVariableException {
+        throws AlreadyDeclaredVariableException
+    {
         RuntimeValue entity = Interpreter.evaluate(memberExpr.object, env);
 
         if (entity.type == ValueType.Class) {
@@ -394,7 +357,16 @@ public abstract class Expressions {
                             equality.error.getMessage()));
                 }
 
-                scope.declareVariable(name, args.get(i), param.getType(), false);
+                RuntimeValue value = args.get(i);
+
+                if (value.type == ValueType.ClassMember)
+                {
+                    ClassMemberValue prop = (ClassMemberValue) value;
+                    scope.declareVariable(name, prop.value, param.getType(), false);
+                    continue;
+                }
+
+                scope.declareVariable(name, value, param.getType(), false);
             }
 
             Environment typeEnv = env.resolveType(member.owner.className);
@@ -466,7 +438,16 @@ public abstract class Expressions {
                         equality.error.getMessage()));
                 }
 
-                scope.declareVariable(name, args.get(i), param.getType(), false);
+                RuntimeValue value = args.get(i);
+
+                if (value.type == ValueType.ClassMember)
+                {
+                    ClassMemberValue prop = (ClassMemberValue) value;
+                    scope.declareVariable(name, prop.value, param.getType(), false);
+                    continue;
+                }
+
+                scope.declareVariable(name, value, param.getType(), false);
             }
 
             RuntimeValue result = NullValue.create();

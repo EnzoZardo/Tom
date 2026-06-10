@@ -7,17 +7,25 @@ import Entities.Abstractions.Runtime.RuntimeValue;
 import Entities.Enums.Ast.NodeType;
 import Entities.Enums.Runtime.ValueType;
 import Entities.Exceptions.AlreadyDeclaredVariableException;
+import Runtime.Values.NumericValue;
+import Runtime.Values.StringValue;
 import Runtime.Environment;
 import Runtime.Interpreter;
-import Runtime.Values.StringValue;
 
-public class ObjectComputedMemberAssigmentStrategy implements MemberAssignmentExprStrategy
+public class ArrayComputedMemberAssignmentStrategy implements MemberAssignmentExprStrategy
 {
     public static boolean canEvaluate(MemberExpr member, RuntimeValue variable, RuntimeValue property)
     {
+        if (property.type != ValueType.Numeric)
+        {
+            return false;
+        }
+
+        NumericValue value = (NumericValue) property;
+
         return member.computed
-            && variable.type == ValueType.Object
-            && property.type == ValueType.String
+            && value.isInteger
+            && variable.type == ValueType.Array
             && member.object.type == NodeType.Identifier;
     }
 
@@ -27,8 +35,9 @@ public class ObjectComputedMemberAssigmentStrategy implements MemberAssignmentEx
         Identifier objectIdentifier = (Identifier) member.object;
 
         RuntimeValue memberIdentifier = Interpreter.evaluate(member.property, env);
-        StringValue computedProperty = (StringValue) memberIdentifier;
+        NumericValue computedProperty = (NumericValue) memberIdentifier;
 
-        return env.assignMember(objectIdentifier.value, computedProperty.value, value);
+        return env.assignIndex(objectIdentifier.value, (int) computedProperty.value, value);
     }
 }
+

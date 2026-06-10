@@ -92,11 +92,9 @@ public class ClassValue extends RuntimeValue {
         }
 
         return new ClassValue(
-                parent == null
-                        ? null
-                        : parent.copy(),
-                copiedMembers,
-                className
+            parent == null ? null : parent.copy(),
+            copiedMembers,
+            className
         );
     }
 }

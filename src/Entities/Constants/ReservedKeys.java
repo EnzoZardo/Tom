@@ -29,6 +29,7 @@ public record ReservedKeys()
 
     /* #region Reserved Keys */
     public static final String Continue = "continue";
+    public static final String Static = "estatico";
     public static final String True = "verdadeiro";
     public static final String While = "enquanto";
     public static final String Return = "retorne";

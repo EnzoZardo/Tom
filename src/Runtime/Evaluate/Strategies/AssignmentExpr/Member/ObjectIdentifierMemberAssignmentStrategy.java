@@ -10,14 +10,16 @@ import Runtime.Environment;
 
 public class ObjectIdentifierMemberAssignmentStrategy implements MemberAssignmentExprStrategy
 {
-    public static boolean canEvaluate(MemberExpr member, Environment environment) {
-        Identifier objectIdentifier = (Identifier) member.object;
-        RuntimeValue variable = environment.lookupVariable(objectIdentifier.value);
-        return member.object.type == NodeType.Identifier && !member.computed && variable.type == ValueType.Object;
+    public static boolean canEvaluate(MemberExpr member, RuntimeValue variable)
+    {
+        return !member.computed
+            && variable.type == ValueType.Object
+            && member.object.type == NodeType.Identifier;
     }
 
     @Override
-    public RuntimeValue evaluate(MemberExpr member, RuntimeValue value, Environment environment) {
+    public RuntimeValue evaluate(MemberExpr member, RuntimeValue value, Environment environment)
+    {
         Identifier memberIdentifier = (Identifier) member.property;
         Identifier objectIdentifier = (Identifier) member.object;
         return environment.assignMember(objectIdentifier.value, memberIdentifier.value, value);

@@ -219,7 +219,7 @@ public class Environment
         if (valueMetadata.getValue().type != ValueType.Class)
         {
             throw new InvalidMemberAssignException("O valor para o qual está tentando dar um novo " +
-                    "valor não é do tipo objeto.");
+                    "valor não é do tipo classe.");
         }
 
         ClassValue objectValue = (ClassValue) valueMetadata.getValue();

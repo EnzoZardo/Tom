@@ -6,13 +6,17 @@ import Entities.Abstractions.Runtime.RuntimeValue;
 import Entities.Enums.Ast.NodeType;
 import Runtime.Environment;
 
-public class AnonymousMemberAssignmentStrategy implements MemberAssignmentExprStrategy {
-    public static boolean canEvaluate(MemberExpr member) {
-        return member.object.type == NodeType.ObjectLiteral || member.object.type == NodeType.ArrayLiteral;
+public class AnonymousMemberAssignmentStrategy implements MemberAssignmentExprStrategy
+{
+    public static boolean canEvaluate(MemberExpr member)
+    {
+        return member.object.type == NodeType.ObjectLiteral
+            || member.object.type == NodeType.ArrayLiteral;
     }
 
     @Override
-    public RuntimeValue evaluate(MemberExpr __, RuntimeValue value, Environment ___) {
+    public RuntimeValue evaluate(MemberExpr __, RuntimeValue value, Environment ___)
+    {
         return value;
     }
 }

@@ -79,4 +79,10 @@ public class ClassMemberValue extends RuntimeValue
     {
         return this.value.bool();
     }
+
+    @Override
+    public String toString()
+    {
+        return value.toString();
+    }
 }
