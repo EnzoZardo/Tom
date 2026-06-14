@@ -76,3 +76,6 @@ Agora é necessário:
 
 ### Atualizações 9.6.26
 - Adição de chamadas com referência para o valor do membro da classe, não necessariamente seu valor "ClassMember"
+
+### Atualizações 13.6.26
+- Adição de strategies para member expressions

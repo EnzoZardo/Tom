@@ -7,7 +7,7 @@ public class NullConstantException extends RuntimeException
         super("Não podemos declarar uma constante sem valor.");
     }
 
-    public static void ThrowIf(boolean condition)
+    public static void throwIf(boolean condition)
     {
         if (condition)
         {

@@ -57,7 +57,7 @@ public class VariableDeclaration extends Statement
         if (parser.peekIs(TokenType.INTERROGATION))
         {
             parser.consume();
-            NullConstantException.ThrowIf(isConstant);
+            NullConstantException.throwIf(isConstant);
             return VariableDeclaration.create(identifier, type);
         }
 

@@ -13,6 +13,7 @@ public record ReservedWords()
         put(ReservedKeys.Protected, TokenType.PROTECTION_MARKER);
         put(ReservedKeys.Private, TokenType.PROTECTION_MARKER);
         put(ReservedKeys.Public, TokenType.PROTECTION_MARKER);
+        put(ReservedKeys.Static, TokenType.STATIC_MARKER);
         put(ReservedKeys.And, TokenType.BINARY_OPERATOR);
         put(ReservedKeys.Or, TokenType.BINARY_OPERATOR);
         put(ReservedKeys.In, TokenType.BINARY_OPERATOR);

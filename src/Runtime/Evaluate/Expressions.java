@@ -3,10 +3,7 @@ package Runtime.Evaluate;
 import Ast.Expressions.*;
 import Ast.Expressions.Literals.ArrayLiteral;
 import Ast.Expressions.Literals.ClassLiteral;
-import Entities.Abstractions.Evaluate.Strategies.AssignmentExprStrategy;
-import Entities.Abstractions.Evaluate.Strategies.BinaryExprStrategy;
-import Entities.Abstractions.Evaluate.Strategies.MemberAssignmentExprStrategy;
-import Entities.Abstractions.Evaluate.Strategies.UnaryExprStrategy;
+import Entities.Abstractions.Evaluate.Strategies.*;
 import Entities.Abstractions.Type;
 import Entities.Common.Result.ErrorOr;
 import Entities.Constants.ReservedKeys;
@@ -25,6 +22,7 @@ import Runtime.Environment;
 import Runtime.Evaluate.Factory.AssignmentExpr.AssignmentExprFactory;
 import Runtime.Evaluate.Factory.AssignmentExpr.Member.MemberAssignmentExprFactory;
 import Runtime.Evaluate.Factory.BinaryExpr.BinaryExprFactory;
+import Runtime.Evaluate.Factory.MemberExpr.MemberExprFactory;
 import Runtime.Evaluate.Factory.UnaryExpr.UnaryExprFactory;
 import Runtime.Interpreter;
 import Entities.Enums.Runtime.ValueType;
@@ -91,6 +89,23 @@ public abstract class Expressions {
         return strategy.evaluate(assignment, env);
     }
 
+    public static RuntimeValue evaluateMemberExpression(MemberExpr memberExpr, Environment env)
+            throws AlreadyDeclaredVariableException
+    {
+        RuntimeValue owner = Interpreter.evaluate(memberExpr.object, env);
+
+        ErrorOr<MemberExprStrategy> result = MemberExprFactory.build(memberExpr, owner);
+
+        if (result.isError())
+        {
+            throw new InvalidNodeException(result.error.getMessage());
+        }
+
+        MemberExprStrategy strategy = result.value;
+
+        return strategy.evaluate(memberExpr, owner, env);
+    }
+
     public static RuntimeValue evaluateObjectExpression(ObjectLiteral object, Environment env)
         throws AlreadyDeclaredVariableException
     {
@@ -122,115 +137,6 @@ public abstract class Expressions {
         }
 
         return value;
-    }
-
-
-    public static RuntimeValue evaluateMemberExpression(MemberExpr memberExpr, Environment env)
-        throws AlreadyDeclaredVariableException
-    {
-        RuntimeValue entity = Interpreter.evaluate(memberExpr.object, env);
-
-        if (entity.type == ValueType.Class) {
-            ClassValue value = (ClassValue) entity;
-
-            if (memberExpr.computed) {
-                //TODO: change this
-                throw new InvalidArrayIndexTypeException();
-            }
-
-            if (memberExpr.property.type == NodeType.Identifier) {
-                Identifier identifier = (Identifier) memberExpr.property;
-                ClassMemberValue member = value.members.get(identifier.value);
-                ClassMemberValue bound = (ClassMemberValue) member.copy();
-
-                bound.owner = value;
-                return bound;
-            }
-
-            return NullValue.create();
-        }
-
-        if (entity.type == ValueType.Object) {
-            ObjectValue value = (ObjectValue) entity;
-
-            if (memberExpr.property.type == NodeType.Identifier && !memberExpr.computed) {
-                Identifier id = (Identifier) memberExpr.property;
-
-                if (value.properties.containsKey(id.value)) {
-                    return value.properties.get(id.value);
-                }
-            } else {
-                RuntimeValue member = Interpreter.evaluate(memberExpr.property, env);
-
-                if (member.type == ValueType.String) {
-                    StringValue id = (StringValue) member;
-
-                    if (value.properties.containsKey(id.value)) {
-                        return value.properties.get(id.value);
-                    }
-                }
-
-                throw new InvalidComputedObjectKeyType();
-            }
-
-            return NullValue.create();
-        }
-
-        if (entity.type == ValueType.Array && memberExpr.computed)
-        {
-            ArrayValue value = (ArrayValue) entity;
-
-            RuntimeValue member = Interpreter.evaluate(memberExpr.property, env);
-
-            if (member.type == ValueType.Numeric)
-            {
-                NumericValue key = (NumericValue) member;
-
-                if (!key.isInteger || key.value < 0)
-                {
-                    throw new InvalidArrayIndexTypeException();
-                }
-
-                int index = (int)key.value;
-                if (value.items.containsKey(index))
-                {
-                    return value.items.get(index);
-                }
-
-                return NullValue.create();
-            }
-
-            throw new InvalidArrayIndexTypeException();
-        }
-
-        if (entity.type == ValueType.String && memberExpr.computed)
-        {
-            StringValue value = (StringValue) entity;
-
-            RuntimeValue member = Interpreter.evaluate(memberExpr.property, env);
-
-            if (member.type == ValueType.Numeric)
-            {
-                NumericValue key = (NumericValue) member;
-
-                if (!key.isInteger || key.value < 0)
-                {
-                    throw new InvalidArrayIndexTypeException();
-                }
-
-                int index = (int)key.value;
-                if (index < value.value.length())
-                {
-                    return StringValue.create(Character.toString(value.value.charAt(index)));
-                }
-
-                return NullValue.create();
-            }
-
-            throw new InvalidArrayIndexTypeException();
-        }
-
-        throw new InvalidNodeException("Esperávamos um objeto ou lista para buscarmos uma chave dele.");
     }
 
     public static RuntimeValue evaluateInstantiationExpression(
@@ -271,7 +177,7 @@ public abstract class Expressions {
 
         if (function.parameters.size() != classLiteral.arguments.size()) {
             throw new IncorrectNumberOfArgumentsException(String.format(
-                    "A função %s esperava %d argumento(s), mas recebeu %d.",
+                    "O construtor %s esperava %d argumento(s), mas recebeu %d.",
                     function.name,
                     function.parameters.size(),
                     classLiteral.arguments.size()));
@@ -289,9 +195,9 @@ public abstract class Expressions {
             ErrorOr<Void> equality = TypeChecker.check(env, args.get(i), param.getType());
             if (equality.isError()) {
                 throw new RuntimeException(String.format(
-                        "Tipo incorreto informado para o argumento '%s'. %s",
-                        name,
-                        equality.error.getMessage()));
+                    "Tipo incorreto informado para o argumento '%s'. %s",
+                    name,
+                    equality.error.getMessage()));
             }
 
             scope.declareVariable(name, args.get(i), param.getType(), false);

@@ -10,6 +10,11 @@ classe Age
 {
     priv var age: int = 2
 
+    publ fun Age(startAge: int): Age 
+    {
+        isso.age = startAge
+    }
+
     publ fun getAge() : int 
     { 
         retorne isso.age 
@@ -29,10 +34,9 @@ classe Age
 }
 
 # instantiation
-var age: Age = novo Age()
+var age: Age = novo Age(50)
 
 # asserts
-age.setAge()
 escreva("must be 1:", age.getAge())
 escreva("must be 2:", Age.getAge())
 age.writeToAge()

@@ -7,33 +7,30 @@ import Entities.Enums.Runtime.ValueType;
 public class ClassMemberValue extends RuntimeValue
 {
     public final ProtectionLevel protectionLevel;
+    public final boolean isStatic;
     public ClassValue owner;
     public RuntimeValue value;
 
     protected ClassMemberValue(
         ProtectionLevel protectionLevel,
         RuntimeValue value,
-        ClassValue owner)
+        ClassValue owner,
+        boolean isStatic)
     {
         super(ValueType.ClassMember);
         this.protectionLevel = protectionLevel;
         this.owner = owner;
         this.value = value;
+        this.isStatic = isStatic;
     }
 
     public static ClassMemberValue create(
         ProtectionLevel protectionLevel,
         RuntimeValue value,
-        ClassValue owner)
+        ClassValue owner,
+        boolean isStatic)
     {
-        return new ClassMemberValue(protectionLevel, value, owner);
-    }
-
-    public static ClassMemberValue create(
-        ProtectionLevel protectionLevel,
-        ClassValue owner)
-    {
-        return new ClassMemberValue(protectionLevel, null, owner);
+        return new ClassMemberValue(protectionLevel, value, owner, isStatic);
     }
 
     public static RuntimeValue mapToValue(RuntimeValue value)
@@ -50,7 +47,7 @@ public class ClassMemberValue extends RuntimeValue
     @Override
     public RuntimeValue copy()
     {
-        return new ClassMemberValue(protectionLevel, value.copy(), owner);
+        return new ClassMemberValue(protectionLevel, value.copy(), owner, isStatic);
     }
 
     public boolean isPublic()
@@ -75,6 +72,7 @@ public class ClassMemberValue extends RuntimeValue
         return "\n" + "\t".repeat(level) + "{\n" +
                 "\t".repeat(next) + "node: " + type.toString() + ",\n" +
                 "\t".repeat(next) + "protectionLevel: " + protectionLevel.toString() + ",\n" +
+                "\t".repeat(next) + "static: " + isStatic + ",\n" +
                 "\t".repeat(next) + "value: " + value.print(next) + ",\n" +
                 "\t".repeat(level) + "}";
     }

@@ -13,23 +13,27 @@ import Parser.Parser;
 
 public class ClassMemberDeclaration extends Statement
 {
-    public ProtectionLevel protectionMarker;
-    public Statement consequent;
+    public final ProtectionLevel protectionMarker;
+    public final Statement consequent;
+    public final boolean isStatic;
 
     protected ClassMemberDeclaration(
         ProtectionLevel protectionMarker,
-        Statement consequent)
+        Statement consequent,
+        boolean isStatic)
     {
         super(NodeType.ClassMemberDeclaration);
         this.protectionMarker = protectionMarker;
         this.consequent = consequent;
+        this.isStatic = isStatic;
     }
 
     public static ClassMemberDeclaration create(
         ProtectionLevel protectionMarker,
-        Statement consequent)
+        Statement consequent,
+        boolean isStatic)
     {
-        return new ClassMemberDeclaration(protectionMarker, consequent);
+        return new ClassMemberDeclaration(protectionMarker, consequent, isStatic);
     }
 
     public static ProtectionLevel getProtectionLevel(String protectionMarker) {
@@ -46,6 +50,14 @@ public class ClassMemberDeclaration extends Statement
         Token protectionMarker = parser.expect(TokenType.PROTECTION_MARKER, "Esperávamos um nível de proteção "
             + "para o membro da classe declarada.");
 
+        boolean isStatic = false;
+
+        if (parser.peekIs(TokenType.STATIC_MARKER))
+        {
+            parser.consume();
+            isStatic = true;
+        }
+
         if (!parser.peekIs(TokenType.DECLARE) &&
             !parser.peekIs(TokenType.CONSTANT) &&
             !parser.peekIs(TokenType.FUNCTION) &&
@@ -58,7 +70,8 @@ public class ClassMemberDeclaration extends Statement
 
         return ClassMemberDeclaration.create(
             getProtectionLevel(protectionMarker.value),
-            consequent);
+            consequent,
+            isStatic);
     }
 
     public String getMemberName()

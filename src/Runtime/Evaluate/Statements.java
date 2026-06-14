@@ -69,7 +69,12 @@ public class Statements {
             RuntimeValue value = Interpreter.evaluate(member.consequent, classEnv);
             members.put(
                 member.getMemberName(),
-                ClassMemberValue.create(member.protectionMarker, value, classValue));
+                ClassMemberValue.create(
+                    member.protectionMarker,
+                    value,
+                    classValue,
+                    member.isStatic)
+            );
         }
 
         Type type = ClassType.create(declaration.name);
@@ -78,7 +83,7 @@ public class Statements {
     }
 
     public static RuntimeValue evaluateTypeDeclaration(
-        TypeDeclaration declaration, Environment env) throws AlreadyDeclaredVariableException
+        TypeDeclaration declaration, Environment env)
     {
         env.declareType(declaration.identifier, Type.reduce(env, declaration.value));
         return NullValue.create();
