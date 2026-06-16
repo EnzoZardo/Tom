@@ -7,5 +7,6 @@ import Runtime.Environment;
 
 public interface MemberExprStrategy
 {
-    RuntimeValue evaluate(MemberExpr expr, RuntimeValue owner, Environment environment) throws AlreadyDeclaredVariableException;
+    RuntimeValue evaluate(MemberExpr expr, RuntimeValue owner, Environment environment)
+        throws AlreadyDeclaredVariableException;
 }

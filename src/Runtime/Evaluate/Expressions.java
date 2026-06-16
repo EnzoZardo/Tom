@@ -139,9 +139,9 @@ public abstract class Expressions {
         return value;
     }
 
-    public static RuntimeValue evaluateInstantiationExpression(
-        ClassLiteral classLiteral, Environment env)
-        throws AlreadyDeclaredVariableException {
+    public static RuntimeValue evaluateInstantiationExpression(ClassLiteral classLiteral, Environment env)
+        throws AlreadyDeclaredVariableException
+    {
         Environment declarationEnv = env.resolve(classLiteral.className);
         RuntimeValue declarationValue = declarationEnv.lookupVariable(classLiteral.className);
 

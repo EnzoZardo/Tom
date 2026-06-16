@@ -40,6 +40,7 @@ public class ErrorOr<T>
     {
         return new ErrorOr<>(null, true);
     }
+
     public static <T> ErrorOr<T> Fail(Error error)
     {
         return new ErrorOr<>(error);
@@ -47,6 +48,10 @@ public class ErrorOr<T>
     public static <T> ErrorOr<T> Fail(String message)
     {
         return new ErrorOr<>(Error.create(message));
+    }
+    public static <T> ErrorOr<T> Fail(String message, ErrorType type)
+    {
+        return new ErrorOr<>(Error.create(message, type));
     }
 
     public ErrorOr<Void> empty()
