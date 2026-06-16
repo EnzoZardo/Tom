@@ -1,42 +1,20 @@
-# types
-tipo int = inteiro
-tipo nil = nulo
+tipo vazio = nulo
+con vazio: vazio = nulo
 
-# constants
-con nil: nil = nulo
-
-# classes
-classe Age
+classe Animal
 {
-    priv var age: int = 2
+    publ est var nome: texto = "Rex"
+    priv var idade: inteiro = 1
+    priv est con mensagem: texto = "Mudamos a idade para:"
 
-    publ fun Age(startAge: int): Age 
-    {
-        isso.age = startAge
-    }
-
-    publ fun getAge() : int 
-    { 
-        retorne isso.age 
-    }
-
-    publ fun setAge() : int 
-    { 
-        isso.age = inteiro.dez
-        retorne isso.age 
-    }
-
-    publ fun writeToAge() : nil 
-    {
-        para cada (age em intervalo(isso.age)) escreva(age)
-        retorne nil
+    publ fun mudaIdade(): inteiro {
+        isso.idade = 3
+        escreva(Animal.mensagem, isso.idade)
+        retorne isso.idade
     }
 }
 
-# instantiation
-var age: Age = novo Age(50)
-
-# asserts
-escreva("must be 1:", age.getAge())
-escreva("must be 2:", Age.getAge())
-age.writeToAge()
+con estimacao: Animal = novo Animal()
+Animal.nome = "Thomas"
+estimacao.mudaIdade()
+escreva(Animal.mensagem)

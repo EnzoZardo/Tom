@@ -6,33 +6,41 @@ import Entities.Enums.Runtime.ValueType;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ClassValue extends RuntimeValue {
+public class ClassValue extends RuntimeValue
+{
     public final String className;
     public HashMap<String, ClassMemberValue> members;
     public ClassValue parent;
+    public final boolean isInstance;
 
     protected ClassValue(
         ClassValue parent,
         HashMap<String, ClassMemberValue> members,
-        String className)
+        String className,
+        boolean isInstance)
     {
         super(ValueType.Class);
         this.parent = parent;
         this.members = members;
         this.className = className;
+        this.isInstance = isInstance;
     }
 
     public static ClassValue create(
         String className,
         ClassValue parent,
-        HashMap<String, ClassMemberValue> members)
+        HashMap<String, ClassMemberValue> members,
+        boolean isInstance)
     {
-        return new ClassValue(parent, members, className);
+        return new ClassValue(parent, members, className, isInstance);
     }
 
-    public static ClassValue create(String className, HashMap<String, ClassMemberValue> members)
+    public static ClassValue create(
+        String className,
+        HashMap<String, ClassMemberValue> members,
+        boolean isInstance)
     {
-        return new ClassValue(null, members, className);
+        return new ClassValue(null, members, className, isInstance);
     }
 
     private String printProps(int level)
@@ -81,20 +89,23 @@ public class ClassValue extends RuntimeValue {
     @Override
     public ClassValue copy()
     {
+        ClassValue classValue = new ClassValue(
+                parent == null ? null : parent.copy(),
+                new HashMap<>(),
+                className,
+                false
+        );
+
         HashMap<String, ClassMemberValue> copiedMembers = new HashMap<>();
 
         for (Map.Entry<String, ClassMemberValue> entry : members.entrySet())
         {
-            copiedMembers.put(
-                entry.getKey(),
-                (ClassMemberValue) entry.getValue().copy()
-            );
+            ClassMemberValue member = (ClassMemberValue) entry.getValue().copy();
+            member.owner = classValue;
+            copiedMembers.put(entry.getKey(), member);
         }
 
-        return new ClassValue(
-            parent == null ? null : parent.copy(),
-            copiedMembers,
-            className
-        );
+        classValue.members = copiedMembers;
+        return classValue;
     }
 }

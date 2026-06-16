@@ -11,6 +11,7 @@ import Entities.Constants.ReservedKeys;
 import Entities.Enums.Runtime.ValueType;
 import Entities.Exceptions.AlreadyDeclaredVariableException;
 import Entities.Exceptions.Evaluate.IncorrectNumberOfArgumentsException;
+import Entities.Exceptions.Evaluate.InvalidMemberAssignException;
 import Entities.Exceptions.ExpectedTypeNotMatch;
 import Entities.Exceptions.InvalidCallException;
 import Entities.Metadata.ArgumentMetadata;
@@ -21,6 +22,7 @@ import Runtime.Values.FlowControl.ReturnFlow;
 import Runtime.Values.FunctionValue;
 import Runtime.Values.NullValue;
 import Runtime.TypeChecker;
+import Runtime.AccessChecker;
 
 import java.util.ArrayList;
 
@@ -30,12 +32,18 @@ public class ClassMemberCallStrategy implements CallExprStrategy
     public RuntimeValue evaluate(CallExpr expr, RuntimeValue caller, Environment environment)
         throws AlreadyDeclaredVariableException
     {
+
         ArrayList<RuntimeValue> args = new ArrayList<>();
         for (Expr arg : expr.arguments) args.add(Interpreter.evaluate(arg, environment));
 
         ClassMemberValue member = (ClassMemberValue) caller;
         FunctionValue function = (FunctionValue) member.value;
-        Environment scope = Environment.create(function.declarationEnv);
+
+        ErrorOr<Void> accessResult = AccessChecker.canAccess(member, environment.currentClass, function.name);
+
+        if (accessResult.isError()) throw new InvalidCallException(accessResult.error.getMessage());
+
+        Environment scope = Environment.create(function.declarationEnv, member.owner);
 
         if (function.parameters.size() != expr.arguments.size())
             throw new IncorrectNumberOfArgumentsException(String.format(
@@ -64,11 +72,7 @@ public class ClassMemberCallStrategy implements CallExprStrategy
         Environment typeEnv = environment.resolveType(member.owner.className);
         Type type = typeEnv.lookupType(member.owner.className);
 
-        scope.declareVariable(
-            ReservedKeys.This,
-            member.owner,
-            type,
-            false);
+        if (!member.isStatic) scope.declareVariable(ReservedKeys.This, member.owner, type, false);
 
         RuntimeValue result = NullValue.create();
         for (Statement statement : function.body)

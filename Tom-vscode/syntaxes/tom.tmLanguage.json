@@ -68,7 +68,7 @@
         },
         {
           "name": "storage.modifier.access.tom",
-          "match": "\\b(publ|prot|priv)\\b"
+          "match": "\\b(publ|prot|priv|est)\\b"
         }
       ]
     },

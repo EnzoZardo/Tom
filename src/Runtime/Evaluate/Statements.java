@@ -61,7 +61,7 @@ public class Statements {
         ClassDeclaration declaration, Environment env) throws AlreadyDeclaredVariableException
     {
         HashMap<String, ClassMemberValue> members = new HashMap<>();
-        ClassValue classValue = ClassValue.create(declaration.name, members);
+        ClassValue classValue = ClassValue.create(declaration.name, members, true);
         Environment classEnv = Environment.create(env);
 
         for (ClassMemberDeclaration member : declaration.members)
@@ -73,6 +73,7 @@ public class Statements {
                     member.protectionMarker,
                     value,
                     classValue,
+                    member.getMemberType(),
                     member.isStatic)
             );
         }

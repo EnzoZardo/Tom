@@ -20,6 +20,7 @@ public class ClassIdentifierMemberAssignmentStrategy implements MemberAssignment
     {
         Identifier memberIdentifier = (Identifier) member.property;
         Identifier objectIdentifier = (Identifier) member.object;
-        return environment.assignClassMember(objectIdentifier.value, memberIdentifier.value, value);
+        return environment.assignClassMember(
+            objectIdentifier.value, memberIdentifier.value, value, environment.currentClass);
     }
 }

@@ -1,6 +1,7 @@
 package Runtime.Values;
 
 import Entities.Abstractions.Runtime.RuntimeValue;
+import Entities.Abstractions.Type;
 import Entities.Enums.Runtime.ProtectionLevel;
 import Entities.Enums.Runtime.ValueType;
 
@@ -8,6 +9,8 @@ public class ClassMemberValue extends RuntimeValue
 {
     public final ProtectionLevel protectionLevel;
     public final boolean isStatic;
+    public final Type type;
+
     public ClassValue owner;
     public RuntimeValue value;
 
@@ -15,6 +18,7 @@ public class ClassMemberValue extends RuntimeValue
         ProtectionLevel protectionLevel,
         RuntimeValue value,
         ClassValue owner,
+        Type type,
         boolean isStatic)
     {
         super(ValueType.ClassMember);
@@ -22,15 +26,17 @@ public class ClassMemberValue extends RuntimeValue
         this.owner = owner;
         this.value = value;
         this.isStatic = isStatic;
+        this.type = type;
     }
 
     public static ClassMemberValue create(
         ProtectionLevel protectionLevel,
         RuntimeValue value,
         ClassValue owner,
+        Type type,
         boolean isStatic)
     {
-        return new ClassMemberValue(protectionLevel, value, owner, isStatic);
+        return new ClassMemberValue(protectionLevel, value, owner, type, isStatic);
     }
 
     public static RuntimeValue mapToValue(RuntimeValue value)
@@ -47,7 +53,7 @@ public class ClassMemberValue extends RuntimeValue
     @Override
     public RuntimeValue copy()
     {
-        return new ClassMemberValue(protectionLevel, value.copy(), owner, isStatic);
+        return new ClassMemberValue(protectionLevel, value.copy(), owner, type, isStatic);
     }
 
     public boolean isPublic()

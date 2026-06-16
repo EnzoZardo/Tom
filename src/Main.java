@@ -1,4 +1,3 @@
-
 import Ast.Statements.Program;
 import Entities.Exceptions.AlreadyDeclaredVariableException;
 import Entities.Exceptions.Parser.AlreadyParsedException;

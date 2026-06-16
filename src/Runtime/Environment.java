@@ -7,6 +7,7 @@ import Ast.Types.SymbolType;
 import Entities.Abstractions.Type;
 import Entities.Common.Result.ErrorOr;
 import Entities.Constants.ReservedKeys;
+import Entities.Enums.Runtime.ProtectionLevel;
 import Entities.Enums.Runtime.ValueType;
 import Entities.Enums.TypeKind;
 import Entities.Exceptions.*;
@@ -30,6 +31,7 @@ import java.util.function.Function;
 public class Environment
 {
     private final Environment parent;
+    public final ClassValue currentClass;
     private final HashMap<String, ValueMetadata> variables;
     private final HashMap<String, ValueMetadata> constants;
     private final HashMap<String, Type> types;
@@ -40,12 +42,14 @@ public class Environment
         types = new HashMap<>();
         variables = new HashMap<>();
         constants = new HashMap<>();
+        currentClass = null;
         setupScope();
     }
 
-    private Environment(Environment parent)
+    private Environment(Environment parent, ClassValue classValue)
     {
         this.parent = parent;
+        this.currentClass = classValue;
         types = new HashMap<>();
         variables = new HashMap<>();
         constants = new HashMap<>();
@@ -58,7 +62,12 @@ public class Environment
 
     public static Environment create(Environment parentEnv) throws AlreadyDeclaredVariableException
     {
-        return new Environment(parentEnv);
+        return new Environment(parentEnv, null);
+    }
+
+    public static Environment create(Environment parentEnv, ClassValue currentClass) throws AlreadyDeclaredVariableException
+    {
+        return new Environment(parentEnv, currentClass);
     }
 
     public RuntimeValue declareClass(String name, RuntimeValue classValue, Type classType)
@@ -87,9 +96,7 @@ public class Environment
         throws AlreadyDeclaredVariableException
     {
         if (variables.containsKey(name) || constants.containsKey(name))
-        {
             throw new AlreadyDeclaredVariableException(name);
-        }
 
         if (constant)
         {
@@ -127,20 +134,16 @@ public class Environment
         Environment variableEnvironment = resolve(name);
 
         if (variableEnvironment.constants.containsKey(name))
-        {
             throw new ConstantAssignmentException(String.format(
                 "Não podemos atribuir a variável '%s', ela é constante.",
                 name));
-        }
 
         ValueMetadata variable = variableEnvironment.variables.get(name);
 
         Type expectedType = variable.getType();
         ErrorOr<Void> equality = TypeChecker.check(this, value, expectedType);
         if (equality.isError())
-        {
             throw new ExpectedTypeNotMatch(equality.error.getMessage());
-        }
 
         variableEnvironment.variables.put(name, ValueMetadata.create(variable.getType(), value));
         return value;
@@ -231,7 +234,7 @@ public class Environment
                 keyName + " para este objeto.");
     }
 
-    public RuntimeValue assignClassMember(String name, String keyName, RuntimeValue value)
+    public RuntimeValue assignClassMember(String name, String keyName, RuntimeValue value, ClassValue caller)
     {
         Environment variableEnvironment = resolve(name);
         ValueMetadata valueMetadata = variableEnvironment.constants.get(name);
@@ -244,18 +247,25 @@ public class Environment
         if (valueMetadata.getValue().type != ValueType.Class)
         {
             throw new InvalidMemberAssignException("O valor para o qual está tentando dar um novo " +
-                    "valor não é do tipo classe.");
+                "valor não é do tipo classe.");
         }
 
-        ClassValue objectValue = (ClassValue) valueMetadata.getValue();
+        ClassValue classValue = (ClassValue) valueMetadata.getValue();
 
-        if (objectValue.members.containsKey(keyName))
+        if (classValue.members.containsKey(keyName))
         {
-            //TODO: create type validations
-            ClassMemberValue val = objectValue.members.get(keyName);
+            ClassMemberValue val = classValue.members.get(keyName);
+            ErrorOr<Void> accessResult = AccessChecker.canAccess(val, caller, keyName);
+
+            if (accessResult.isError()) throw new InvalidMemberAssignException(accessResult.error.getMessage());
+
+            Type expectedType = val.type;
+            ErrorOr<Void> equality = TypeChecker.check(this, value, expectedType);
+            if (equality.isError()) throw new ExpectedTypeNotMatch(equality.error.getMessage());
+
             val.value = value;
-            objectValue.members.put(keyName, val);
-            return objectValue;
+            classValue.members.put(keyName, val);
+            return classValue;
         }
 
         throw new InvalidMemberAssignException("Não foi encontrada nenhuma chave com o nome " +

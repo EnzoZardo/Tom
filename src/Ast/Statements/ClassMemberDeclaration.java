@@ -1,7 +1,9 @@
 package Ast.Statements;
 
 import Ast.Expressions.Identifier;
+import Ast.Types.ClassType;
 import Entities.Abstractions.Ast.Statement;
+import Entities.Abstractions.Type;
 import Entities.Constants.ReservedKeys;
 import Entities.Enums.Ast.NodeType;
 import Entities.Enums.Lexer.TokenType;
@@ -36,12 +38,34 @@ public class ClassMemberDeclaration extends Statement
         return new ClassMemberDeclaration(protectionMarker, consequent, isStatic);
     }
 
-    public static ProtectionLevel getProtectionLevel(String protectionMarker) {
-        return switch (protectionMarker) {
+    public static ProtectionLevel getProtectionLevel(String protectionMarker)
+    {
+        return switch (protectionMarker)
+        {
             case ReservedKeys.Protected -> ProtectionLevel.Protected;
             case ReservedKeys.Private -> ProtectionLevel.Private;
             case ReservedKeys.Public -> ProtectionLevel.Public;
             default -> throw new InvalidTokenException("Marcador de nível de proteção inválido: " + protectionMarker);
+        };
+    }
+
+    public String getMemberName()
+    {
+        return switch (consequent.type)
+        {
+            case VariableDeclaration -> ((VariableDeclaration) consequent).identifier;
+            case FunctionDeclaration -> ((FunctionDeclaration) consequent).identifier;
+            default -> throw new InvalidTokenException("Declaração inválida de membro de classe.");
+        };
+    }
+
+    public Type getMemberType()
+    {
+        return switch (consequent.type)
+        {
+            case VariableDeclaration -> ((VariableDeclaration) consequent).expectedType;
+            case FunctionDeclaration -> ((FunctionDeclaration) consequent).returnType;
+            default -> throw new InvalidTokenException("Declaração inválida de membro de classe.");
         };
     }
 
@@ -60,11 +84,8 @@ public class ClassMemberDeclaration extends Statement
 
         if (!parser.peekIs(TokenType.DECLARE) &&
             !parser.peekIs(TokenType.CONSTANT) &&
-            !parser.peekIs(TokenType.FUNCTION) &&
-            !parser.peekIs(TokenType.CLASS))
-        {
+            !parser.peekIs(TokenType.FUNCTION))
             throw new InvalidTokenException("Declaração inválida de membro de classe.");
-        }
 
         Statement consequent = Statement.parse(parser);
 
@@ -72,16 +93,6 @@ public class ClassMemberDeclaration extends Statement
             getProtectionLevel(protectionMarker.value),
             consequent,
             isStatic);
-    }
-
-    public String getMemberName()
-    {
-        return switch (consequent.type) {
-            case NodeType.VariableDeclaration -> ((VariableDeclaration) consequent).identifier;
-            case NodeType.FunctionDeclaration -> ((FunctionDeclaration) consequent).identifier;
-            case NodeType.ClassDeclaration -> ((ClassDeclaration) consequent).name;
-            default -> throw new InvalidTokenException("Declaração inválida de membro de classe.");
-        };
     }
 
 
