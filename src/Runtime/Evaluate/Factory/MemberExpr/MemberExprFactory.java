@@ -15,27 +15,21 @@ public class MemberExprFactory
         throws AlreadyDeclaredVariableException
     {
         if (owner.type == ValueType.Class)
-        {
             return ErrorOr.Success(new ClassMemberStrategy());
-        }
 
         if (owner.type == ValueType.Object)
         {
             if (expr.property.type == NodeType.Identifier && !expr.computed)
-            {
                 return ErrorOr.Success(new ObjectIdentifierMemberStrategy());
-            }
 
             return ErrorOr.Success(new ObjectComputedMemberStrategy());
         }
 
-        if (owner.type == ValueType.Array && expr.computed) {
+        if (owner.type == ValueType.Array && expr.computed)
             return ErrorOr.Success(new ArrayIndexMemberStrategy());
-        }
 
-        if (owner.type == ValueType.String && expr.computed) {
+        if (owner.type == ValueType.String && expr.computed)
             return ErrorOr.Success(new StringIndexMemberStrategy());
-        }
 
         return ErrorOr.Fail("Expressão de membro inválida.");
     }

@@ -17,9 +17,7 @@ public class ArrayComputedMemberAssignmentStrategy implements MemberAssignmentEx
     public static boolean canEvaluate(MemberExpr member, RuntimeValue variable, RuntimeValue property)
     {
         if (property.type != ValueType.Numeric)
-        {
             return false;
-        }
 
         NumericValue value = (NumericValue) property;
 
@@ -30,7 +28,8 @@ public class ArrayComputedMemberAssignmentStrategy implements MemberAssignmentEx
     }
 
     @Override
-    public RuntimeValue evaluate(MemberExpr member, RuntimeValue value, Environment env) throws AlreadyDeclaredVariableException
+    public RuntimeValue evaluate(MemberExpr member, RuntimeValue value, Environment env)
+        throws AlreadyDeclaredVariableException
     {
         Identifier objectIdentifier = (Identifier) member.object;
 

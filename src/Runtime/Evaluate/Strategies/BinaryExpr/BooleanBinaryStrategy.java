@@ -10,19 +10,24 @@ import Entities.Exceptions.Evaluate.InvalidOperatorException;
 import Runtime.Evaluate.Factory.BinaryExpr.Boolean.In.InclusionsFactory;
 import Runtime.Values.*;
 
-public class BooleanBinaryStrategy implements BinaryExprStrategy {
-    public static boolean canEvaluate(String operator) {
+public class BooleanBinaryStrategy implements BinaryExprStrategy
+{
+    public static boolean canEvaluate(String operator)
+    {
         return ReservedOperators.isBooleanOperator(operator);
     }
 
     @Override
-    public RuntimeValue evaluate(RuntimeValue right, RuntimeValue left, String operator) {
-        return switch (operator) {
-            case ReservedKeys.In -> {
+    public RuntimeValue evaluate(RuntimeValue right, RuntimeValue left, String operator)
+    {
+        return switch (operator)
+        {
+            case ReservedKeys.In ->
+            {
                 var result = InclusionsFactory.build(left, right);
-                if (result.isError()) {
+                if (result.isError())
                     throw new InvalidOperatorException(result.error.getMessage());
-                }
+
                 yield result.value.has();
             }
             case ReservedKeys.Equality -> BooleanValue.create(left.equals(right));
@@ -37,16 +42,17 @@ public class BooleanBinaryStrategy implements BinaryExprStrategy {
         };
     }
 
-    private static BooleanValue evaluateSizeOperator(RuntimeValue left, RuntimeValue right, String operator) {
-        if (left.type != ValueType.Numeric || right.type != ValueType.Numeric) {
+    private static BooleanValue evaluateSizeOperator(RuntimeValue left, RuntimeValue right, String operator)
+    {
+        if (left.type != ValueType.Numeric || right.type != ValueType.Numeric)
             throw new InvalidBinaryOperation(String.format("A operação %s só é permitida entre valores numéricos.",
                 operator));
-        }
 
         NumericValue rightValue = (NumericValue) right;
         NumericValue leftValue = (NumericValue) left;
 
-        boolean result = switch (operator) {
+        boolean result = switch (operator)
+        {
             case ReservedKeys.Minor -> leftValue.value < rightValue.value;
             case ReservedKeys.Greater -> leftValue.value > rightValue.value;
             case ReservedKeys.MinorOrEqual -> leftValue.value <= rightValue.value;

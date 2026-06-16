@@ -7,7 +7,7 @@ public class ZeroDivisionException extends EvaluatingException
         super("Não é possível dividir por zero.");
     }
 
-    public static void ThrowIfZero(Number number)
+    public static void throwIfZero(Number number)
     {
         if (number.floatValue() == 0)
         {

@@ -14,8 +14,8 @@ import Runtime.Values.StringValue;
 public abstract class ObjectInclusionsFactory {
     public static ErrorOr<Contains<ObjectValue>> build(RuntimeValue left, ObjectValue right) {
         return switch (left.type) {
-            case ValueType.String -> ErrorOr.Success(new ObjectContainsString(right, (StringValue) left));
-            case ValueType.Array -> ErrorOr.Success(new ObjectContainsArray(right, (ArrayValue) left));
+            case String -> ErrorOr.Success(new ObjectContainsString(right, (StringValue) left));
+            case Array -> ErrorOr.Success(new ObjectContainsArray(right, (ArrayValue) left));
             default -> ErrorOr.Fail("Valor não permitido para ser verificado se está em objeto.");
         };
     }

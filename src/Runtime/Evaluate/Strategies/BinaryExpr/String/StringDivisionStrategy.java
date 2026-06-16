@@ -28,7 +28,7 @@ public class StringDivisionStrategy implements StringBinaryExprStrategy {
         }
 
         int divisor = (int) rightValue.value;
-        ZeroDivisionException.ThrowIfZero(divisor);
+        ZeroDivisionException.throwIfZero(divisor);
 
         String target = leftValue.value;
 

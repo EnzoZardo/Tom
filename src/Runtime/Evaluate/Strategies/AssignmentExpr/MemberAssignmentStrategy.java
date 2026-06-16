@@ -16,12 +16,12 @@ public class MemberAssignmentStrategy implements AssignmentExprStrategy
 {
     @Override
     public RuntimeValue evaluate(AssignmentExpr assignment, Environment environment)
-        throws AlreadyDeclaredVariableException {
+        throws AlreadyDeclaredVariableException
+    {
         ErrorOr<MemberAssignmentExprStrategy> result = MemberAssignmentExprFactory.build(assignment, environment);
 
-        if (result.isError()) {
+        if (result.isError())
             throw new InvalidAssignmentExpression(result.error.getMessage());
-        }
 
         MemberAssignmentExprStrategy strategy = result.value;
         MemberExpr assigned = (MemberExpr) assignment.assigned;

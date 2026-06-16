@@ -18,34 +18,24 @@ public abstract class MemberAssignmentExprFactory
         MemberExpr member = (MemberExpr) assignment.assigned;
 
         if (AnonymousMemberAssignmentStrategy.canEvaluate(member))
-        {
             return ErrorOr.Success(new AnonymousMemberAssignmentStrategy());
-        }
 
         Identifier objectIdentifier = (Identifier) member.object;
         RuntimeValue variable = env.lookupVariable(objectIdentifier.value);
 
         if (ClassIdentifierMemberAssignmentStrategy.canEvaluate(member, variable))
-        {
             return ErrorOr.Success(new ClassIdentifierMemberAssignmentStrategy());
-        }
 
         if (ObjectIdentifierMemberAssignmentStrategy.canEvaluate(member, variable))
-        {
             return ErrorOr.Success(new ObjectIdentifierMemberAssignmentStrategy());
-        }
 
         RuntimeValue property = Interpreter.evaluate(member.property, env);
 
         if (ObjectComputedMemberAssigmentStrategy.canEvaluate(member, variable, property))
-        {
             return ErrorOr.Success(new ObjectComputedMemberAssigmentStrategy());
-        }
 
         if (ArrayComputedMemberAssignmentStrategy.canEvaluate(member, variable, property))
-        {
             return ErrorOr.Success(new ArrayComputedMemberAssignmentStrategy());
-        }
 
         return ErrorOr.Fail("Não é possível realizar a atribuição dos valores informados.");
     }

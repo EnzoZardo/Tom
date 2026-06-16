@@ -79,3 +79,7 @@ Agora é necessário:
 
 ### Atualizações 13.6.26
 - Adição de strategies para member expressions
+
+### Atualizações 16.6.26
+- Adição de strategies para call expressions
+- Averiguação para a criação de um fluxo todo com result pattern

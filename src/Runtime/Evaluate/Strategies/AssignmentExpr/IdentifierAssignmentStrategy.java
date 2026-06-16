@@ -8,7 +8,8 @@ import Entities.Exceptions.AlreadyDeclaredVariableException;
 import Runtime.Environment;
 import Runtime.Interpreter;
 
-public class IdentifierAssignmentStrategy implements AssignmentExprStrategy {
+public class IdentifierAssignmentStrategy implements AssignmentExprStrategy
+{
     @Override
     public RuntimeValue evaluate(AssignmentExpr assignment, Environment environment)
         throws AlreadyDeclaredVariableException
