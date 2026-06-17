@@ -89,3 +89,5 @@ Agora é necessário:
 ### Atualizações 17.6.26
 - Adição de inclua para ser nosso import
 - Adição de parse de herança, falta apenas evaluar
+- Adição de classes e herança e validações. 
+- Agora precisamos criar funções undefined

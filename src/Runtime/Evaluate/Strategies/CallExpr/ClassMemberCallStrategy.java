@@ -32,7 +32,6 @@ public class ClassMemberCallStrategy implements CallExprStrategy
     public RuntimeValue evaluate(CallExpr expr, RuntimeValue caller, Environment environment)
         throws AlreadyDeclaredVariableException
     {
-
         ArrayList<RuntimeValue> args = new ArrayList<>();
         for (Expr arg : expr.arguments) args.add(Interpreter.evaluate(arg, environment));
 
@@ -57,7 +56,7 @@ public class ClassMemberCallStrategy implements CallExprStrategy
             ArgumentMetadata param = function.parameters.get(i);
             String name = param.getName();
 
-            ErrorOr<Void> equality = TypeChecker.check(environment, args.get(i), param.getType());
+            ErrorOr<Void> equality = TypeChecker.check(environment, ClassMemberValue.mapToValue(args.get(i)), param.getType());
             if (equality.isError())
                 throw new RuntimeException(String.format(
                     "Tipo incorreto informado para o argumento '%s'. %s",
@@ -72,7 +71,17 @@ public class ClassMemberCallStrategy implements CallExprStrategy
         Environment typeEnv = environment.resolveType(member.owner.className);
         Type type = typeEnv.lookupType(member.owner.className);
 
-        if (!member.isStatic) scope.declareVariable(ReservedKeys.This, member.owner, type, false);
+        if (!member.isStatic)
+        {
+            if (member.owner.parent != null)
+            {
+                Environment parentTypeEnv = environment.resolveType(member.owner.parent.className);
+                Type parentType = parentTypeEnv.lookupType(member.owner.parent.className);
+                scope.declareVariable(ReservedKeys.Super, member.owner.parent, parentType, false);
+            }
+
+            scope.declareVariable(ReservedKeys.This, member.owner, type, false);
+        }
 
         RuntimeValue result = NullValue.create();
         for (Statement statement : function.body)

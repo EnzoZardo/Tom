@@ -58,9 +58,7 @@ public class FunctionDeclaration extends Statement
         {
             Expr identifier = metadata.getExpr();
             if (identifier.type != NodeType.Identifier)
-            {
                 throw new InvalidNodeException("Esperávamos o nome do argumento da função.");
-            }
 
             parameters.add(ArgumentMetadata.create(metadata.getType(), ((Identifier) identifier).value));
         }

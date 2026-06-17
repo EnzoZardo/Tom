@@ -22,6 +22,7 @@ import Runtime.Evaluate.Factory.BinaryExpr.BinaryExprFactory;
 import Runtime.Evaluate.Factory.CallExpr.CallExprFactory;
 import Runtime.Evaluate.Factory.MemberExpr.MemberExprFactory;
 import Runtime.Evaluate.Factory.UnaryExpr.UnaryExprFactory;
+import Runtime.Evaluate.Strategies.CallExpr.ConstructorCallStrategy;
 import Runtime.Interpreter;
 import Entities.Enums.Runtime.ValueType;
 import Entities.Abstractions.Runtime.RuntimeValue;
@@ -144,70 +145,18 @@ public abstract class Expressions
     }
 
     public static RuntimeValue evaluateInstantiationExpression(ClassLiteral classLiteral, Environment env)
-        throws AlreadyDeclaredVariableException
+            throws AlreadyDeclaredVariableException
     {
         Environment declarationEnv = env.resolve(classLiteral.className);
         RuntimeValue declarationValue = declarationEnv.lookupVariable(classLiteral.className);
-
         if (declarationValue.type != ValueType.Class)
             throw new InvalidNodeException("Esperávamos um o nome de uma classe para instanciar.");
 
         ClassValue value = ((ClassValue) declarationValue).copy();
 
-        if (!value.members.containsKey(classLiteral.className))
-        {
-            if (classLiteral.arguments.isEmpty()) return value;
-
-            throw new InvalidCallException("Não foi encontrado nenhum construtor " +
-                    "com esse número de argumentos para esta classe.");
-        }
-
-        ArrayList<RuntimeValue> args = new ArrayList<>();
-
-        for (Expr expr : classLiteral.arguments) args.add(Interpreter.evaluate(expr, env));
-
-        ClassMemberValue constructor = value.members.get(classLiteral.className);
-
-        if (constructor.value.type != ValueType.Function)
-            throw new InvalidCallException("Valor informado não permite ser chamado como um construtor.");
-
-        FunctionValue function = (FunctionValue) constructor.value;
-        Environment scope = Environment.create(function.declarationEnv);
-
-        if (function.parameters.size() != classLiteral.arguments.size())
-            throw new IncorrectNumberOfArgumentsException(String.format(
-                "O construtor %s esperava %d argumento(s), mas recebeu %d.",
-                function.name,
-                function.parameters.size(),
-                classLiteral.arguments.size()));
-
-        Environment typeEnv = env.resolveType(value.className);
-        Type type = typeEnv.lookupType(value.className);
-
-        scope.declareVariable(ReservedKeys.This, value, type, false);
-
-        for (int i = 0; i < function.parameters.size(); i++) {
-            ArgumentMetadata param = function.parameters.get(i);
-            String name = param.getName();
-
-            ErrorOr<Void> equality = TypeChecker.check(env, args.get(i), param.getType());
-            if (equality.isError())
-                throw new RuntimeException(String.format(
-                    "Tipo incorreto informado para o argumento '%s'. %s",
-                    name,
-                    equality.error.getMessage()));
-
-            scope.declareVariable(name, args.get(i), param.getType(), false);
-        }
-
-        RuntimeValue result;
-        for (Statement statement : function.body)
-        {
-            result = Interpreter.evaluate(statement, scope);
-
-            if (result.type == ValueType.Return)
-                throw new InvalidStatementContextException("Não se pode haver um retorno em um construtor.");
-        }
+        CallExpr syntheticCall = CallExpr.create(null, classLiteral.arguments);
+        ConstructorCallStrategy strategy = new ConstructorCallStrategy();
+        strategy.evaluate(syntheticCall, value, env);
 
         return value;
     }

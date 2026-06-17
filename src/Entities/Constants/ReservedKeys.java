@@ -42,6 +42,7 @@ public record ReservedKeys()
     public static final String Class = "classe";
     public static final String Private = "priv";
     public static final String False = "falso";
+    public static final String Super = "super";
     public static final String Public = "publ";
     public static final String Static = "est";
     public static final String Else = "senao";

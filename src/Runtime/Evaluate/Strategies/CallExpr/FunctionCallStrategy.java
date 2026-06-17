@@ -46,7 +46,7 @@ public class FunctionCallStrategy implements CallExprStrategy
             ArgumentMetadata param = function.parameters.get(i);
             String name = param.getName();
 
-            ErrorOr<Void> equality = TypeChecker.check(environment, args.get(i), param.getType());
+            ErrorOr<Void> equality = TypeChecker.check(environment, ClassMemberValue.mapToValue(args.get(i)), param.getType());
             if (equality.isError())
                 throw new RuntimeException(String.format(
                     "Tipo incorreto informado para o argumento '%s'. %s",

@@ -117,8 +117,8 @@ public abstract class Statements
                 throw new InvalidNodeException("Só pode estender classe");
             }
 
-            classValue = ClassValue.create(declaration.name, (ClassValue) value, members, true);
-        } else {
+            classValue = ClassValue.create(declaration.name, ((ClassValue) value).copy(), members, true);
+        } else { 
             classValue = ClassValue.create(declaration.name, members, true);
         }
 
