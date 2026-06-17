@@ -21,7 +21,9 @@ public record ReservedWords()
         put(ReservedKeys.Function, TokenType.FUNCTION);
         put(ReservedKeys.Continue, TokenType.CONTINUE);
         put(ReservedKeys.Variable, TokenType.DECLARE);
+        put(ReservedKeys.Extends, TokenType.EXTENDS);
         put(ReservedKeys.Return, TokenType.RETURN);
+        put(ReservedKeys.Import, TokenType.IMPORT);
         put(ReservedKeys.Class, TokenType.CLASS);
         put(ReservedKeys.While, TokenType.WHILE);
         put(ReservedKeys.Break, TokenType.BREAK);

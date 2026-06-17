@@ -15,7 +15,9 @@ import Entities.Exceptions.AlreadyDeclaredVariableException;
 import Entities.Exceptions.Evaluate.IncorrectNumberOfArgumentsException;
 import Entities.Exceptions.Evaluate.InvalidBinaryOperation;
 import Entities.Exceptions.ExpectedTypeNotMatch;
+import Entities.Exceptions.InvalidArgumentException;
 import Entities.Exceptions.Parser.InvalidNodeException;
+import Parser.Parser;
 import Runtime.Environment;
 import Runtime.Interpreter;
 import Entities.Abstractions.Runtime.RuntimeValue;
@@ -26,18 +28,62 @@ import Runtime.Values.FlowControl.BreakFlow;
 import Runtime.Values.FlowControl.ContinueFlow;
 import Runtime.Values.FlowControl.ReturnFlow;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 
-public class Statements {
-    public static RuntimeValue evaluateProgram(Program program, Environment env) throws AlreadyDeclaredVariableException {
+public abstract class Statements
+{
+    public static RuntimeValue evaluateProgram(Program program, Environment env)
+        throws AlreadyDeclaredVariableException
+    {
         RuntimeValue lastEvaluated = NullValue.create();
 
-        for (Statement stmt : program.body) {
-            lastEvaluated = Interpreter.evaluate(stmt, env);
-        }
+        for (Statement stmt : program.body) lastEvaluated = Interpreter.evaluate(stmt, env);
 
         return lastEvaluated;
+    }
+
+    //TODO: melhorar todo esse método, validar extensões, etc
+    public static RuntimeValue evaluateImport(Import importStatement, Environment env)
+        throws AlreadyDeclaredVariableException
+    {
+        //TODO: CHECK THIS METHOD WHEN ALL IS RESULT
+        RuntimeValue value = Interpreter.evaluate(importStatement.path, env);
+
+        if (value.type != ValueType.String) throw new InvalidNodeException("Queriamos uma string aqui");
+
+        StringValue path = (StringValue) value;
+        String content;
+
+        {
+            File file = new File(path.value);
+            if (!file.exists()) return NullValue.create();
+
+            try (FileReader reader = new FileReader(file))
+            {
+                content = reader.readAllAsString();
+            }
+            catch (IOException e)
+            {
+                return NullValue.create();
+            }
+        }
+
+        Parser parser = Parser.create(content.toCharArray());
+        Program program;
+        try
+        {
+            program = parser.build();
+        }
+        catch (InvalidArgumentException e)
+        {
+            return NullValue.create();
+        }
+        return Interpreter.evaluate(program, env);
     }
 
     public static RuntimeValue evaluateVariableDeclaration(
@@ -48,11 +94,9 @@ public class Statements {
 
         ErrorOr<Void> equality = TypeChecker.check(env, value, declaration.expectedType);
         if (equality.isError() && declaration.value != null)
-        {
             throw new ExpectedTypeNotMatch(String.format("Tipo incorreto informado para a variável '%s'. %s",
                 declaration.identifier,
                 equality.error.getMessage()));
-        }
 
         return env.declareVariable(declaration.identifier, value, declaration.expectedType, declaration.constant);
     }
@@ -61,7 +105,23 @@ public class Statements {
         ClassDeclaration declaration, Environment env) throws AlreadyDeclaredVariableException
     {
         HashMap<String, ClassMemberValue> members = new HashMap<>();
-        ClassValue classValue = ClassValue.create(declaration.name, members, true);
+        ClassValue classValue;
+
+        if (declaration.parentClass != null)
+        {
+            Environment parentEnv = env.resolve(declaration.parentClass);
+            RuntimeValue value = parentEnv.lookupVariable(declaration.parentClass);
+            if (value.type != ValueType.Class)
+            {
+                // TODO: refactor
+                throw new InvalidNodeException("Só pode estender classe");
+            }
+
+            classValue = ClassValue.create(declaration.name, (ClassValue) value, members, true);
+        } else {
+            classValue = ClassValue.create(declaration.name, members, true);
+        }
+
         Environment classEnv = Environment.create(env);
 
         for (ClassMemberDeclaration member : declaration.members)

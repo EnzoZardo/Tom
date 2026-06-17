@@ -1,7 +1,6 @@
 package Runtime;
 
 import Entities.Common.Result.ErrorOr;
-import Entities.Enums.Runtime.ProtectionLevel;
 import Runtime.Values.ClassMemberValue;
 import Runtime.Values.ClassValue;
 
@@ -13,8 +12,8 @@ public abstract class AccessChecker
 
         while (current != null)
         {
-            if (current.className.equals(owner.className))
-                return ErrorOr.Success();
+            if (current.className.equals(owner.className)) return ErrorOr.Success();
+
             current = current.parent;
         }
 
@@ -29,16 +28,14 @@ public abstract class AccessChecker
         if (!member.isStatic && member.owner.isInstance)
             return ErrorOr.Fail("Apenas é possível acessar membros em classes instanciadas.");
 
-        if (member.protectionLevel == ProtectionLevel.Public)
-            return ErrorOr.Success();
+        if (member.isPublic()) return ErrorOr.Success();
 
         if (caller == null)
             return ErrorOr.Fail("Não é possível acessar o membro '" + keyName + "' devido ao seu nível de proteção.");
 
-        if (member.protectionLevel == ProtectionLevel.Private)
+        if (member.isPrivate())
         {
-            if (caller.className.equals(member.owner.className))
-                return ErrorOr.Success();
+            if (caller.className.equals(member.owner.className)) return ErrorOr.Success();
 
             return ErrorOr.Fail("Membro '" + keyName + "' privado não pode ser acessado nesse contexto.");
         }

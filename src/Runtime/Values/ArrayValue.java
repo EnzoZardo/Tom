@@ -37,17 +37,17 @@ public class ArrayValue extends FreezableValue
     {
         final int next = level + 1;
         StringBuilder ret = new StringBuilder("\n")
-                .repeat("\t", level)
-                .append("[\n");
+            .repeat("\t", level)
+            .append("[\n");
+
         for (Map.Entry<Integer, RuntimeValue> entry : items.entrySet())
-        {
             ret.repeat("\t", next)
                 .append(entry.getKey())
                 .append(": ")
                 .append(entry.getValue().print(next))
                 .append(',')
                 .append('\n');
-        }
+
         return ret.append("\n")
                 .repeat("\t", level)
                 .append("]")
@@ -57,24 +57,14 @@ public class ArrayValue extends FreezableValue
     @Override
     public boolean equals(RuntimeValue that)
     {
-        if (that.type != type) {
-            return false;
-        }
+        if (that.type != type) return false;
 
         ArrayValue arrayValue = (ArrayValue) that;
 
-        if (arrayValue.items.size() != items.size())
-        {
-            return false;
-        }
+        if (arrayValue.items.size() != items.size()) return false;
 
         for (int i = 0; i < items.size(); i++)
-        {
-            if (!items.get(i).equals(arrayValue.items.get(i)))
-            {
-                 return false;
-            }
-        }
+            if (!items.get(i).equals(arrayValue.items.get(i))) return false;
 
         return true;
     }
@@ -99,9 +89,7 @@ public class ArrayValue extends FreezableValue
     public RuntimeValue iterate(int index)
     {
         if (index < 0 || index >= items.size())
-        {
             throw new InvalidIndexException("O índice " + index + " é inválido.");
-        }
 
         return items.get(index);
     }
@@ -120,10 +108,7 @@ public class ArrayValue extends FreezableValue
         for (int i = 0; i < items.size(); i++)
         {
             ret.append(items.get(i));
-            if (i < items.size() - 1)
-            {
-                ret.append(", ");
-            }
+            if (i < items.size() - 1) ret.append(", ");
         }
 
         return ret.append("]").toString();
@@ -135,12 +120,7 @@ public class ArrayValue extends FreezableValue
         HashMap<Integer, RuntimeValue> copiedItems = new HashMap<>();
 
         for (Map.Entry<Integer, RuntimeValue> entry : items.entrySet())
-        {
-            copiedItems.put(
-                    entry.getKey(),
-                    entry.getValue().copy()
-            );
-        }
+            copiedItems.put(entry.getKey(), entry.getValue().copy());
 
         return ArrayValue.create(copiedItems, frozen);
     }

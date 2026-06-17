@@ -14,6 +14,7 @@ public record ReservedKeys()
     /* #refion Punctuation Tokens */
     public static final char Interrogation = '?';
     public static final char Backslash = '\\';
+    public static final char Underline = '_';
     public static final char Semicolon = ';';
     public static final char Quote = '"';
     public static final char Colon = ':';
@@ -33,6 +34,8 @@ public record ReservedKeys()
     public static final String While = "enquanto";
     public static final String Return = "retorne";
     public static final String Protected = "prot";
+    public static final String Extends = "herda";
+    public static final String Import = "inclua";
     public static final String Function = "fun";
     public static final String Variable = "var";
     public static final String Constant = "con";

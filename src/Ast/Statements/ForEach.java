@@ -35,10 +35,10 @@ public class ForEach extends Statement
     }
 
     public static ForEach create(
-            Expr iterable,
-            ArrayList<Expr> iterators,
-            String operator,
-            Statement consequent)
+        Expr iterable,
+        ArrayList<Expr> iterators,
+        String operator,
+        Statement consequent)
     {
         return new ForEach(iterable, iterators, operator, consequent);
     }

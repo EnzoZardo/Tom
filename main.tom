@@ -1,20 +1,16 @@
-tipo vazio = nulo
-con vazio: vazio = nulo
-
-classe Animal
+classe Animal 
 {
-    publ est var nome: texto = "Rex"
-    priv var idade: inteiro = 1
-    priv est con mensagem: texto = "Mudamos a idade para:"
-
-    publ fun mudaIdade(): inteiro {
-        isso.idade = 3
-        escreva(Animal.mensagem, isso.idade)
-        retorne isso.idade
+    prot fun faz_barulho(barulho: texto) : nulo 
+    {
+        escreva(barulho)
+        retorne nulo
     }
 }
 
-con estimacao: Animal = novo Animal()
-Animal.nome = "Thomas"
-estimacao.mudaIdade()
-escreva(Animal.mensagem)
+classe Cachorro herda Animal
+{
+    prot fun faz_barulho(barulho: texto) : nulo 
+    {
+        retorne super.faz_barulho("Au au");
+    }
+}

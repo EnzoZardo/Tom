@@ -5,6 +5,7 @@ public enum NodeType
     /* #region Statements */
     Break,
     Return,
+    Import,
     Program,
     Continue,
     IfStatement,

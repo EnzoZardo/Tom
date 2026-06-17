@@ -1,6 +1,7 @@
 package Ast.Statements;
 
 import Ast.Expressions.Identifier;
+import Entities.Abstractions.Ast.Expr;
 import Entities.Abstractions.Ast.Statement;
 import Entities.Constants.ReservedKeys;
 import Entities.Enums.Ast.NodeType;
@@ -14,23 +15,27 @@ import java.util.ArrayList;
 public class ClassDeclaration extends Statement
 {
     public String name;
+    public String parentClass;
     public ArrayList<ClassMemberDeclaration> members;
 
     protected ClassDeclaration(
         String name,
-        ArrayList<ClassMemberDeclaration> members
+        ArrayList<ClassMemberDeclaration> members,
+        String parentClass
     )
     {
         super(NodeType.ClassDeclaration);
         this.name = name;
         this.members = members;
+        this.parentClass = parentClass;
     }
 
     public static ClassDeclaration create(
         String name,
-        ArrayList<ClassMemberDeclaration> members)
+        ArrayList<ClassMemberDeclaration> members,
+        String parentClass)
     {
-        return new ClassDeclaration(name, members);
+        return new ClassDeclaration(name, members, parentClass);
     }
 
     public static ClassDeclaration parse(Parser parser) throws InvalidArgumentException
@@ -38,6 +43,13 @@ public class ClassDeclaration extends Statement
         parser.consume();
 
         Token identifier = parser.expect(TokenType.IDENTIFIER, "Esperávamos um nome para a classe declarada.");
+        Token parentClass = null;
+
+        if (parser.peekIs(TokenType.EXTENDS))
+        {
+            parser.consume();
+            parentClass = parser.expect(TokenType.IDENTIFIER, "Esperávamos um nome para a classe herdada.");
+        }
 
         parser.expect(TokenType.OPEN_BRACE, "Esperávamos um '{' para a abertura de uma classe.");
         ArrayList<ClassMemberDeclaration> members = new ArrayList<>();
@@ -50,7 +62,7 @@ public class ClassDeclaration extends Statement
         parser.context.outClass();
 
         parser.consume();
-        return ClassDeclaration.create(identifier.value, members);
+        return ClassDeclaration.create(identifier.value, members, parentClass == null ? null : parentClass.value);
     }
 
     private String printBody(int level)

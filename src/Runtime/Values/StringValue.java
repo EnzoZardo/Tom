@@ -46,12 +46,9 @@ public class StringValue extends RuntimeValue
     @Override
     public boolean equals(RuntimeValue that)
     {
-        if (that.type != type) {
-            return false;
-        }
+        if (that.type != type) return false;
 
         StringValue stringValue = (StringValue) that;
-
         return stringValue.value.equals(value);
     }
 
@@ -65,9 +62,7 @@ public class StringValue extends RuntimeValue
     public RuntimeValue iterate(int index)
     {
         if (index < 0 || index >= value.length())
-        {
             throw new InvalidIndexException("O índice " + index + " é inválido.");
-        }
 
         return StringValue.create(value.charAt(index));
     }

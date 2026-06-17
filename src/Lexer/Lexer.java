@@ -1,6 +1,7 @@
 package Lexer;
 
 import Entities.Constants.ReservedComments;
+import Entities.Constants.ReservedKeys;
 import Entities.Constants.ReservedOperators;
 import Entities.Constants.ReservedWords;
 import Entities.Exceptions.Parser.AlreadyParsedException;
@@ -271,20 +272,14 @@ public class Lexer
     {
         StringBuilder token = new StringBuilder(Character.toString(c));
         TokenFileLocation start = TokenFileLocation.create(columnIndex, lineIndex, tokenIndex);
-        while (_peek() != null && Character.isAlphabetic(_peek()))
+        while (_peek() != null && (Character.isAlphabetic(_peek()) || ReservedKeys.Underline == _peek()))
         {
             token.append(_consume());
         }
 
         TokenFileLocation end = TokenFileLocation.create(columnIndex, lineIndex, tokenIndex);
-        if (ReservedWords.isReserved(token.toString()))
-        {
-            tokens.add(ReservedWords.token(token.toString(), start, end));
-        }
-        else
-        {
-            tokens.add(Token.create(TokenType.IDENTIFIER, token.toString(), start, end));
-        }
+        if (ReservedWords.isReserved(token.toString())) tokens.add(ReservedWords.token(token.toString(), start, end));
+        else tokens.add(Token.create(TokenType.IDENTIFIER, token.toString(), start, end));
     }
 
     private void _numeric(char c)

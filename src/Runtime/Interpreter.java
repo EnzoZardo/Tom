@@ -5,16 +5,20 @@ import Ast.Statements.*;
 import Ast.Expressions.*;
 import Entities.Abstractions.Ast.Statement;
 import Entities.Exceptions.AlreadyDeclaredVariableException;
+import Entities.Exceptions.InvalidArgumentException;
 import Runtime.Evaluate.Expressions;
 import Runtime.Evaluate.Statements;
 import Entities.Abstractions.Runtime.RuntimeValue;
 import Runtime.Values.NumericValue;
 import Runtime.Values.StringValue;
 
-public class Interpreter
+import java.io.IOException;
+
+public abstract class Interpreter
 {
     public static RuntimeValue evaluate(Statement node, Environment env)
-        throws AlreadyDeclaredVariableException {
+        throws AlreadyDeclaredVariableException
+    {
         return switch (node.type) {
             case IntegerLiteral -> NumericValue.create(((IntegerLiteral) node).value, true);
             case FloatLiteral -> NumericValue.create(((FloatLiteral) node).value, false);
@@ -40,6 +44,7 @@ public class Interpreter
             case Return -> Statements.evaluateReturnStatement((Return) node, env);
             case Continue -> Statements.evaluateContinue();
             case Break -> Statements.evaluateBreak();
+            case Import -> Statements.evaluateImport((Import) node, env);
             default -> throw new RuntimeException("This AST Node was not recognized yet." + node.print(0));
         };
     }

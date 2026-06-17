@@ -85,3 +85,7 @@ Agora é necessário:
 - Averiguação para a criação de um fluxo todo com result pattern
 - Adição de verificação de níveis de proteção
 - O código precisa de uma boa refatorada
+
+### Atualizações 17.6.26
+- Adição de inclua para ser nosso import
+- Adição de parse de herança, falta apenas evaluar

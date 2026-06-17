@@ -17,6 +17,8 @@ public enum TokenType
     CLASS,
     EQUALS,
     RETURN,
+    IMPORT,
+    EXTENDS,
     DECLARE,
     CONSTANT,
     CONTINUE,
