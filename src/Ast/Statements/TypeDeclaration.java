@@ -1,10 +1,9 @@
 package Ast.Statements;
 
+import Entities.Common.Result.ErrorOr;
 import Entities.Enums.Ast.NodeType;
 import Entities.Abstractions.Type;
 import Entities.Abstractions.Ast.Statement;
-import Entities.Exceptions.InvalidArgumentException;
-import Entities.Exceptions.Parser.InvalidTokenException;
 import Entities.Enums.Lexer.TokenType;
 import Lexer.Tokens.Token;
 import Parser.Parser;
@@ -30,14 +29,18 @@ public class TypeDeclaration extends Statement
         return new TypeDeclaration(value, identifier);
     }
 
-    public static TypeDeclaration parse(Parser parser) throws InvalidTokenException, InvalidArgumentException
+    public static ErrorOr<TypeDeclaration> parse(Parser parser)
     {
         parser.consume();
-        Token identifierToken = parser.expect(TokenType.IDENTIFIER, "Esperávamos o nome do tipo em sua declaração.");
-        String identifier = identifierToken.value;
+        ErrorOr<Token> identifierTokenOr = parser.expect(TokenType.IDENTIFIER, "Esperávamos o nome do tipo em sua declaração.");
+        if (identifierTokenOr.isError()) return identifierTokenOr.propagateError();
+        String identifier = identifierTokenOr.value.value;
 
-        parser.expect(TokenType.EQUALS, "Esperávamos '=' para declararmos o tipo " + identifier +".");
-        return TypeDeclaration.create(Type.parse(parser), identifier);
+        ErrorOr<Token> equalsOr = parser.expect(TokenType.EQUALS, "Esperávamos '=' para declararmos o tipo " + identifier +".");
+        if (equalsOr.isError()) return equalsOr.propagateError();
+        ErrorOr<Type> typeOr = Type.parse(parser);
+        if (typeOr.isError()) return typeOr.propagateError();
+        return ErrorOr.Success(TypeDeclaration.create(typeOr.value, identifier));
     }
 
     @Override

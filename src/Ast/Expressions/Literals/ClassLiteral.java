@@ -2,10 +2,9 @@ package Ast.Expressions.Literals;
 
 import Ast.Expressions.CallExpr;
 import Entities.Abstractions.Ast.Expr;
+import Entities.Common.Result.ErrorOr;
 import Entities.Enums.Ast.NodeType;
 import Entities.Enums.Lexer.TokenType;
-import Entities.Exceptions.InvalidArgumentException;
-import Entities.Exceptions.Parser.InvalidTokenException;
 import Lexer.Tokens.Token;
 import Parser.Parser;
 
@@ -28,14 +27,20 @@ public class ClassLiteral extends Expr
         return new ClassLiteral(args, className);
     }
 
-    public static Expr parse(Parser parser) throws InvalidTokenException, InvalidArgumentException
+    public static ErrorOr<Expr> parse(Parser parser)
     {
         parser.consume();
 
-        Token name = parser.expect(TokenType.IDENTIFIER, "Esperávamos o nome da classe para construir ela.");
+        ErrorOr<Token> nameOr = parser.expect(TokenType.IDENTIFIER, "Esperávamos o nome da classe para" +
+            "poder criar ela, mas recebemos outro símbolo no código - %s");
+        if (nameOr.isError()) return nameOr.propagateError();
 
-        ArrayList<Expr> args = CallExpr.parseArgs(parser);
-        return ClassLiteral.create(args, name.value);
+        String name = nameOr.value.value;
+
+        ErrorOr<ArrayList<Expr>> argsOr = CallExpr.parseArgs(parser);
+        if (argsOr.isError()) return argsOr.propagateError();
+
+        return ErrorOr.Success(ClassLiteral.create(argsOr.value, name));
     }
 
     private String printArgs(int level)
@@ -46,11 +51,10 @@ public class ClassLiteral extends Expr
                 .append("[");
 
         for (Expr entry : arguments)
-        {
             ret.repeat("\t", next)
-                    .append(entry.print(next))
-                    .append(',');
-        }
+                .append(entry.print(next))
+                .append(',');
+
         return ret.append("\n")
                 .repeat("\t", level)
                 .append("]")

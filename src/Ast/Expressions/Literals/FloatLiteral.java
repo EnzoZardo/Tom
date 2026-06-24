@@ -15,7 +15,7 @@ public class FloatLiteral extends Expr
         this.value = value;
     }
 
-    public static FloatLiteral create(Token token) throws InvalidArgumentException
+    public static FloatLiteral create(Token token)
     {
         return new FloatLiteral(Float.parseFloat(token.value));
     }

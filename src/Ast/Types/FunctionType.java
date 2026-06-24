@@ -4,6 +4,7 @@ import Entities.Common.Result.ErrorOr;
 import Entities.Enums.TypeKind;
 import Entities.Abstractions.Type;
 import Entities.Enums.Lexer.TokenType;
+import Lexer.Tokens.Token;
 import Parser.Parser;
 import Runtime.Environment;
 
@@ -75,7 +76,7 @@ public class FunctionType extends Type
         return FunctionType.create(params, Type.reduce(env, functionType.returnType));
     }
 
-    public static Type parse(Parser parser)
+    public static ErrorOr<Type> parse(Parser parser)
     {
         if (!parser.peekIs(TokenType.OPEN_PARENTHESIS))
         {
@@ -87,11 +88,14 @@ public class FunctionType extends Type
 
         while (parser.notEof() && !parser.peekIs(TokenType.CLOSE_PARENTHESIS))
         {
-            Type type = Type.parse(parser);
+            ErrorOr<Type> typeOr = Type.parse(parser);
+            if (typeOr.isError()) return typeOr.propagateError();
+            Type type = typeOr.value;
 
             if (!parser.peekIs(TokenType.CLOSE_PARENTHESIS))
             {
-                parser.expect(TokenType.COMMA, "Símbolo inválido %s na declaração de uma função. Esperávamos ':' ou ')'");
+                ErrorOr<Token> commaOr = parser.expect(TokenType.COMMA, "Símbolo inválido %s na declaração de uma função. Esperávamos ':' ou ')'");
+                if (commaOr.isError()) return commaOr.propagateError();
             }
 
             if (parser.peekIs(TokenType.COMMA))
@@ -102,10 +106,14 @@ public class FunctionType extends Type
             parameters.add(type);
         }
 
-        parser.expect(TokenType.CLOSE_PARENTHESIS, "Esperávamos ')' depois da declaração dos tipos dos " +
+        ErrorOr<Token> closeParenOr = parser.expect(TokenType.CLOSE_PARENTHESIS, "Esperávamos ')' depois da declaração dos tipos dos " +
                 "argumentos da função.");
-        parser.expect(TokenType.COLON, "Esperávamos ':' para declarar o tipo de retorno da função.");
-        return FunctionType.create(parameters, Type.parse(parser));
+        if (closeParenOr.isError()) return closeParenOr.propagateError();
+        ErrorOr<Token> colonOr = parser.expect(TokenType.COLON, "Esperávamos ':' para declarar o tipo de retorno da função.");
+        if (colonOr.isError()) return colonOr.propagateError();
+        ErrorOr<Type> returnTypeOr = Type.parse(parser);
+        if (returnTypeOr.isError()) return returnTypeOr.propagateError();
+        return ErrorOr.Success(FunctionType.create(parameters, returnTypeOr.value));
     }
 
     private String printProps(int level)

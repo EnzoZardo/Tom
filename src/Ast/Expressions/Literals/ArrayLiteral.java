@@ -1,11 +1,10 @@
 package Ast.Expressions.Literals;
 
-import Ast.Expressions.BinaryExpr;
 import Entities.Abstractions.Ast.Expr;
+import Entities.Common.Result.ErrorOr;
 import Entities.Enums.Ast.NodeType;
 import Entities.Enums.Lexer.TokenType;
-import Entities.Exceptions.InvalidArgumentException;
-import Entities.Exceptions.Parser.InvalidTokenException;
+import Lexer.Tokens.Token;
 import Parser.Parser;
 
 import java.util.ArrayList;
@@ -20,30 +19,27 @@ public class ArrayLiteral extends Expr
         this.items = items;
     }
 
-    public static ArrayLiteral create(ArrayList<Expr> items) throws InvalidArgumentException
+    public static ArrayLiteral create(ArrayList<Expr> items)
     {
         return new ArrayLiteral(items);
     }
 
-    public static Expr parse(Parser parser) throws InvalidTokenException, InvalidArgumentException
+    public static ErrorOr<Expr> parse(Parser parser)
     {
-//        TODO: maybe uncomment
-//        if (!parser.peekIs(TokenType.OPEN_BRACKETS))
-//        {
-//            return BinaryExpr.parseAdditive(parser);
-//        }
-
         parser.consume();
 
         ArrayList<Expr> items = new ArrayList<>();
         while (parser.notEof() && !parser.peekIs(TokenType.CLOSE_BRACKETS))
         {
-            items.add(Expr.parse(parser));
+            ErrorOr<Expr> itemOr = Expr.parse(parser);
+            if (itemOr.isError()) return itemOr.propagateError();
+            items.add(itemOr.value);
 
             if (!parser.peekIs(TokenType.CLOSE_BRACKETS))
             {
-                parser.expect(TokenType.COMMA, "Esperávamos ',' ou ']' " +
-                        "para a fechar uma lista mas recebemos '%s'.");
+                ErrorOr<Token> closeOr = parser.expect(TokenType.COMMA, "Na criação de uma lista, esperávamos " +
+                    "uma vírgula - , - ou um fechamento de colchetes - ] -, mas recebemos outro símbolo no código - %s");
+                if (closeOr.isError()) return closeOr.propagateError();
             }
 
             if (parser.peekIs(TokenType.COMMA))
@@ -52,27 +48,28 @@ public class ArrayLiteral extends Expr
             }
         }
 
-        parser.expect(TokenType.CLOSE_BRACKETS, "Esperávamos ']' para fechar a lista, mas recebemos '%s'.");
-        return ArrayLiteral.create(items);
+        ErrorOr<Token> closeOr = parser.expect(TokenType.CLOSE_BRACKETS, "Esperávamos ']' para fechar a lista, " +
+            "mas recebemos outro símbolo no código - %s");
+        if (closeOr.isError()) return closeOr.propagateError();
+        return ErrorOr.Success(ArrayLiteral.create(items));
     }
 
     private String printItems(int level)
     {
         final int next = level + 1;
         StringBuilder ret = new StringBuilder("\n")
-                .repeat("\t", level)
-                .append('[');
+            .repeat("\t", level)
+            .append('[');
 
         for (Expr item : items)
-        {
             ret.repeat("\t", next)
-                    .append(item.print(next))
-                    .append(',');
-        }
+                .append(item.print(next))
+                .append(',');
+
         return ret.append("\n")
-                .repeat("\t", level)
-                .append("]")
-                .toString();
+            .repeat("\t", level)
+            .append("]")
+            .toString();
     }
 
     @Override

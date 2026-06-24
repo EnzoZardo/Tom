@@ -1,11 +1,11 @@
 package Ast.Expressions;
 
+import Entities.Common.Result.ErrorOr;
 import Entities.Enums.Ast.NodeType;
 import Entities.Abstractions.Ast.Expr;
 import Entities.Abstractions.Type;
-import Entities.Exceptions.InvalidArgumentException;
-import Entities.Exceptions.Parser.InvalidTokenException;
 import Entities.Enums.Lexer.TokenType;
+import Lexer.Tokens.Token;
 import Parser.Parser;
 import Entities.Metadata.ExprMetadata;
 
@@ -32,86 +32,120 @@ public class CallExpr extends Expr
         return new CallExpr(caller, arguments);
     }
 
-    public static Expr parse(Parser parser, Expr caller) throws InvalidTokenException, InvalidArgumentException
+    public static ErrorOr<Expr> parse(Parser parser, Expr caller)
     {
-        Expr call = CallExpr.create(caller, CallExpr.parseArgs(parser));
+        ErrorOr<ArrayList<Expr>> argsOr = CallExpr.parseArgs(parser);
+        if (argsOr.isError()) return argsOr.propagateError();
+
+        Expr call = CallExpr.create(caller, argsOr.value);
 
         if (parser.peekIs(TokenType.OPEN_PARENTHESIS))
-        {
-            call = CallExpr.parse(parser, call);
-        }
+            return CallExpr.parse(parser, call);
 
-        return call;
+        return ErrorOr.Success(call);
     }
 
-    public static ArrayList<Expr> parseArgumentsList(Parser parser) throws InvalidTokenException, InvalidArgumentException
+    public static ErrorOr<ArrayList<Expr>> parseArgumentsList(Parser parser)
     {
         ArrayList<Expr> args = new ArrayList<>();
-        args.add(Expr.parse(parser));
+
+        ErrorOr<Expr> firstOr = Expr.parse(parser);
+        if (firstOr.isError()) return firstOr.propagateError();
+
+        args.add(firstOr.value);
 
         while (parser.notEof() && parser.peekIs(TokenType.COMMA))
         {
             parser.consume();
-            args.add(Expr.parse(parser));
+
+            ErrorOr<Expr> argOr = Expr.parse(parser);
+            if (argOr.isError()) return argOr.propagateError();
+
+            args.add(argOr.value);
         }
 
-        return args;
+        return ErrorOr.Success(args);
     }
 
-    private static void parseArgDeclaration(ArrayList<ExprMetadata> args, Parser parser) throws InvalidTokenException, InvalidArgumentException
+    private static ErrorOr<Void> parseArgDeclaration(ArrayList<ExprMetadata> args, Parser parser)
     {
-        Expr identifier = AssignmentExpr.parse(parser);
-        parser.expect(TokenType.COLON, "Esperávamos ':' após o identificador de um argumento.");
-        Type type = Type.parse(parser);
-        args.add(ExprMetadata.create(type, identifier));
+        ErrorOr<Expr> identifierOr = AssignmentExpr.parse(parser);
+        if (identifierOr.isError()) return identifierOr.propagateError();
+
+        ErrorOr<Token> colonOr = parser.expect(TokenType.COLON,
+            "Esperávamos dois pontos - : - para o nome de um parâmetro de nossa função, mas recebemos " +
+            "outro símbolo no código - %s");
+        if (colonOr.isError()) return colonOr.propagateError();
+
+        ErrorOr<Type> typeOr = Type.parse(parser);
+        if (typeOr.isError()) return typeOr.propagateError();
+
+        args.add(ExprMetadata.create(typeOr.value, identifierOr.value));
+        return ErrorOr.Success();
     }
 
-    public static ArrayList<ExprMetadata> parseArgumentsDeclarationList(Parser parser) throws InvalidTokenException, InvalidArgumentException
+    public static ErrorOr<ArrayList<ExprMetadata>> parseArgumentsDeclarationList(Parser parser)
     {
         ArrayList<ExprMetadata> args = new ArrayList<>();
-        parseArgDeclaration(args, parser);
+
+        ErrorOr<Void> firstOr = parseArgDeclaration(args, parser);
+        if (firstOr.isError()) return firstOr.propagateError();
 
         while (parser.notEof() && parser.peekIs(TokenType.COMMA))
         {
             parser.consume();
-            parseArgDeclaration(args, parser);
+
+            ErrorOr<Void> nextOr = parseArgDeclaration(args, parser);
+            if (nextOr.isError()) return nextOr.propagateError();
         }
 
-        return args;
+        return ErrorOr.Success(args);
     }
 
-    public static ArrayList<Expr> parseArgs(Parser parser) throws InvalidTokenException, InvalidArgumentException
+    public static ErrorOr<ArrayList<Expr>> parseArgs(Parser parser)
     {
-        parser.expect(TokenType.OPEN_PARENTHESIS, "Esperávamos '(' para abrir a lista de argumentos.");
+        ErrorOr<Token> openOr = parser.expect(TokenType.OPEN_PARENTHESIS, "Esperávamos um parênteses - ( - para " +
+            "abrir a lista de argumentos de uma função, mas recebemos outro símbolo no código - %s");
+        if (openOr.isError()) return openOr.propagateError();
 
         if (parser.peekIs(TokenType.CLOSE_PARENTHESIS))
         {
             parser.consume();
-            return new ArrayList<>();
+            return ErrorOr.Success(new ArrayList<>());
         }
 
-        ArrayList<Expr> args = CallExpr.parseArgumentsList(parser);
+        ErrorOr<ArrayList<Expr>> argsOr = CallExpr.parseArgumentsList(parser);
+        if (argsOr.isError()) return argsOr.propagateError();
 
-        parser.expect(TokenType.CLOSE_PARENTHESIS, "Esperávamos ')' para fechar a lista de argumentos.");
+        ErrorOr<Token> closeOr = parser.expect(TokenType.CLOSE_PARENTHESIS, "Esperávamos um fechamento de " +
+            "parênteses - ) - para fechar a lista de argumentos de uma função, mas recebemos outro " +
+            "símbolo no código - %s");
+        if (closeOr.isError()) return closeOr.propagateError();
 
-        return args;
+        return argsOr;
     }
 
-    public static ArrayList<ExprMetadata> parseArgsDeclaration(Parser parser) throws InvalidTokenException, InvalidArgumentException
+    public static ErrorOr<ArrayList<ExprMetadata>> parseArgsDeclaration(Parser parser)
     {
-        parser.expect(TokenType.OPEN_PARENTHESIS, "Esperávamos '(' para abrir a lista de argumentos.");
+        ErrorOr<Token> openOr = parser.expect(TokenType.OPEN_PARENTHESIS, "Esperávamos um parênteses - ( - para " +
+            "abrir a lista de parâmetros de uma função, mas recebemos outro símbolo no código - %s");
+        if (openOr.isError()) return openOr.propagateError();
 
         if (parser.peekIs(TokenType.CLOSE_PARENTHESIS))
         {
             parser.consume();
-            return new ArrayList<>();
+            return ErrorOr.Success(new ArrayList<>());
         }
 
-        ArrayList<ExprMetadata> args = CallExpr.parseArgumentsDeclarationList(parser);
+        ErrorOr<ArrayList<ExprMetadata>> argsOr = CallExpr.parseArgumentsDeclarationList(parser);
+        if (argsOr.isError()) return argsOr.propagateError();
 
-        parser.expect(TokenType.CLOSE_PARENTHESIS, "Esperávamos ')' para fechar a lista de argumentos.");
+        ErrorOr<Token> closeOr = parser.expect(TokenType.CLOSE_PARENTHESIS, "Esperávamos um fechamento de " +
+            "parênteses - ) - para fechar a lista de parâmetros de uma função, mas recebemos outro " +
+            "símbolo no código - %s");
+        if (closeOr.isError()) return closeOr.propagateError();
 
-        return args;
+        return argsOr;
     }
 
     private String printArgs(int level)
@@ -122,11 +156,10 @@ public class CallExpr extends Expr
                 .append("[");
 
         for (Expr entry : arguments)
-        {
             ret.repeat("\t", next)
                     .append(entry.print(next))
                     .append(',');
-        }
+
         return ret.append("\n")
                 .repeat("\t", level)
                 .append("]")

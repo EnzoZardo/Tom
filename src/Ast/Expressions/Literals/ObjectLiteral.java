@@ -1,12 +1,9 @@
 package Ast.Expressions.Literals;
 
-import Ast.Expressions.MemberExpr;
+import Entities.Common.Result.ErrorOr;
 import Entities.Enums.Ast.NodeType;
-import Ast.Expressions.BinaryExpr;
 import Ast.Expressions.Property;
 import Entities.Abstractions.Ast.Expr;
-import Entities.Exceptions.InvalidArgumentException;
-import Entities.Exceptions.Parser.InvalidTokenException;
 import Entities.Enums.Lexer.TokenType;
 import Lexer.Tokens.Token;
 import Parser.Parser;
@@ -28,43 +25,44 @@ public class ObjectLiteral extends Expr
         return new ObjectLiteral(properties);
     }
 
-    public static Expr parse(Parser parser) throws InvalidTokenException, InvalidArgumentException
+    public static ErrorOr<Expr> parse(Parser parser)
     {
-//        TODO: maybe uncomment
-//        if (!parser.peekIs(TokenType.OPEN_BRACE))
-//        {
-//            return BinaryExpr.parseAdditive(parser);
-//        }
-
         parser.consume();
 
         ArrayList<Property> properties = new ArrayList<>();
         while (parser.notEof() && !parser.peekIs(TokenType.CLOSE_BRACE))
         {
-            Token key = parser.expect(TokenType.IDENTIFIER, "Esperávamos um identificador para uma " +
-                    "chave do objeto.");
+            ErrorOr<Token> keyOr = parser.expect(TokenType.IDENTIFIER, "Esperávamos um nome para a " +
+                "chave do nosso objeto, mas recebemos outro símbolo no código - %s");
+            if (keyOr.isError()) return keyOr.propagateError();
+            String key = keyOr.value.value;
 
             if (parser.peekIs(TokenType.COMMA))
             {
                 parser.consume();
-                properties.add(Property.create(key.value));
+                properties.add(Property.create(key));
                 continue;
             }
 
             if (parser.peekIs(TokenType.CLOSE_BRACE))
             {
-                properties.add(Property.create(key.value));
+                properties.add(Property.create(key));
                 continue;
             }
 
-            parser.expect(TokenType.COLON, "Esperávamos ':' para marcar " +
-                    "o valor da chave " + key + ", mas recebemos '%s'");
-            Expr value = Expr.parse(parser);
+            ErrorOr<Token> colonOr = parser.expect(TokenType.COLON, "Esperávamos dois pontos - : - para marcar " +
+                "o valor da chave " + key + ", mas recebemos outro símbolo no código - %s");
+            if (colonOr.isError()) return colonOr.propagateError();
+
+            ErrorOr<Expr> valueOr = Expr.parse(parser);
+            if (valueOr.isError()) return valueOr.propagateError();
 
             if (!parser.peekIs(TokenType.CLOSE_BRACE))
             {
-                parser.expect(TokenType.COMMA, "Esperávamos ',' ou '}' " +
-                        "para a chave " + key + ", mas recebemos '%s'");
+                ErrorOr<Token> commaOr = parser.expect(TokenType.COMMA, "Esperávamos uma vírgula - , - ou um" +
+                    " fechamento de chaves - } - para a chave " + key + ", mas recebemos outro símbolo no código" +
+                    " - %s");
+                if (commaOr.isError()) return commaOr.propagateError();
             }
 
             if (parser.peekIs(TokenType.COMMA))
@@ -72,12 +70,13 @@ public class ObjectLiteral extends Expr
                 parser.consume();
             }
 
-            properties.add(Property.create(key.value, value));
+            properties.add(Property.create(key, valueOr.value));
         }
 
-        parser.expect(TokenType.CLOSE_BRACE, "Esperávamos '}' para fechar o objeto, mas recebemos '%s'");
+        ErrorOr<Token> closeOr = parser.expect(TokenType.CLOSE_BRACE, "Esperávamos '}' para fechar o objeto, mas recebemos '%s'");
+        if (closeOr.isError()) return closeOr.propagateError();
 
-        return ObjectLiteral.create(properties);
+        return ErrorOr.Success(ObjectLiteral.create(properties));
     }
 
     public static ObjectLiteral create()

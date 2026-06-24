@@ -2,11 +2,9 @@ package Parser;
 
 import Ast.Statements.*;
 import Entities.Abstractions.Ast.Statement;
-import Entities.Exceptions.*;
-import Entities.Exceptions.Parser.AlreadyParsedException;
-import Entities.Exceptions.Parser.InvalidTokenException;
+import Entities.Common.Result.ErrorOr;
+import Entities.Common.Result.ErrorType;
 import Entities.Parsing.ContextMemory;
-import Lexer.Lexer;
 import Entities.Enums.Lexer.TokenType;
 import Lexer.Tokens.Token;
 
@@ -18,45 +16,43 @@ public class Parser
     public final ContextMemory context;
     public int tokenIndex = 0;
 
-    public Parser(char[] content) throws AlreadyParsedException, InvalidTokenException
+    private Parser(ArrayList<Token> tokens)
     {
-        Lexer lexer = Lexer.create(content);
         context = ContextMemory.create();
-        tokens = lexer.tokenize();
+        this.tokens = tokens;
     }
 
-    public static Parser create(char[] content) throws AlreadyParsedException, InvalidTokenException
+    public static Parser create(ArrayList<Token> tokens)
     {
-        return new Parser(content);
+        return new Parser(tokens);
     }
 
-    public Program build() throws InvalidArgumentException, InvalidTokenException
+    public ErrorOr<Program> build()
     {
         Program program = Program.create();
         while (notEof())
         {
-            program.addStatement(Statement.parse(this));
+            var stmtOr = Statement.parse(this);
+            if (stmtOr.isError()) return stmtOr.propagateError();
+            program.addStatement(stmtOr.value);
         }
-        return program;
+
+        return ErrorOr.Success(program);
     }
 
-    public Token expect(TokenType token, String error)
+    public ErrorOr<Token> expect(TokenType token, String error)
     {
         Token prev = consume();
         if (prev.type != token)
         {
-            if (error.contains("%s"))
-            {
-                System.err.printf((error) + "%n", prev.value);
-            } else
-            {
-                System.err.println(error);
-            }
+            String message = error;
 
-            System.err.println(prev);
-            System.exit(1);
+            if (error.contains("%s"))
+                message = String.format((error) + "%n", prev.value);
+
+            return ErrorOr.Fail(message, ErrorType.ParsingError, prev.location);
         }
-        return prev;
+        return ErrorOr.Success(prev);
     }
 
     public boolean notEof()
@@ -64,7 +60,7 @@ public class Parser
         return !peekIs(TokenType.EOF);
     }
 
-    private Token peek()
+    public Token peek()
     {
         return peek(0);
     }

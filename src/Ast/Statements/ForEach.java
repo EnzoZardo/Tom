@@ -1,14 +1,11 @@
 package Ast.Statements;
 
-import Ast.Expressions.AssignmentExpr;
-import Ast.Expressions.Identifier;
 import Ast.Expressions.PrimaryExpr;
 import Entities.Abstractions.Ast.Expr;
 import Entities.Abstractions.Ast.Statement;
+import Entities.Common.Result.ErrorOr;
 import Entities.Enums.Ast.NodeType;
 import Entities.Enums.Lexer.TokenType;
-import Entities.Exceptions.InvalidArgumentException;
-import Entities.Exceptions.Parser.InvalidTokenException;
 import Lexer.Tokens.Token;
 import Parser.Parser;
 
@@ -43,36 +40,52 @@ public class ForEach extends Statement
         return new ForEach(iterable, iterators, operator, consequent);
     }
 
-    public static Statement parse(Parser parser) throws InvalidArgumentException
+    public static ErrorOr<ForEach> parse(Parser parser)
     {
         parser.consume();
-        parser.expect(TokenType.EACH, "Esperávamos a palavra chave 'cada' após um 'para'.");
-        parser.expect(TokenType.OPEN_PARENTHESIS, "Esperávamos '(' após um loop para cada.");
-        ArrayList<Expr> iterators = parseArgumentsList(parser);
-        Token operator = parser.expect(TokenType.BINARY_OPERATOR, "Esperávamos uma expressão binária entre os " +
+        ErrorOr<Token> eachOr = parser.expect(TokenType.EACH, "Esperávamos a palavra chave 'cada' após um 'para'.");
+        if (eachOr.isError()) return eachOr.propagateError();
+
+        ErrorOr<Token> openOr = parser.expect(TokenType.OPEN_PARENTHESIS, "Esperávamos '(' após um loop para cada.");
+        if (openOr.isError()) return openOr.propagateError();
+
+        ErrorOr<ArrayList<Expr>> iteratorsOr = parseArgumentsList(parser);
+        if (iteratorsOr.isError()) return iteratorsOr.propagateError();
+
+        ErrorOr<Token> operatorOr = parser.expect(TokenType.BINARY_OPERATOR, "Esperávamos uma expressão binária entre os " +
                 "argumentos e nosso iterável.");
-        Expr iterable = Expr.parse(parser);
-        parser.expect(TokenType.CLOSE_PARENTHESIS, "Esperávamos ')' após a expressão de teste de um enquanto.");
+        if (operatorOr.isError()) return operatorOr.propagateError();
+
+        ErrorOr<Expr> iterableOr = Expr.parse(parser);
+        if (iterableOr.isError()) return iterableOr.propagateError();
+
+        ErrorOr<Token> closeOr = parser.expect(TokenType.CLOSE_PARENTHESIS, "Esperávamos ')' após a expressão de teste de um enquanto.");
+        if (closeOr.isError()) return closeOr.propagateError();
 
         parser.context.enterLoop();
-        Statement consequent = Statement.parse(parser);
+        var consequentOr = Statement.parse(parser);
+        if (consequentOr.isError()) return consequentOr.propagateError();
         parser.context.outLoop();
 
-        return ForEach.create(iterable, iterators, operator.value, consequent);
+        return ErrorOr.Success(ForEach.create(iterableOr.value, iteratorsOr.value, operatorOr.value.value, consequentOr.value));
     }
 
-    public static ArrayList<Expr> parseArgumentsList(Parser parser) throws InvalidTokenException, InvalidArgumentException
+    public static ErrorOr<ArrayList<Expr>> parseArgumentsList(Parser parser)
     {
         ArrayList<Expr> args = new ArrayList<>();
-        args.add(PrimaryExpr.parse(parser));
+        ErrorOr<Expr> firstOr = PrimaryExpr.parse(parser);
+        if (firstOr.isError()) return firstOr.propagateError();
+        args.add(firstOr.value);
 
         while (parser.notEof() && parser.peekIs(TokenType.COMMA))
         {
             parser.consume();
-            args.add(PrimaryExpr.parse(parser));
+            ErrorOr<Expr> argOr = PrimaryExpr.parse(parser);
+            if (argOr.isError()) return argOr.propagateError();
+            args.add(argOr.value);
         }
 
-        return args;
+        return ErrorOr.Success(args);
     }
 
 

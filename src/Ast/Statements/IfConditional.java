@@ -2,9 +2,10 @@ package Ast.Statements;
 
 import Entities.Abstractions.Ast.Expr;
 import Entities.Abstractions.Ast.Statement;
+import Entities.Common.Result.ErrorOr;
 import Entities.Enums.Ast.NodeType;
 import Entities.Enums.Lexer.TokenType;
-import Entities.Exceptions.InvalidArgumentException;
+import Lexer.Tokens.Token;
 import Parser.Parser;
 
 public class IfConditional extends Statement
@@ -39,22 +40,27 @@ public class IfConditional extends Statement
         return new IfConditional(test, consequent, null);
     }
 
-    public static Statement parse(Parser parser) throws InvalidArgumentException
+    public static ErrorOr<IfConditional> parse(Parser parser)
     {
         parser.consume();
-        parser.expect(TokenType.OPEN_PARENTHESIS, "Esperávamos '(' após um se.");
-        Expr test = Expr.parse(parser);
-        parser.expect(TokenType.CLOSE_PARENTHESIS, "Esperávamos ')' após a expressão de teste de um se.");
-        Statement consequent = Statement.parse(parser);
+        ErrorOr<Token> openOr = parser.expect(TokenType.OPEN_PARENTHESIS, "Esperávamos '(' após um se.");
+        if (openOr.isError()) return openOr.propagateError();
+        ErrorOr<Expr> testOr = Expr.parse(parser);
+        if (testOr.isError()) return testOr.propagateError();
+        ErrorOr<Token> closeOr = parser.expect(TokenType.CLOSE_PARENTHESIS, "Esperávamos ')' após a expressão de teste de um se.");
+        if (closeOr.isError()) return closeOr.propagateError();
+        var consequentOr = Statement.parse(parser);
+        if (consequentOr.isError()) return consequentOr.propagateError();
 
         if (parser.peekIs(TokenType.ELSE))
         {
             parser.consume();
-            Statement alternate = Statement.parse(parser);
-            return IfConditional.create(test, consequent, alternate);
+            var alternateOr = Statement.parse(parser);
+            if (alternateOr.isError()) return alternateOr.propagateError();
+            return ErrorOr.Success(IfConditional.create(testOr.value, consequentOr.value, alternateOr.value));
         }
 
-        return IfConditional.create(test, consequent);
+        return ErrorOr.Success(IfConditional.create(testOr.value, consequentOr.value));
     }
 
     @Override

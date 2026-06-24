@@ -1,11 +1,8 @@
 package Ast.Expressions;
 
-import Ast.Expressions.Literals.ArrayLiteral;
+import Entities.Common.Result.ErrorOr;
 import Entities.Enums.Ast.NodeType;
-import Ast.Expressions.Literals.ObjectLiteral;
 import Entities.Abstractions.Ast.Expr;
-import Entities.Exceptions.InvalidArgumentException;
-import Entities.Exceptions.Parser.InvalidTokenException;
 import Entities.Enums.Lexer.TokenType;
 import Parser.Parser;
 
@@ -23,18 +20,22 @@ public class AssignmentExpr extends Expr
         this.value = right;
     }
 
-    public static Expr parse(Parser parser) throws InvalidTokenException, InvalidArgumentException
+    public static ErrorOr<Expr> parse(Parser parser)
     {
-        Expr left = BinaryExpr.parseBoolean(parser);
+        ErrorOr<Expr> leftOr = BinaryExpr.parseBoolean(parser);
+        if (leftOr.isError()) return leftOr.propagateError();
 
         if (parser.peekIs(TokenType.EQUALS))
         {
             parser.consume();
-            Expr value = AssignmentExpr.parse(parser);
-            return AssignmentExpr.create(left, value);
+
+            ErrorOr<Expr> valueOr = AssignmentExpr.parse(parser);
+            if (valueOr.isError()) return valueOr.propagateError();
+
+            return ErrorOr.Success(AssignmentExpr.create(leftOr.value, valueOr.value));
         }
 
-        return left;
+        return leftOr;
     }
 
     public static AssignmentExpr create(Expr assigned, Expr value)

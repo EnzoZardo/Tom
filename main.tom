@@ -1,0 +1,22 @@
+classe {Pessoa 
+{
+    publ var idade: inteiro ?
+
+    publ fun Pessoa(idade: inteiro): Pessoa 
+    {
+        isso.idade = idade
+    }
+}
+
+fun main(): inteiro 
+{
+    con input: texto = leia("Informe sua idade: ")
+    con idade: inteiro = inteiro.converte(input)
+
+    con pessoa: Pessoa = novo Pessoa(idade)
+    escreva(pessoa.idade)
+
+    retorne inteiro.zero
+}
+
+main()

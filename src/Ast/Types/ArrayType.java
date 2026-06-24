@@ -4,6 +4,7 @@ import Entities.Common.Result.ErrorOr;
 import Entities.Enums.TypeKind;
 import Entities.Abstractions.Type;
 import Entities.Enums.Lexer.TokenType;
+import Lexer.Tokens.Token;
 import Parser.Parser;
 import Runtime.Environment;
 
@@ -33,7 +34,7 @@ public class ArrayType extends Type
         return ArrayType.create(Type.reduce(env, underlying));
     }
 
-    public static Type parse(Parser parser)
+    public static ErrorOr<Type> parse(Parser parser)
     {
         if (!parser.peekIs(TokenType.OPEN_BRACKETS))
         {
@@ -41,8 +42,11 @@ public class ArrayType extends Type
         }
 
         parser.consume();
-        parser.expect(TokenType.CLOSE_BRACKETS, "Esperávamos ']' depois dos '[' para a declaração de uma lista.");
-        return ArrayType.create(Type.parse(parser));
+        ErrorOr<Token> closeOr = parser.expect(TokenType.CLOSE_BRACKETS, "Esperávamos ']' depois dos '[' para a declaração de uma lista.");
+        if (closeOr.isError()) return closeOr.propagateError();
+        ErrorOr<Type> underlyingOr = Type.parse(parser);
+        if (underlyingOr.isError()) return underlyingOr.propagateError();
+        return ErrorOr.Success(ArrayType.create(underlyingOr.value));
     }
 
     public static ErrorOr<Void> equals(Type type1, Type type2)

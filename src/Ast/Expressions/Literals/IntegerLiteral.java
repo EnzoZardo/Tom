@@ -15,7 +15,7 @@ public class IntegerLiteral extends Expr
         this.value = value;
     }
 
-    public static IntegerLiteral create(Token token) throws InvalidArgumentException
+    public static IntegerLiteral create(Token token)
     {
         return new IntegerLiteral(Integer.parseInt(token.value));
     }

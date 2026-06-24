@@ -2,9 +2,10 @@ package Ast.Statements;
 
 import Entities.Abstractions.Ast.Expr;
 import Entities.Abstractions.Ast.Statement;
+import Entities.Common.Result.ErrorOr;
 import Entities.Enums.Ast.NodeType;
 import Entities.Enums.Lexer.TokenType;
-import Entities.Exceptions.InvalidArgumentException;
+import Lexer.Tokens.Token;
 import Parser.Parser;
 
 public class While extends Statement
@@ -26,17 +27,24 @@ public class While extends Statement
         return new While(test, consequent);
     }
 
-    public static Statement parse(Parser parser) throws InvalidArgumentException
+    public static ErrorOr<While> parse(Parser parser)
     {
         parser.consume();
-        parser.expect(TokenType.OPEN_PARENTHESIS, "Esperávamos '(' após um enquanto.");
-        Expr test = Expr.parse(parser);
-        parser.expect(TokenType.CLOSE_PARENTHESIS, "Esperávamos ')' após a expressão de teste de um enquanto.");
+        ErrorOr<Token> openOr = parser.expect(TokenType.OPEN_PARENTHESIS, "Esperávamos '(' após um enquanto.");
+        if (openOr.isError()) return openOr.propagateError();
+
+        ErrorOr<Expr> testOr = Expr.parse(parser);
+        if (testOr.isError()) return testOr.propagateError();
+
+        ErrorOr<Token> closeOr = parser.expect(TokenType.CLOSE_PARENTHESIS, "Esperávamos ')' após a expressão de teste de um enquanto.");
+        if (closeOr.isError()) return closeOr.propagateError();
+
         parser.context.enterLoop();
-        Statement consequent = Statement.parse(parser);
+        var consequentOr = Statement.parse(parser);
+        if (consequentOr.isError()) return consequentOr.propagateError();
         parser.context.outLoop();
 
-        return While.create(test, consequent);
+        return ErrorOr.Success(While.create(testOr.value, consequentOr.value));
     }
 
     @Override

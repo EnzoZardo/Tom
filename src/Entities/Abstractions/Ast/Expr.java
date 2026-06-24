@@ -1,5 +1,6 @@
 package Entities.Abstractions.Ast;
 
+import Entities.Common.Result.ErrorOr;
 import Entities.Enums.Ast.NodeType;
 import Ast.Expressions.AssignmentExpr;
 import Entities.Exceptions.InvalidArgumentException;
@@ -13,7 +14,7 @@ public abstract class Expr extends Statement
     }
 
     // Começa na expressão de menor precedência
-    public static Expr parse(Parser parser) throws InvalidArgumentException
+    public static ErrorOr<Expr> parse(Parser parser)
     {
         return AssignmentExpr.parse(parser);
     }

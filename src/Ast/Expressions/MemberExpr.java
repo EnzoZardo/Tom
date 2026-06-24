@@ -1,10 +1,9 @@
 package Ast.Expressions;
 
+import Entities.Common.Result.ErrorOr;
+import Entities.Common.Result.ErrorType;
 import Entities.Enums.Ast.NodeType;
 import Entities.Abstractions.Ast.Expr;
-import Entities.Exceptions.InvalidArgumentException;
-import Entities.Exceptions.Parser.InvalidNodeException;
-import Entities.Exceptions.Parser.InvalidTokenException;
 import Entities.Enums.Lexer.TokenType;
 import Lexer.Tokens.Token;
 import Parser.Parser;
@@ -16,9 +15,9 @@ public class MemberExpr extends Expr
     public boolean computed;
 
     protected MemberExpr(
-            Expr object,
-            Expr property,
-            boolean computed)
+        Expr object,
+        Expr property,
+        boolean computed)
     {
         super(NodeType.MemberExpression);
         this.object = object;
@@ -27,35 +26,41 @@ public class MemberExpr extends Expr
     }
 
     public static MemberExpr create(
-            Expr object,
-            Expr property,
-            boolean computed)
+        Expr object,
+        Expr property,
+        boolean computed)
     {
         return new MemberExpr(object, property, computed);
     }
 
-    public static Expr parse(Parser parser) throws InvalidTokenException, InvalidArgumentException
+    public static ErrorOr<Expr> parse(Parser parser)
     {
-        Expr object = PrimaryExpr.parse(parser);
+        ErrorOr<Expr> objectOr = PrimaryExpr.parse(parser);
+
+        if (objectOr.isError()) return objectOr.propagateError();
+        Expr object = objectOr.value;
 
         while (true)
         {
             if (parser.peekIs(TokenType.OPEN_PARENTHESIS))
             {
-                object = CallExpr.parse(parser, object);
+                ErrorOr<Expr> callOr = CallExpr.parse(parser, object);
+                if (callOr.isError()) return callOr.propagateError();
+
+                object = callOr.value;
             }
             else if (parser.peekIs(TokenType.DOT))
             {
                 parser.consume();
 
-                Expr property = PrimaryExpr.parse(parser);
+                ErrorOr<Expr> propertyOr = PrimaryExpr.parse(parser);
+                if (propertyOr.isError()) return propertyOr.propagateError();
+                Expr property = propertyOr.value;
 
                 if (property.type != NodeType.Identifier)
-                {
-                    throw new InvalidNodeException(
-                            "Esperávamos um identificador depois de um '.'."
-                    );
-                }
+                    return ErrorOr.Fail(
+                        "Esperávamos um nome para a chave de nosso objeto após um ponto - .",
+                        ErrorType.ParsingError);
 
                 object = MemberExpr.create(object, property, false);
             }
@@ -63,14 +68,16 @@ public class MemberExpr extends Expr
             {
                 parser.consume();
 
-                Expr property = Expr.parse(parser);
+                ErrorOr<Expr> propertyOr = Expr.parse(parser);
+                if (propertyOr.isError()) return propertyOr.propagateError();
 
-                parser.expect(
-                        TokenType.CLOSE_BRACKETS,
-                        "Esperávamos um ']' após acesso indexado."
+                ErrorOr<Token> closeOr = parser.expect(
+                    TokenType.CLOSE_BRACKETS,
+                    "Esperávamos um fechamento de colchetes - ] - após acesso a uma computado de um objeto"
                 );
+                if (closeOr.isError()) return closeOr.propagateError();
 
-                object = MemberExpr.create(object, property, true);
+                object = MemberExpr.create(object, propertyOr.value, true);
             }
             else
             {
@@ -78,23 +85,18 @@ public class MemberExpr extends Expr
             }
         }
 
-        return object;
+        return ErrorOr.Success(object);
     }
 
-    public static Expr parseCall(Parser parser) throws InvalidTokenException, InvalidArgumentException
+    public static ErrorOr<Expr> parseCall(Parser parser)
     {
-        Expr member = MemberExpr.parse(parser);
+        ErrorOr<Expr> memberOr = MemberExpr.parse(parser);
+        if (memberOr.isError()) return memberOr.propagateError();
 
-        if (parser.peekIs(TokenType.OPEN_PARENTHESIS)) {
-            return CallExpr.parse(parser, member);
-        }
+        if (parser.peekIs(TokenType.OPEN_PARENTHESIS))
+            return CallExpr.parse(parser, memberOr.value);
 
-        return member;
-    }
-
-    private static boolean isParsingMemberChaining(Parser parser)
-    {
-        return parser.peekIs(TokenType.DOT) || parser.peekIs(TokenType.OPEN_BRACKETS);
+        return memberOr;
     }
 
     @Override

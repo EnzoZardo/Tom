@@ -1,8 +1,9 @@
 package Ast.Statements;
 
 import Entities.Abstractions.Ast.Statement;
+import Entities.Common.Result.ErrorOr;
+import Entities.Common.Result.ErrorType;
 import Entities.Enums.Ast.NodeType;
-import Entities.Exceptions.Parser.InvalidStatementContextException;
 import Parser.Parser;
 
 public class Break extends Statement
@@ -17,15 +18,18 @@ public class Break extends Statement
         return new Break();
     }
 
-    public static Statement parse(Parser parser)
+    public static ErrorOr<Break> parse(Parser parser)
     {
         if (parser.context.inLoop())
         {
             parser.consume();
-            return Break.create();
+            return ErrorOr.Success(Break.create());
         }
 
-        throw new InvalidStatementContextException("Só é possível usar um pare dentro de um loop.");
+        return ErrorOr.Fail(
+            "Só é possível usar um pare dentro de um loop.",
+            ErrorType.ParsingError,
+            parser.peek().location);
     }
 
     @Override

@@ -1,9 +1,10 @@
 import Ast.Statements.Program;
+import Entities.Common.Result.Error;
+import Entities.Common.Result.ErrorOr;
 import Entities.Exceptions.AlreadyDeclaredVariableException;
 import Entities.Exceptions.Parser.AlreadyParsedException;
 import Entities.Exceptions.InvalidArgumentException;
 import Entities.Exceptions.Parser.InvalidTokenException;
-import Parser.Parser;
 import Runtime.*;
 
 void main(String[] args)
@@ -24,7 +25,7 @@ void main(String[] args)
         throw new InvalidArgumentException("Número incorreto de argumentos informado.");
     }
 
-    final String fileName = args[0]; // "./main.tom";
+    String fileName = args[0]; // "./main.tom";
     String content;
 
     {
@@ -37,11 +38,24 @@ void main(String[] args)
         try (FileReader reader = new FileReader(file))
         {
             content = reader.readAllAsString();
+            fileName = file.getAbsolutePath();
         }
     }
 
-    Parser parser = Parser.create(content.toCharArray());
-    Program program = parser.build();
+    ErrorOr<Program> initialization = Program.initialize(content, fileName);
+
+    if (initialization.isError())
+    {
+        Error err = initialization.error;
+        System.err.println(err.getMessage());
+        if (err.getLocation() != null)
+        {
+            System.err.println(err.getLocation());
+        }
+        System.exit(err.getExit());
+    }
+
+    Program program = initialization.value;
     Interpreter.evaluate(program, Environment.create());
 }
 

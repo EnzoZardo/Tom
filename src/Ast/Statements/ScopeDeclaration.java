@@ -2,9 +2,9 @@ package Ast.Statements;
 
 import Entities.Abstractions.Ast.Expr;
 import Entities.Abstractions.Ast.Statement;
+import Entities.Common.Result.ErrorOr;
 import Entities.Enums.Ast.NodeType;
 import Entities.Enums.Lexer.TokenType;
-import Entities.Exceptions.InvalidArgumentException;
 import Parser.Parser;
 
 import java.util.ArrayList;
@@ -24,11 +24,11 @@ public class ScopeDeclaration extends Statement
         return new ScopeDeclaration(body);
     }
 
-    public static Statement parse(Parser parser) throws InvalidArgumentException
+    public static ErrorOr<Statement> parse(Parser parser)
     {
         if (parser.peekIs(1, TokenType.IDENTIFIER) && parser.peekIs(2, TokenType.COLON))
         {
-            return Expr.parse(parser);
+            return Expr.parse(parser).propagateError();
         }
 
         parser.consume();
@@ -36,11 +36,13 @@ public class ScopeDeclaration extends Statement
 
         while (parser.notEof() && !parser.peekIs(TokenType.CLOSE_BRACE))
         {
-            body.add(Statement.parse(parser));
+            var stmtOr = Statement.parse(parser);
+            if (stmtOr.isError()) return stmtOr.propagateError();
+            body.add(stmtOr.value);
         }
 
         parser.consume();
-        return ScopeDeclaration.create(body);
+        return ErrorOr.Success(ScopeDeclaration.create(body));
     }
 
     private String printBody(int level)

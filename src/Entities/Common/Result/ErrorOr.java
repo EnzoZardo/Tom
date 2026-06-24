@@ -1,5 +1,7 @@
 package Entities.Common.Result;
 
+import Entities.Common.Location.LocationPoint;
+
 public class ErrorOr<T>
 {
     public T value = null;
@@ -49,12 +51,25 @@ public class ErrorOr<T>
     {
         return new ErrorOr<>(Error.create(message));
     }
+    public static <T> ErrorOr<T> Fail(String message, ErrorType type, LocationPoint location)
+    {
+        return new ErrorOr<>(Error.create(message, type, location));
+    }
     public static <T> ErrorOr<T> Fail(String message, ErrorType type)
     {
         return new ErrorOr<>(Error.create(message, type));
     }
 
     public ErrorOr<Void> empty()
+    {
+        if (isError())
+        {
+            return ErrorOr.Fail(error);
+        }
+        return ErrorOr.Success(null);
+    }
+
+    public <J> ErrorOr<J> propagateError()
     {
         if (isError())
         {

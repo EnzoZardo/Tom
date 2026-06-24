@@ -16,13 +16,8 @@ public class Identifier extends Expr
         super(NodeType.Identifier);
     }
 
-    public static Identifier create(Token token) throws InvalidArgumentException
+    public static Identifier create(Token token)
     {
-        if (token.type != TokenType.IDENTIFIER)
-        {
-            throw new InvalidArgumentException("Um símbolo inesperado foi dado como identificador.");
-        }
-
         return new Identifier(token.value);
     }
 

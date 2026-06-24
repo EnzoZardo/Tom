@@ -11,8 +11,8 @@ public class Property extends Expr
     protected Property(String key, Expr value)
     {
         super(NodeType.Property);
-        this.key = key;
         this.value = value;
+        this.key = key;
     }
 
     public static Property create(String key, Expr value)

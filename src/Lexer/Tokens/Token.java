@@ -1,29 +1,31 @@
 package Lexer.Tokens;
 
+import Entities.Common.Location.FileLocation;
+import Entities.Common.Location.LocationPoint;
 import Entities.Constants.ReservedKeys;
 import Entities.Enums.Lexer.TokenType;
 
 public class Token
 {
     public TokenType type;
-    public TokenLocation location;
+    public LocationPoint location;
     public String value;
 
-    protected Token(TokenType type, String value, TokenLocation location)
+    protected Token(TokenType type, String value, LocationPoint location)
     {
         this.type = type;
         this.value = value;
         this.location = location;
     }
 
-    public static Token create(TokenType type, String value, TokenLocation location)
+    public static Token create(TokenType type, String value, LocationPoint location)
     {
         return new Token(type, value, location);
     }
 
-    public static Token create(TokenType type, String value, TokenFileLocation start, TokenFileLocation end)
+    public static Token create(TokenType type, String value, FileLocation start, FileLocation end, String file)
     {
-        return new Token(type, value, TokenLocation.create(start, end));
+        return new Token(type, value, LocationPoint.create(start, end, file));
     }
 
     public static boolean isNumeric(char c)
@@ -59,16 +61,6 @@ public class Token
     public static boolean isNewLine(String c)
     {
         return "\n".equals(c);
-    }
-
-    public char Char()
-    {
-        char[] c = value.toCharArray();
-        if (c.length == 0)
-        {
-            return '\0';
-        }
-        return c[0];
     }
 
     @Override

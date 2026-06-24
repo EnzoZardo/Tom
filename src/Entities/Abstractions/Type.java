@@ -18,7 +18,7 @@ public abstract class Type extends Statement
         this.type = type;
     }
 
-    public static Type parse(Parser parser)
+    public static ErrorOr<Type> parse(Parser parser)
     {
         return FunctionType.parse(parser);
     }

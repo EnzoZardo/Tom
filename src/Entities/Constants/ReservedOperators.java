@@ -2,7 +2,7 @@ package Entities.Constants;
 
 import Entities.Enums.Lexer.TokenType;
 import Lexer.Tokens.Token;
-import Lexer.Tokens.TokenFileLocation;
+import Entities.Common.Location.FileLocation;
 
 import java.util.Set;
 
@@ -67,12 +67,12 @@ public record ReservedOperators()
             || ReservedKeys.GreaterOrEqual.equals(operator);
     }
 
-    public static Token token(String value, TokenFileLocation start, TokenFileLocation end)
+    public static Token token(String value, FileLocation start, FileLocation end, String file)
     {
         if (ReservedKeys.Equals.equals(value)) {
-            return Token.create(TokenType.EQUALS, value, start, end);
+            return Token.create(TokenType.EQUALS, value, start, end, file);
         }
 
-        return Token.create(TokenType.BINARY_OPERATOR, value, start, end);
+        return Token.create(TokenType.BINARY_OPERATOR, value, start, end, file);
     }
 }

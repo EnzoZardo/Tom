@@ -1,7 +1,7 @@
 package Entities.Constants;
 
 import Entities.Enums.Lexer.TokenType;
-import Lexer.Tokens.TokenFileLocation;
+import Entities.Common.Location.FileLocation;
 import Lexer.Tokens.Token;
 import java.util.HashMap;
 import java.util.Map;
@@ -40,8 +40,8 @@ public record ReservedWords()
         return relations.containsKey(value);
     }
 
-    public static Token token(String value, TokenFileLocation start, TokenFileLocation end)
+    public static Token token(String value, FileLocation start, FileLocation end, String file)
     {
-        return Token.create(relations.get(value), value, start, end);
+        return Token.create(relations.get(value), value, start, end, file);
     }
 }

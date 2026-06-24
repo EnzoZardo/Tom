@@ -49,7 +49,7 @@ public abstract class Statements
 
     //TODO: melhorar todo esse método, validar extensões, etc
     public static RuntimeValue evaluateImport(Import importStatement, Environment env)
-        throws AlreadyDeclaredVariableException
+            throws AlreadyDeclaredVariableException
     {
         //TODO: CHECK THIS METHOD WHEN ALL IS RESULT
         RuntimeValue value = Interpreter.evaluate(importStatement.path, env);
@@ -73,16 +73,14 @@ public abstract class Statements
             }
         }
 
-        Parser parser = Parser.create(content.toCharArray());
-        Program program;
-        try
+        ErrorOr<Program> initialization = Program.initialize(content, path.value);
+
+        if (initialization.isError())
         {
-            program = parser.build();
+            //return error
         }
-        catch (InvalidArgumentException e)
-        {
-            return NullValue.create();
-        }
+
+        Program program = initialization.value;
         return Interpreter.evaluate(program, env);
     }
 

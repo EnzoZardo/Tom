@@ -1,13 +1,15 @@
 package Lexer.Tokens;
 
+import Entities.Common.Location.FileLocation;
+import Entities.Common.Location.LocationPoint;
 import Entities.Constants.ReservedKeys;
 import Entities.Enums.Lexer.TokenType;
 
 public class PonctuationToken extends Token
 {
-    protected PonctuationToken(TokenType type, String value, TokenFileLocation start, TokenFileLocation end)
+    protected PonctuationToken(TokenType type, String value, FileLocation start, FileLocation end, String file)
     {
-        super(type, value, TokenLocation.create(start, end));
+        super(type, value, LocationPoint.create(start, end, file));
     }
 
     public static boolean isSemicolon(char c)

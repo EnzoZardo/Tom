@@ -1,12 +1,9 @@
 package Ast.Statements;
 
-import Ast.Expressions.Identifier;
-import Entities.Abstractions.Ast.Expr;
 import Entities.Abstractions.Ast.Statement;
-import Entities.Constants.ReservedKeys;
+import Entities.Common.Result.ErrorOr;
 import Entities.Enums.Ast.NodeType;
 import Entities.Enums.Lexer.TokenType;
-import Entities.Exceptions.InvalidArgumentException;
 import Lexer.Tokens.Token;
 import Parser.Parser;
 
@@ -24,10 +21,10 @@ public class ClassDeclaration extends Statement
         String parentClass
     )
     {
-        super(NodeType.ClassDeclaration);
         this.name = name;
         this.members = members;
         this.parentClass = parentClass;
+        super(NodeType.ClassDeclaration);
     }
 
     public static ClassDeclaration create(
@@ -38,57 +35,67 @@ public class ClassDeclaration extends Statement
         return new ClassDeclaration(name, members, parentClass);
     }
 
-    public static ClassDeclaration parse(Parser parser) throws InvalidArgumentException
+    public static ErrorOr<ClassDeclaration> parse(Parser parser)
     {
         parser.consume();
 
-        Token identifier = parser.expect(TokenType.IDENTIFIER, "Esperávamos um nome para a classe declarada.");
-        Token parentClass = null;
+        ErrorOr<Token> identifierOr = parser.expect(TokenType.IDENTIFIER, "Esperávamos um nome para a classe " +
+            "declarada, mas recebemos outro símbolo no código - %s");
+        if (identifierOr.isError()) return identifierOr.propagateError();
+        Token parentClassToken = null;
 
         if (parser.peekIs(TokenType.EXTENDS))
         {
             parser.consume();
-            parentClass = parser.expect(TokenType.IDENTIFIER, "Esperávamos um nome para a classe herdada.");
+            ErrorOr<Token> parentOr = parser.expect(TokenType.IDENTIFIER, "Esperávamos um nome para a classe que " +
+                "será herdada, mas recebemos outro símbolo no código - %s");
+            if (parentOr.isError()) return parentOr.propagateError();
+            parentClassToken = parentOr.value;
         }
 
-        parser.expect(TokenType.OPEN_BRACE, "Esperávamos um '{' para a abertura de uma classe.");
+        ErrorOr<Token> openBraceOr = parser.expect(TokenType.OPEN_BRACE, "Esperávamos uma abertura de chaves " +
+            "- { - para a abertura do corpo da nossa classe " + identifierOr.value.value + ", mas recebemos outro " +
+            "símbolo no código - %s");
+        if (openBraceOr.isError()) return openBraceOr.propagateError();
+
         ArrayList<ClassMemberDeclaration> members = new ArrayList<>();
 
         parser.context.enterClass();
         while (parser.notEof() && !parser.peekIs(TokenType.CLOSE_BRACE))
         {
-            members.add(ClassMemberDeclaration.parse(parser));
+            ErrorOr<ClassMemberDeclaration> memberOr = ClassMemberDeclaration.parse(parser);
+            if (memberOr.isError()) return memberOr.propagateError();
+
+            members.add(memberOr.value);
         }
         parser.context.outClass();
 
         parser.consume();
-        return ClassDeclaration.create(identifier.value, members, parentClass == null ? null : parentClass.value);
+        return ErrorOr.Success(ClassDeclaration.create(
+            identifierOr.value.value,
+            members,
+            parentClassToken == null ? null : parentClassToken.value));
     }
 
     private String printBody(int level)
     {
         final int next = level + 1;
         StringBuilder ret = new StringBuilder("\n")
-                .repeat("\t", level)
-                .append("[");
+            .repeat("\t", level)
+            .append("[");
 
         int index = 0;
         for (ClassMemberDeclaration statement : members)
         {
             ret.repeat("\t", next).append(statement.print(next));
-
-            if (index < members.size() - 1)
-            {
-                ret.append(", ");
-            }
-
+            if (index < members.size() - 1) ret.append(", ");
             index++;
         }
 
         return ret.append("\n")
-                .repeat("\t", level)
-                .append("]")
-                .toString();
+            .repeat("\t", level)
+            .append("]")
+            .toString();
     }
 
     @Override

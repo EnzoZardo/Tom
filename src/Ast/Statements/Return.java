@@ -1,11 +1,9 @@
 package Ast.Statements;
 
-import Ast.Expressions.PrimaryExpr;
 import Entities.Abstractions.Ast.Expr;
 import Entities.Abstractions.Ast.Statement;
+import Entities.Common.Result.ErrorOr;
 import Entities.Enums.Ast.NodeType;
-import Entities.Exceptions.InvalidArgumentException;
-import Entities.Exceptions.Parser.InvalidStatementContextException;
 import Parser.Parser;
 
 public class Return extends Statement
@@ -22,15 +20,17 @@ public class Return extends Statement
         return new Return(value);
     }
 
-    public static Statement parse(Parser parser) throws InvalidArgumentException
+    public static ErrorOr<Return> parse(Parser parser)
     {
         if (parser.context.inFunction())
         {
             parser.consume();
-            return Return.create(Expr.parse(parser));
+            ErrorOr<Expr> valueOr = Expr.parse(parser);
+            if (valueOr.isError()) return valueOr.propagateError();
+            return ErrorOr.Success(Return.create(valueOr.value));
         }
 
-        throw new InvalidStatementContextException("Só é possível usar um retorno dentro de uma função.");
+        return ErrorOr.Fail("Só é possível usar um retorno dentro de uma função.");
     }
 
     @Override

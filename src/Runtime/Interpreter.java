@@ -17,7 +17,7 @@ import java.io.IOException;
 public abstract class Interpreter
 {
     public static RuntimeValue evaluate(Statement node, Environment env)
-        throws AlreadyDeclaredVariableException
+            throws AlreadyDeclaredVariableException
     {
         return switch (node.type) {
             case IntegerLiteral -> NumericValue.create(((IntegerLiteral) node).value, true);

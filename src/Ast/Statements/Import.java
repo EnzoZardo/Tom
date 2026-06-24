@@ -2,8 +2,8 @@ package Ast.Statements;
 
 import Entities.Abstractions.Ast.Expr;
 import Entities.Abstractions.Ast.Statement;
+import Entities.Common.Result.ErrorOr;
 import Entities.Enums.Ast.NodeType;
-import Entities.Exceptions.InvalidArgumentException;
 import Parser.Parser;
 
 public class Import extends Statement
@@ -21,10 +21,12 @@ public class Import extends Statement
         return new Import(path);
     }
 
-    public static Statement parse(Parser parser) throws InvalidArgumentException
+    public static ErrorOr<Import> parse(Parser parser)
     {
         parser.consume();
-        return Import.create(Expr.parse(parser));
+        ErrorOr<Expr> pathOr = Expr.parse(parser);
+        if (pathOr.isError()) return pathOr.propagateError();
+        return ErrorOr.Success(Import.create(pathOr.value));
     }
 
     @Override

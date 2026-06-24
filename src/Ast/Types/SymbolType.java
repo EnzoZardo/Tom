@@ -35,10 +35,11 @@ public class SymbolType extends Type
         return symbolType;
     }
 
-    public static Type parse(Parser parser)
+    public static ErrorOr<Type> parse(Parser parser)
     {
-        Token token = parser.expect(TokenType.IDENTIFIER, "Esperávamos o nome do tipo enquanto analisávamos.");
-        return SymbolType.create(token.value);
+        ErrorOr<Token> tokenOr = parser.expect(TokenType.IDENTIFIER, "Esperávamos o nome do tipo enquanto analisávamos.");
+        if (tokenOr.isError()) return tokenOr.propagateError();
+        return ErrorOr.Success(SymbolType.create(tokenOr.value.value));
     }
 
     public static ErrorOr<Void> equals(Type type1, Type type2)

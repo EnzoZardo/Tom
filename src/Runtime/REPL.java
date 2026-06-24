@@ -1,8 +1,11 @@
 package Runtime;
 
 import Ast.Statements.Program;
+import Entities.Common.Result.ErrorOr;
 import Entities.Exceptions.AlreadyDeclaredVariableException;
+import Lexer.Lexer;
 import Lexer.Tokens.PonctuationToken;
+import Lexer.Tokens.Token;
 import Parser.Parser;
 
 import java.io.BufferedReader;
@@ -12,6 +15,7 @@ import java.util.*;
 
 public class REPL
 {
+    private static final String EMPTY = "";
     private final BufferedReader bf = new BufferedReader(new InputStreamReader(System.in));
     private final Stack<String> lastOpen;
     private boolean isParenthesisOpen;
@@ -185,9 +189,25 @@ public class REPL
         {
             try
             {
-                Parser parser = Parser.create(repl.getInput());
-                Program program = parser.build();
-                IO.println(Interpreter.evaluate(program, env));
+                Lexer lexer = Lexer.create(repl.getInput(), EMPTY);
+                ErrorOr<ArrayList<Token>> tokenizationResult = lexer.tokenize();
+
+                if (tokenizationResult.isError())
+                {
+                    System.err.println(tokenizationResult.error.getMessage());
+                    continue;
+                }
+
+                Parser parser = Parser.create(tokenizationResult.value);
+                ErrorOr<Program> build = parser.build();
+
+                if (build.isError())
+                {
+                    System.err.println(tokenizationResult.error.getMessage());
+                    continue;
+                }
+
+                IO.println(Interpreter.evaluate(build.value, env));
             }
             catch (Exception ex)
             {

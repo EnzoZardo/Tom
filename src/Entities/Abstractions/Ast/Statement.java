@@ -1,8 +1,8 @@
 package Entities.Abstractions.Ast;
 
 import Ast.Statements.*;
+import Entities.Common.Result.ErrorOr;
 import Entities.Enums.Ast.NodeType;
-import Entities.Exceptions.InvalidArgumentException;
 import Entities.Enums.Lexer.TokenType;
 import Parser.Parser;
 
@@ -15,7 +15,7 @@ public abstract class Statement
         this.type = type;
     }
 
-    public static Statement parse(Parser parser) throws InvalidArgumentException
+    public static ErrorOr<? extends Statement> parse(Parser parser)
     {
         return switch (parser.peekType())
         {

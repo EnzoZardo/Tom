@@ -1,17 +1,20 @@
 package Ast.Statements;
 
-import Ast.Expressions.Identifier;
-import Ast.Types.ClassType;
+import Ast.Types.FunctionType;
 import Entities.Abstractions.Ast.Statement;
 import Entities.Abstractions.Type;
+import Entities.Common.Result.ErrorOr;
+import Entities.Common.Result.ErrorType;
 import Entities.Constants.ReservedKeys;
 import Entities.Enums.Ast.NodeType;
 import Entities.Enums.Lexer.TokenType;
 import Entities.Enums.Runtime.ProtectionLevel;
-import Entities.Exceptions.InvalidArgumentException;
-import Entities.Exceptions.Parser.InvalidTokenException;
+import Entities.Metadata.ArgumentMetadata;
 import Lexer.Tokens.Token;
 import Parser.Parser;
+
+import java.util.ArrayList;
+import java.util.stream.Collectors;
 
 public class ClassMemberDeclaration extends Statement
 {
@@ -38,14 +41,14 @@ public class ClassMemberDeclaration extends Statement
         return new ClassMemberDeclaration(protectionMarker, consequent, isStatic);
     }
 
-    public static ProtectionLevel getProtectionLevel(String protectionMarker)
+    public static ErrorOr<ProtectionLevel> getProtectionLevel(String protectionMarker)
     {
         return switch (protectionMarker)
         {
-            case ReservedKeys.Protected -> ProtectionLevel.Protected;
-            case ReservedKeys.Private -> ProtectionLevel.Private;
-            case ReservedKeys.Public -> ProtectionLevel.Public;
-            default -> throw new InvalidTokenException("Marcador de nível de proteção inválido: " + protectionMarker);
+            case ReservedKeys.Protected -> ErrorOr.Success(ProtectionLevel.Protected);
+            case ReservedKeys.Private -> ErrorOr.Success(ProtectionLevel.Private);
+            case ReservedKeys.Public -> ErrorOr.Success(ProtectionLevel.Public);
+            default -> ErrorOr.Fail("Marcador de nível de proteção inválido: " + protectionMarker);
         };
     }
 
@@ -55,7 +58,7 @@ public class ClassMemberDeclaration extends Statement
         {
             case VariableDeclaration -> ((VariableDeclaration) consequent).identifier;
             case FunctionDeclaration -> ((FunctionDeclaration) consequent).identifier;
-            default -> throw new InvalidTokenException("Declaração inválida de membro de classe.");
+            default -> null;
         };
     }
 
@@ -63,16 +66,30 @@ public class ClassMemberDeclaration extends Statement
     {
         return switch (consequent.type)
         {
-            case VariableDeclaration -> ((VariableDeclaration) consequent).expectedType;
-            case FunctionDeclaration -> ((FunctionDeclaration) consequent).returnType;
-            default -> throw new InvalidTokenException("Declaração inválida de membro de classe.");
+            case VariableDeclaration ->
+            {
+                VariableDeclaration declaration = (VariableDeclaration) consequent;
+                yield declaration.expectedType;
+            }
+            case FunctionDeclaration ->
+            {
+                FunctionDeclaration declaration = (FunctionDeclaration) consequent;
+                yield FunctionType.create(
+                    declaration.parameters.stream()
+                        .map(ArgumentMetadata::getType)
+                        .collect(Collectors.toCollection(ArrayList::new)),
+                    declaration.returnType);
+            }
+            default -> null;
         };
     }
 
-    public static ClassMemberDeclaration parse(Parser parser) throws InvalidArgumentException
+    public static ErrorOr<ClassMemberDeclaration> parse(Parser parser)
     {
-        Token protectionMarker = parser.expect(TokenType.PROTECTION_MARKER, "Esperávamos um nível de proteção "
-            + "para o membro da classe declarada.");
+        ErrorOr<Token> protectionMarkerOr = parser.expect(TokenType.PROTECTION_MARKER, "Esperávamos um nível " +
+                "de proteção (público, privado ou protegido) para o membro da classe declarada, mas recebemos outro " +
+                "símbolo no código - %s");
+        if (protectionMarkerOr.isError()) return protectionMarkerOr.propagateError();
 
         boolean isStatic = false;
 
@@ -85,14 +102,21 @@ public class ClassMemberDeclaration extends Statement
         if (!parser.peekIs(TokenType.DECLARE) &&
             !parser.peekIs(TokenType.CONSTANT) &&
             !parser.peekIs(TokenType.FUNCTION))
-            throw new InvalidTokenException("Declaração inválida de membro de classe.");
+            return ErrorOr.Fail(
+                "Declaração inválida de membro de classe, só são aceitas funções ou declarações de variáveis.",
+                ErrorType.ParsingError,
+                parser.peek().location);
 
-        Statement consequent = Statement.parse(parser);
+        var consequentOr = Statement.parse(parser);
+        if (consequentOr.isError()) return consequentOr.propagateError();
 
-        return ClassMemberDeclaration.create(
-            getProtectionLevel(protectionMarker.value),
-            consequent,
-            isStatic);
+        ErrorOr<ProtectionLevel> levelOr = getProtectionLevel(protectionMarkerOr.value.value);
+        if (levelOr.isError()) return levelOr.propagateError();
+
+        return ErrorOr.Success(ClassMemberDeclaration.create(
+            levelOr.value,
+            consequentOr.value,
+            isStatic));
     }
 
 

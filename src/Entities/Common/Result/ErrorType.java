@@ -2,8 +2,12 @@ package Entities.Common.Result;
 
 public enum ErrorType
 {
+    Success,
     Any,
-    IncorrectNumberOfArguments,
+    UnexpectedSymbol,
+    AlreadyTokenized,
+    ParsingError,
+    InvalidCall,
     ExpectedTypeNotMatch,
-    InvalidCall
+    IncorrectNumberOfArguments
 }

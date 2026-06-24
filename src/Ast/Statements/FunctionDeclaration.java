@@ -3,11 +3,10 @@ package Ast.Statements;
 import Ast.Expressions.CallExpr;
 import Entities.Abstractions.Ast.Expr;
 import Ast.Expressions.Identifier;
+import Entities.Common.Result.ErrorOr;
 import Entities.Enums.Ast.NodeType;
 import Entities.Abstractions.Type;
 import Entities.Abstractions.Ast.Statement;
-import Entities.Exceptions.InvalidArgumentException;
-import Entities.Exceptions.Parser.InvalidNodeException;
 import Entities.Enums.Lexer.TokenType;
 import Lexer.Tokens.Token;
 import Parser.Parser;
@@ -45,41 +44,51 @@ public class FunctionDeclaration extends Statement
         return new FunctionDeclaration(identifier, parameters, body, returnType);
     }
 
-    public static Statement parse(Parser parser) throws InvalidArgumentException
+    public static ErrorOr<FunctionDeclaration> parse(Parser parser)
     {
         parser.consume();
-        Token identifierToken = parser.expect(TokenType.IDENTIFIER, "Esperávamos receber o nome da função.");
-        String name = identifierToken.value;
+        ErrorOr<Token> identifierTokenOr = parser.expect(TokenType.IDENTIFIER, "Esperávamos receber o nome da função.");
+        if (identifierTokenOr.isError()) return identifierTokenOr.propagateError();
+        String name = identifierTokenOr.value.value;
 
-        ArrayList<ExprMetadata> parametersMetadata = CallExpr.parseArgsDeclaration(parser);
+        ErrorOr<ArrayList<ExprMetadata>> paramsMetaOr = CallExpr.parseArgsDeclaration(parser);
+        if (paramsMetaOr.isError()) return paramsMetaOr.propagateError();
+        ArrayList<ExprMetadata> parametersMetadata = paramsMetaOr.value;
         ArrayList<ArgumentMetadata> parameters = new ArrayList<>();
 
         for (ExprMetadata metadata : parametersMetadata)
         {
             Expr identifier = metadata.getExpr();
             if (identifier.type != NodeType.Identifier)
-                throw new InvalidNodeException("Esperávamos o nome do argumento da função.");
+                return ErrorOr.Fail("Esperávamos o nome do argumento da função.");
 
             parameters.add(ArgumentMetadata.create(metadata.getType(), ((Identifier) identifier).value));
         }
 
-        parser.expect(TokenType.COLON, "Esperávamos ':' para declararmos o tipo de " +
-                "retorno de uma função função.");
+        ErrorOr<Token> colonOr = parser.expect(TokenType.COLON, "Esperávamos ':' para declararmos o tipo de " +
+                "retorno de uma função.");
+        if (colonOr.isError()) return colonOr.propagateError();
 
-        Type type = Type.parse(parser);
+        ErrorOr<Type> typeOr = Type.parse(parser);
+        if (typeOr.isError()) return typeOr.propagateError();
+        Type type = typeOr.value;
 
-        parser.expect(TokenType.OPEN_BRACE, "Esperávamos '{' para analisarmos o corpo da função.");
+        ErrorOr<Token> openBraceOr = parser.expect(TokenType.OPEN_BRACE, "Esperávamos '{' para analisarmos o corpo da função.");
+        if (openBraceOr.isError()) return openBraceOr.propagateError();
         ArrayList<Statement> body = new ArrayList<>();
 
         parser.context.enterFunction();
         while (parser.notEof() && !parser.peekIs(TokenType.CLOSE_BRACE))
         {
-            body.add(Statement.parse(parser));
+            var stmtOr = Statement.parse(parser);
+            if (stmtOr.isError()) return stmtOr.propagateError();
+            body.add(stmtOr.value);
         }
         parser.context.outFunction();
 
-        parser.expect(TokenType.CLOSE_BRACE, "Esperávamos '}' para fecharmos o corpo de uma função.");
-        return FunctionDeclaration.create(name, parameters, body, type);
+        ErrorOr<Token> closeBraceOr = parser.expect(TokenType.CLOSE_BRACE, "Esperávamos '}' para fecharmos o corpo de uma função.");
+        if (closeBraceOr.isError()) return closeBraceOr.propagateError();
+        return ErrorOr.Success(FunctionDeclaration.create(name, parameters, body, type));
     }
 
     private String printParams(int level)
