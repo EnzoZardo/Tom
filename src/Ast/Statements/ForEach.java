@@ -43,23 +43,26 @@ public class ForEach extends Statement
     public static ErrorOr<ForEach> parse(Parser parser)
     {
         parser.consume();
-        ErrorOr<Token> eachOr = parser.expect(TokenType.EACH, "Esperávamos a palavra chave 'cada' após um 'para'.");
+        ErrorOr<Token> eachOr = parser.expect(TokenType.EACH, "Esperávamos a palavra chave 'cada' após um " +
+            "'para' para podermos iniciar um loop para-cada, mas recebemos outro símbolo no código - %s");
         if (eachOr.isError()) return eachOr.propagateError();
 
-        ErrorOr<Token> openOr = parser.expect(TokenType.OPEN_PARENTHESIS, "Esperávamos '(' após um loop para cada.");
+        ErrorOr<Token> openOr = parser.expect(TokenType.OPEN_PARENTHESIS, "Esperávamos um parênteses - ( - para " +
+            "abrir o nosso loop para-cada, mas recebemos outro símbolo no código - %s");
         if (openOr.isError()) return openOr.propagateError();
 
         ErrorOr<ArrayList<Expr>> iteratorsOr = parseArgumentsList(parser);
         if (iteratorsOr.isError()) return iteratorsOr.propagateError();
 
-        ErrorOr<Token> operatorOr = parser.expect(TokenType.BINARY_OPERATOR, "Esperávamos uma expressão binária entre os " +
-                "argumentos e nosso iterável.");
+        ErrorOr<Token> operatorOr = parser.expect(TokenType.BINARY_OPERATOR, "Esperávamos uma expressão binária " +
+            "entre os argumentos e o iterável de nosso para-cada, mas recebemos outro símbolo no nosso código - %s");
         if (operatorOr.isError()) return operatorOr.propagateError();
 
         ErrorOr<Expr> iterableOr = Expr.parse(parser);
         if (iterableOr.isError()) return iterableOr.propagateError();
 
-        ErrorOr<Token> closeOr = parser.expect(TokenType.CLOSE_PARENTHESIS, "Esperávamos ')' após a expressão de teste de um enquanto.");
+        ErrorOr<Token> closeOr = parser.expect(TokenType.CLOSE_PARENTHESIS, "Esperávamos um fechamento de " +
+            "parênteses - ) - para fechar o nosso loop para-cada, mas recebemos outro símbolo no código - %s");
         if (closeOr.isError()) return closeOr.propagateError();
 
         parser.context.enterLoop();

@@ -47,12 +47,14 @@ public class FunctionDeclaration extends Statement
     public static ErrorOr<FunctionDeclaration> parse(Parser parser)
     {
         parser.consume();
-        ErrorOr<Token> identifierTokenOr = parser.expect(TokenType.IDENTIFIER, "Esperávamos receber o nome da função.");
+        ErrorOr<Token> identifierTokenOr = parser.expect(TokenType.IDENTIFIER, "Esperávamos um nome para a " +
+            "função declarada, mas recebemos outro símbolo no código - %s");
         if (identifierTokenOr.isError()) return identifierTokenOr.propagateError();
         String name = identifierTokenOr.value.value;
 
         ErrorOr<ArrayList<ExprMetadata>> paramsMetaOr = CallExpr.parseArgsDeclaration(parser);
         if (paramsMetaOr.isError()) return paramsMetaOr.propagateError();
+
         ArrayList<ExprMetadata> parametersMetadata = paramsMetaOr.value;
         ArrayList<ArgumentMetadata> parameters = new ArrayList<>();
 
@@ -60,13 +62,15 @@ public class FunctionDeclaration extends Statement
         {
             Expr identifier = metadata.getExpr();
             if (identifier.type != NodeType.Identifier)
-                return ErrorOr.Fail("Esperávamos o nome do argumento da função.");
+                return ErrorOr.Fail(String.format("Esperávamos o nome do parâmetro de nossa função %s, " +
+                        "mas recebemos outro símbolo no nosso código", name));
 
             parameters.add(ArgumentMetadata.create(metadata.getType(), ((Identifier) identifier).value));
         }
 
-        ErrorOr<Token> colonOr = parser.expect(TokenType.COLON, "Esperávamos ':' para declararmos o tipo de " +
-                "retorno de uma função.");
+        ErrorOr<Token> colonOr = parser.expect(TokenType.COLON,
+            "Esperávamos dois pontos - : - para o nome de um parâmetro de nossa função, mas recebemos " +
+            "outro símbolo no código - %s");
         if (colonOr.isError()) return colonOr.propagateError();
 
         ErrorOr<Type> typeOr = Type.parse(parser);
@@ -99,7 +103,6 @@ public class FunctionDeclaration extends Statement
             .append("[\n");
 
         for (ArgumentMetadata parameter : parameters)
-        {
             ret.repeat("\t", next)
                 .append("name: ")
                 .append(parameter.getName())
@@ -108,7 +111,7 @@ public class FunctionDeclaration extends Statement
                 .append("type: ")
                 .append(parameter.getType().print(next))
                 .append('\n');
-        }
+
         return ret.repeat("\t", level)
                 .append("]")
                 .toString();
@@ -122,11 +125,10 @@ public class FunctionDeclaration extends Statement
             .append("[");
 
         for (Statement statement : body)
-        {
             ret.repeat("\t", next)
                 .append(statement.print(next))
                 .append(',');
-        }
+
         return ret.append("\n")
             .repeat("\t", level)
             .append("]")
