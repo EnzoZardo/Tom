@@ -3,12 +3,11 @@ package Ast.Statements;
 import Ast.Types.FunctionType;
 import Entities.Abstractions.Ast.Statement;
 import Entities.Abstractions.Type;
-import Entities.Common.Result.ErrorOr;
-import Entities.Common.Result.ErrorType;
 import Entities.Constants.ReservedKeys;
 import Entities.Enums.Ast.NodeType;
 import Entities.Enums.Lexer.TokenType;
 import Entities.Enums.Runtime.ProtectionLevel;
+import Entities.Exceptions.Parser.ParsingException;
 import Entities.Metadata.ArgumentMetadata;
 import Lexer.Tokens.Token;
 import Parser.Parser;
@@ -41,14 +40,14 @@ public class ClassMemberDeclaration extends Statement
         return new ClassMemberDeclaration(protectionMarker, consequent, isStatic);
     }
 
-    public static ErrorOr<ProtectionLevel> getProtectionLevel(String protectionMarker)
+    public static ProtectionLevel getProtectionLevel(String protectionMarker)
     {
         return switch (protectionMarker)
         {
-            case ReservedKeys.Protected -> ErrorOr.Success(ProtectionLevel.Protected);
-            case ReservedKeys.Private -> ErrorOr.Success(ProtectionLevel.Private);
-            case ReservedKeys.Public -> ErrorOr.Success(ProtectionLevel.Public);
-            default -> ErrorOr.Fail("Marcador de nível de proteção inválido: " + protectionMarker);
+            case ReservedKeys.Protected -> ProtectionLevel.Protected;
+            case ReservedKeys.Private -> ProtectionLevel.Private;
+            case ReservedKeys.Public -> ProtectionLevel.Public;
+            default -> throw new ParsingException("Marcador de nível de proteção inválido: " + protectionMarker);
         };
     }
 
@@ -84,12 +83,11 @@ public class ClassMemberDeclaration extends Statement
         };
     }
 
-    public static ErrorOr<ClassMemberDeclaration> parse(Parser parser)
+    public static ClassMemberDeclaration parse(Parser parser)
     {
-        ErrorOr<Token> protectionMarkerOr = parser.expect(TokenType.PROTECTION_MARKER, "Esperávamos um nível " +
+        Token protectionMarker = parser.expect(TokenType.PROTECTION_MARKER, "Esperávamos um nível " +
                 "de proteção (público, privado ou protegido) para o membro da classe declarada, mas recebemos outro " +
                 "símbolo no código - %s");
-        if (protectionMarkerOr.isError()) return protectionMarkerOr.propagateError();
 
         boolean isStatic = false;
 
@@ -102,21 +100,17 @@ public class ClassMemberDeclaration extends Statement
         if (!parser.peekIs(TokenType.DECLARE) &&
             !parser.peekIs(TokenType.CONSTANT) &&
             !parser.peekIs(TokenType.FUNCTION))
-            return ErrorOr.Fail(
-                "Declaração inválida de membro de classe, só são aceitas funções ou declarações de variáveis.",
-                ErrorType.ParsingError,
-                parser.peek().location);
+            throw new ParsingException(
+                "Declaração inválida de membro de classe, só são aceitas funções ou declarações de variáveis.");
 
-        var consequentOr = Statement.parse(parser);
-        if (consequentOr.isError()) return consequentOr.propagateError();
+        Statement consequent = Statement.parse(parser);
 
-        ErrorOr<ProtectionLevel> levelOr = getProtectionLevel(protectionMarkerOr.value.value);
-        if (levelOr.isError()) return levelOr.propagateError();
+        ProtectionLevel level = getProtectionLevel(protectionMarker.value);
 
-        return ErrorOr.Success(ClassMemberDeclaration.create(
-            levelOr.value,
-            consequentOr.value,
-            isStatic));
+        return ClassMemberDeclaration.create(
+            level,
+            consequent,
+            isStatic);
     }
 
 

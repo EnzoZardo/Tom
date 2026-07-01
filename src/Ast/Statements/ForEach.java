@@ -3,7 +3,6 @@ package Ast.Statements;
 import Ast.Expressions.PrimaryExpr;
 import Entities.Abstractions.Ast.Expr;
 import Entities.Abstractions.Ast.Statement;
-import Entities.Common.Result.ErrorOr;
 import Entities.Enums.Ast.NodeType;
 import Entities.Enums.Lexer.TokenType;
 import Lexer.Tokens.Token;
@@ -40,55 +39,44 @@ public class ForEach extends Statement
         return new ForEach(iterable, iterators, operator, consequent);
     }
 
-    public static ErrorOr<ForEach> parse(Parser parser)
+    public static ForEach parse(Parser parser)
     {
         parser.consume();
-        ErrorOr<Token> eachOr = parser.expect(TokenType.EACH, "Esperávamos a palavra chave 'cada' após um " +
+        parser.expect(TokenType.EACH, "Esperávamos a palavra chave 'cada' após um " +
             "'para' para podermos iniciar um loop para-cada, mas recebemos outro símbolo no código - %s");
-        if (eachOr.isError()) return eachOr.propagateError();
 
-        ErrorOr<Token> openOr = parser.expect(TokenType.OPEN_PARENTHESIS, "Esperávamos um parênteses - ( - para " +
+        parser.expect(TokenType.OPEN_PARENTHESIS, "Esperávamos um parênteses - ( - para " +
             "abrir o nosso loop para-cada, mas recebemos outro símbolo no código - %s");
-        if (openOr.isError()) return openOr.propagateError();
 
-        ErrorOr<ArrayList<Expr>> iteratorsOr = parseArgumentsList(parser);
-        if (iteratorsOr.isError()) return iteratorsOr.propagateError();
+        ArrayList<Expr> iterators = parseArgumentsList(parser);
 
-        ErrorOr<Token> operatorOr = parser.expect(TokenType.BINARY_OPERATOR, "Esperávamos uma expressão binária " +
+        Token operator = parser.expect(TokenType.BINARY_OPERATOR, "Esperávamos uma expressão binária " +
             "entre os argumentos e o iterável de nosso para-cada, mas recebemos outro símbolo no nosso código - %s");
-        if (operatorOr.isError()) return operatorOr.propagateError();
 
-        ErrorOr<Expr> iterableOr = Expr.parse(parser);
-        if (iterableOr.isError()) return iterableOr.propagateError();
+        Expr iterable = Expr.parse(parser);
 
-        ErrorOr<Token> closeOr = parser.expect(TokenType.CLOSE_PARENTHESIS, "Esperávamos um fechamento de " +
+        parser.expect(TokenType.CLOSE_PARENTHESIS, "Esperávamos um fechamento de " +
             "parênteses - ) - para fechar o nosso loop para-cada, mas recebemos outro símbolo no código - %s");
-        if (closeOr.isError()) return closeOr.propagateError();
 
         parser.context.enterLoop();
-        var consequentOr = Statement.parse(parser);
-        if (consequentOr.isError()) return consequentOr.propagateError();
+        Statement consequent = Statement.parse(parser);
         parser.context.outLoop();
 
-        return ErrorOr.Success(ForEach.create(iterableOr.value, iteratorsOr.value, operatorOr.value.value, consequentOr.value));
+        return ForEach.create(iterable, iterators, operator.value, consequent);
     }
 
-    public static ErrorOr<ArrayList<Expr>> parseArgumentsList(Parser parser)
+    public static ArrayList<Expr> parseArgumentsList(Parser parser)
     {
         ArrayList<Expr> args = new ArrayList<>();
-        ErrorOr<Expr> firstOr = PrimaryExpr.parse(parser);
-        if (firstOr.isError()) return firstOr.propagateError();
-        args.add(firstOr.value);
+        args.add(PrimaryExpr.parse(parser));
 
         while (parser.notEof() && parser.peekIs(TokenType.COMMA))
         {
             parser.consume();
-            ErrorOr<Expr> argOr = PrimaryExpr.parse(parser);
-            if (argOr.isError()) return argOr.propagateError();
-            args.add(argOr.value);
+            args.add(PrimaryExpr.parse(parser));
         }
 
-        return ErrorOr.Success(args);
+        return args;
     }
 
 

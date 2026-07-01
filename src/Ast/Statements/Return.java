@@ -2,8 +2,9 @@ package Ast.Statements;
 
 import Entities.Abstractions.Ast.Expr;
 import Entities.Abstractions.Ast.Statement;
-import Entities.Common.Result.ErrorOr;
 import Entities.Enums.Ast.NodeType;
+import Entities.Enums.Lexer.TokenType;
+import Entities.Exceptions.Parser.ParsingException;
 import Parser.Parser;
 
 public class Return extends Statement
@@ -20,17 +21,28 @@ public class Return extends Statement
         return new Return(value);
     }
 
-    public static ErrorOr<Return> parse(Parser parser)
+    public static Return create()
+    {
+        return new Return(null);
+    }
+
+    public static Return parse(Parser parser)
     {
         if (parser.context.inFunction())
         {
             parser.consume();
-            ErrorOr<Expr> valueOr = Expr.parse(parser);
-            if (valueOr.isError()) return valueOr.propagateError();
-            return ErrorOr.Success(Return.create(valueOr.value));
+
+            if (parser.peekIs(TokenType.INTERROGATION))
+            {
+                parser.consume();
+                return Return.create();
+            }
+
+            Expr value = Expr.parse(parser);
+            return Return.create(value);
         }
 
-        return ErrorOr.Fail("Só é possível usar um retorno dentro de uma função.");
+        throw new ParsingException("Só é possível usar um retorno dentro de uma função.");
     }
 
     @Override

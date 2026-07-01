@@ -1,9 +1,9 @@
 package Ast.Expressions.Literals;
 
-import Entities.Common.Result.ErrorOr;
 import Entities.Enums.Ast.NodeType;
 import Ast.Expressions.Property;
 import Entities.Abstractions.Ast.Expr;
+import Entities.Exceptions.Parser.ParsingException;
 import Entities.Enums.Lexer.TokenType;
 import Lexer.Tokens.Token;
 import Parser.Parser;
@@ -25,17 +25,16 @@ public class ObjectLiteral extends Expr
         return new ObjectLiteral(properties);
     }
 
-    public static ErrorOr<Expr> parse(Parser parser)
+    public static Expr parse(Parser parser)
     {
         parser.consume();
 
         ArrayList<Property> properties = new ArrayList<>();
         while (parser.notEof() && !parser.peekIs(TokenType.CLOSE_BRACE))
         {
-            ErrorOr<Token> keyOr = parser.expect(TokenType.IDENTIFIER, "Esperávamos um nome para a " +
+            Token keyToken = parser.expect(TokenType.IDENTIFIER, "Esperávamos um nome para a " +
                 "chave do nosso objeto, mas recebemos outro símbolo no código - %s");
-            if (keyOr.isError()) return keyOr.propagateError();
-            String key = keyOr.value.value;
+            String key = keyToken.value;
 
             if (parser.peekIs(TokenType.COMMA))
             {
@@ -50,19 +49,16 @@ public class ObjectLiteral extends Expr
                 continue;
             }
 
-            ErrorOr<Token> colonOr = parser.expect(TokenType.COLON, "Esperávamos dois pontos - : - para marcar " +
+            parser.expect(TokenType.COLON, "Esperávamos dois pontos - : - para marcar " +
                 "o valor da chave " + key + ", mas recebemos outro símbolo no código - %s");
-            if (colonOr.isError()) return colonOr.propagateError();
 
-            ErrorOr<Expr> valueOr = Expr.parse(parser);
-            if (valueOr.isError()) return valueOr.propagateError();
+            Expr value = Expr.parse(parser);
 
             if (!parser.peekIs(TokenType.CLOSE_BRACE))
             {
-                ErrorOr<Token> commaOr = parser.expect(TokenType.COMMA, "Esperávamos uma vírgula - , - ou um" +
+                parser.expect(TokenType.COMMA, "Esperávamos uma vírgula - , - ou um" +
                     " fechamento de chaves - } - para a chave " + key + ", mas recebemos outro símbolo no código" +
                     " - %s");
-                if (commaOr.isError()) return commaOr.propagateError();
             }
 
             if (parser.peekIs(TokenType.COMMA))
@@ -70,13 +66,12 @@ public class ObjectLiteral extends Expr
                 parser.consume();
             }
 
-            properties.add(Property.create(key, valueOr.value));
+            properties.add(Property.create(key, value));
         }
 
-        ErrorOr<Token> closeOr = parser.expect(TokenType.CLOSE_BRACE, "Esperávamos '}' para fechar o objeto, mas recebemos '%s'");
-        if (closeOr.isError()) return closeOr.propagateError();
+        parser.expect(TokenType.CLOSE_BRACE, "Esperávamos '}' para fechar o objeto, mas recebemos '%s'");
 
-        return ErrorOr.Success(ObjectLiteral.create(properties));
+        return ObjectLiteral.create(properties);
     }
 
     public static ObjectLiteral create()

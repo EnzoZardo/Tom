@@ -8,7 +8,6 @@ import Entities.Exceptions.AlreadyDeclaredVariableException;
 import Entities.Metadata.ParameterMetadata;
 import Runtime.Environment;
 import Runtime.Interpreter;
-import Runtime.Values.ClassMemberValue;
 import Runtime.Values.NativeFunctionValue;
 
 import java.util.ArrayList;
@@ -20,7 +19,7 @@ public class NativeFunctionCallStrategy implements CallExprStrategy
         throws AlreadyDeclaredVariableException
     {
         ArrayList<RuntimeValue> args = new ArrayList<>();
-        for (Expr arg : expr.arguments) args.add(ClassMemberValue.mapToValue(Interpreter.evaluate(arg, environment)));
+        for (Expr arg : expr.arguments) args.add(Interpreter.evaluate(arg, environment));
 
         NativeFunctionValue nativeFunction = (NativeFunctionValue) caller;
 

@@ -1,9 +1,9 @@
 package Ast.Expressions;
 
-import Entities.Common.Result.ErrorOr;
 import Entities.Constants.ReservedOperators;
 import Entities.Enums.Ast.NodeType;
 import Entities.Abstractions.Ast.Expr;
+import Entities.Exceptions.Parser.ParsingException;
 import Parser.Parser;
 
 public class UnaryExpr extends Expr
@@ -23,16 +23,15 @@ public class UnaryExpr extends Expr
         return new UnaryExpr(right, operator);
     }
 
-    public static ErrorOr<Expr> parse(Parser parser)
+    public static Expr parse(Parser parser)
     {
         if (ReservedOperators.isUnary(parser.peekValue()))
         {
             String operator = parser.consume().value;
 
-            ErrorOr<Expr> rightOr = UnaryExpr.parse(parser);
-            if (rightOr.isError()) return rightOr.propagateError();
+            Expr right = UnaryExpr.parse(parser);
 
-            return ErrorOr.Success(UnaryExpr.create(rightOr.value, operator));
+            return UnaryExpr.create(right, operator);
         }
 
         return MemberExpr.parseCall(parser);
@@ -48,4 +47,3 @@ public class UnaryExpr extends Expr
                 "\t".repeat(level) + "}";
     }
 }
-

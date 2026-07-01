@@ -1,16 +1,12 @@
 import Ast.Statements.Program;
-import Entities.Common.Result.Error;
-import Entities.Common.Result.ErrorOr;
+import Entities.Exceptions.Parser.LexingException;
+import Entities.Exceptions.Parser.ParsingException;
 import Entities.Exceptions.AlreadyDeclaredVariableException;
-import Entities.Exceptions.Parser.AlreadyParsedException;
 import Entities.Exceptions.InvalidArgumentException;
-import Entities.Exceptions.Parser.InvalidTokenException;
 import Runtime.*;
 
 void main(String[] args)
-    throws AlreadyParsedException,
-        IOException,
-        InvalidTokenException,
+    throws IOException,
         InvalidArgumentException,
         AlreadyDeclaredVariableException
 {
@@ -25,7 +21,7 @@ void main(String[] args)
         throw new InvalidArgumentException("Número incorreto de argumentos informado.");
     }
 
-    String fileName = args[0]; // "./main.tom";
+    String fileName = args[0];
     String content;
 
     {
@@ -42,21 +38,30 @@ void main(String[] args)
         }
     }
 
-    ErrorOr<Program> initialization = Program.initialize(content, fileName);
-
-    if (initialization.isError())
+    try
     {
-        Error err = initialization.error;
-        System.err.println(err.getMessage());
-        if (err.getLocation() != null)
-        {
-            System.err.println(err.getLocation());
-        }
-        System.exit(err.getExit());
+        Program program = Program.initialize(content, fileName);
+        Interpreter.evaluate(program, Environment.create());
     }
-
-    Program program = initialization.value;
-    Interpreter.evaluate(program, Environment.create());
+    //TODO: fix
+    catch (ParsingException e)
+    {
+        System.err.println(e.getMessage());
+        if (e.getLocation() != null)
+        {
+            System.err.println(e.getLocation());
+        }
+        System.exit(e.getExit());
+    }
+    catch (LexingException e)
+    {
+        System.err.println(e.getMessage());
+        if (e.getLocation() != null)
+        {
+            System.err.println(e.getLocation());
+        }
+        System.exit(e.getExit());
+    }
 }
 
 

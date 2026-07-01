@@ -2,7 +2,6 @@ package Ast.Expressions.Literals;
 
 import Ast.Expressions.CallExpr;
 import Entities.Abstractions.Ast.Expr;
-import Entities.Common.Result.ErrorOr;
 import Entities.Enums.Ast.NodeType;
 import Entities.Enums.Lexer.TokenType;
 import Lexer.Tokens.Token;
@@ -27,20 +26,16 @@ public class ClassLiteral extends Expr
         return new ClassLiteral(args, className);
     }
 
-    public static ErrorOr<Expr> parse(Parser parser)
+    public static Expr parse(Parser parser)
     {
         parser.consume();
 
-        ErrorOr<Token> nameOr = parser.expect(TokenType.IDENTIFIER, "Esperávamos o nome da classe para" +
+        Token name = parser.expect(TokenType.IDENTIFIER, "Esperávamos o nome da classe para" +
             "poder criar ela, mas recebemos outro símbolo no código - %s");
-        if (nameOr.isError()) return nameOr.propagateError();
 
-        String name = nameOr.value.value;
+        ArrayList<Expr> args = CallExpr.parseArgs(parser);
 
-        ErrorOr<ArrayList<Expr>> argsOr = CallExpr.parseArgs(parser);
-        if (argsOr.isError()) return argsOr.propagateError();
-
-        return ErrorOr.Success(ClassLiteral.create(argsOr.value, name));
+        return ClassLiteral.create(args, name.value);
     }
 
     private String printArgs(int level)

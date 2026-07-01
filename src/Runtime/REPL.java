@@ -1,8 +1,9 @@
 package Runtime;
 
 import Ast.Statements.Program;
-import Entities.Common.Result.ErrorOr;
 import Entities.Exceptions.AlreadyDeclaredVariableException;
+import Entities.Exceptions.Parser.LexingException;
+import Entities.Exceptions.Parser.ParsingException;
 import Lexer.Lexer;
 import Lexer.Tokens.PonctuationToken;
 import Lexer.Tokens.Token;
@@ -190,24 +191,16 @@ public class REPL
             try
             {
                 Lexer lexer = Lexer.create(repl.getInput(), EMPTY);
-                ErrorOr<ArrayList<Token>> tokenizationResult = lexer.tokenize();
+                ArrayList<Token> tokens = lexer.tokenize();
 
-                if (tokenizationResult.isError())
-                {
-                    System.err.println(tokenizationResult.error.getMessage());
-                    continue;
-                }
+                Parser parser = Parser.create(tokens);
+                Program program = parser.build();
 
-                Parser parser = Parser.create(tokenizationResult.value);
-                ErrorOr<Program> build = parser.build();
-
-                if (build.isError())
-                {
-                    System.err.println(tokenizationResult.error.getMessage());
-                    continue;
-                }
-
-                IO.println(Interpreter.evaluate(build.value, env));
+                IO.println(Interpreter.evaluate(program, env));
+            }
+            catch (LexingException | ParsingException e)
+            {
+                System.err.println(e.getMessage());
             }
             catch (Exception ex)
             {

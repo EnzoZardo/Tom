@@ -11,7 +11,7 @@ import Entities.Exceptions.AlreadyDeclaredVariableException;
 import Entities.Exceptions.Evaluate.IncorrectNumberOfArgumentsException;
 import Entities.Exceptions.ExpectedTypeNotMatch;
 import Entities.Metadata.ArgumentMetadata;
-import Runtime.Values.ClassMemberValue;
+import Runtime.Values.EmptyValue;
 import Runtime.Values.FlowControl.ReturnFlow;
 import Runtime.Values.FunctionValue;
 import Runtime.Environment;
@@ -46,14 +46,14 @@ public class FunctionCallStrategy implements CallExprStrategy
             ArgumentMetadata param = function.parameters.get(i);
             String name = param.getName();
 
-            ErrorOr<Void> equality = TypeChecker.check(environment, ClassMemberValue.mapToValue(args.get(i)), param.getType());
+            ErrorOr<Void> equality = TypeChecker.check(environment, args.get(i), param.getType());
             if (equality.isError())
                 throw new RuntimeException(String.format(
                     "Tipo incorreto informado para o argumento '%s'. %s",
                     name,
                     equality.error.getMessage()));
 
-            scope.declareVariable(name, args.get(i), param.getType(), false, ClassMemberValue::mapToValue);
+            scope.declareVariable(name, args.get(i), param.getType(), false);
         }
 
         RuntimeValue result = NullValue.create();
@@ -66,7 +66,7 @@ public class FunctionCallStrategy implements CallExprStrategy
 
         RuntimeValue ret = result.type == ValueType.Return
             ? ((ReturnFlow) result).value
-            : NullValue.create();
+            : EmptyValue.create();
 
         ErrorOr<Void> equality = TypeChecker.check(environment, ret, function.returnType);
 

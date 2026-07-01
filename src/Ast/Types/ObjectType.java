@@ -4,6 +4,7 @@ import Entities.Common.Result.ErrorOr;
 import Entities.Enums.TypeKind;
 import Entities.Abstractions.Type;
 import Entities.Enums.Lexer.TokenType;
+import Entities.Exceptions.Parser.ParsingException;
 import Lexer.Tokens.Token;
 import Parser.Parser;
 import Runtime.Environment;
@@ -50,9 +51,8 @@ public class ObjectType extends Type
                 return ErrorOr.Fail("O nome das chaves do objeto é diferente.");
             }
 
-            if (Type.equals(prop1.type, prop2.type).isError()) {
-                return ErrorOr.Fail("O tipo das chaves do objeto é diferente.");
-            }
+            ErrorOr<Void> result = Type.equals(prop1.type, prop2.type);
+            if (result.isError()) return result;
         }
 
         return ErrorOr.Success();
@@ -76,7 +76,7 @@ public class ObjectType extends Type
         return ObjectType.create(props);
     }
 
-    public static ErrorOr<Type> parse(Parser parser)
+    public static Type parse(Parser parser)
     {
         if (!parser.peekIs(TokenType.OPEN_BRACE))
         {
@@ -88,19 +88,14 @@ public class ObjectType extends Type
         ArrayList<ObjectTypeProperty> properties = new ArrayList<>();
         while (parser.notEof() && !parser.peekIs(TokenType.CLOSE_BRACE))
         {
-            ErrorOr<Token> keyOr = parser.expect(TokenType.IDENTIFIER, "Expecting identifier as object-type key.");
-            if (keyOr.isError()) return keyOr.propagateError();
-            ErrorOr<Token> colonOr = parser.expect(TokenType.COLON, "Expecting colon after object-type key.");
-            if (colonOr.isError()) return colonOr.propagateError();
+            Token key = parser.expect(TokenType.IDENTIFIER, "Expecting identifier as object-type key.");
+            parser.expect(TokenType.COLON, "Expecting colon after object-type key.");
 
-            ErrorOr<Type> valueOr = Type.parse(parser);
-            if (valueOr.isError()) return valueOr.propagateError();
-            Type value = valueOr.value;
+            Type value = Type.parse(parser);
 
             if (!parser.peekIs(TokenType.CLOSE_BRACE))
             {
-                ErrorOr<Token> semiOr = parser.expect(TokenType.SEMICOLON, "Invalid token found parsing object-like type. Expected semicolon or close brace.");
-                if (semiOr.isError()) return semiOr.propagateError();
+                parser.expect(TokenType.SEMICOLON, "Invalid token found parsing object-like type. Expected semicolon or close brace.");
             }
 
             if (parser.peekIs(TokenType.SEMICOLON))
@@ -108,13 +103,12 @@ public class ObjectType extends Type
                 parser.consume();
             }
 
-            properties.add(ObjectTypeProperty.create(keyOr.value.value, value));
+            properties.add(ObjectTypeProperty.create(key.value, value));
         }
 
-        ErrorOr<Token> closeOr = parser.expect(TokenType.CLOSE_BRACE, "Expecting a close brace after last object value.");
-        if (closeOr.isError()) return closeOr.propagateError();
+        parser.expect(TokenType.CLOSE_BRACE, "Expecting a close brace after last object value.");
         properties.sort(Comparator.comparing(p -> p.key));
-        return ErrorOr.Success(ObjectType.create(properties));
+        return ObjectType.create(properties);
     }
 
     private String printProps(int level)

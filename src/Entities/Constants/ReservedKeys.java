@@ -88,6 +88,7 @@ public record ReservedKeys()
     public static final String Boolean = "logico";
     public static final String Object = "objeto";
     public static final String String = "texto";
+    public static final String Empty = "vazio";
     public static final String Float = "real";
     public static final String Null = "nulo";
     /* #endregion */

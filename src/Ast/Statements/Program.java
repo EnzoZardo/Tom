@@ -1,6 +1,5 @@
 package Ast.Statements;
 
-import Entities.Common.Result.ErrorOr;
 import Entities.Enums.Ast.NodeType;
 import Entities.Abstractions.Ast.Statement;
 import Lexer.Lexer;
@@ -19,19 +18,13 @@ public class Program extends Statement
         body = new ArrayList<>();
     }
 
-    public static ErrorOr<Program> initialize(String content, String file)
+    public static Program initialize(String content, String file)
     {
         Lexer lexer = Lexer.create(content.toCharArray(), file);
-        ErrorOr<ArrayList<Token>> tokenization = lexer.tokenize();
+        ArrayList<Token> tokens = lexer.tokenize();
 
-        if (tokenization.isError()) return tokenization.propagateError();
-
-        Parser parser = Parser.create(tokenization.value);
-        ErrorOr<Program> build = parser.build();
-
-        if (build.isError()) return build.propagateError();
-
-        return build;
+        Parser parser = Parser.create(tokens);
+        return parser.build();
     }
 
     public static Program create()

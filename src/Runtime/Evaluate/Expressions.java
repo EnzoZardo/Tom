@@ -66,7 +66,7 @@ public abstract class Expressions
         RuntimeValue left = Interpreter.evaluate(expr.left, env);
         RuntimeValue right = Interpreter.evaluate(expr.right, env);
 
-        return strategy.evaluate(left, right, expr.operator);
+        return strategy.evaluate(right, left, expr.operator);
     }
 
     public static RuntimeValue evaluateVariableAssignment(AssignmentExpr assignment, Environment env)
@@ -85,22 +85,29 @@ public abstract class Expressions
     public static RuntimeValue evaluateMemberExpression(MemberExpr memberExpr, Environment env)
             throws AlreadyDeclaredVariableException
     {
+        return evaluateMemberExpression(memberExpr, env, true);
+    }
+
+    public static RuntimeValue evaluateMemberExpression(MemberExpr memberExpr, Environment env, boolean unwrap)
+            throws AlreadyDeclaredVariableException
+    {
         RuntimeValue owner = Interpreter.evaluate(memberExpr.object, env);
-
         ErrorOr<MemberExprStrategy> result = MemberExprFactory.build(memberExpr, owner);
-
         if (result.isError())
             throw new InvalidNodeException(result.error.getMessage());
 
         MemberExprStrategy strategy = result.value;
-
-        return strategy.evaluate(memberExpr, owner, env);
+        RuntimeValue value = strategy.evaluate(memberExpr, owner, env);
+        return unwrap ? ClassMemberValue.mapToValue(value) : value;
     }
 
     public static RuntimeValue evaluateCallExpression(
         CallExpr call, Environment env) throws AlreadyDeclaredVariableException
     {
-        RuntimeValue caller = Interpreter.evaluate(call.caller, env);
+        RuntimeValue caller = call.caller.type == NodeType.MemberExpression
+                ? evaluateMemberExpression((MemberExpr) call.caller, env, false)
+                : Interpreter.evaluate(call.caller, env);
+
         ErrorOr<CallExprStrategy> result = CallExprFactory.build(caller);
 
         if (result.isError())

@@ -92,6 +92,10 @@ public abstract class TypeChecker
                 if (value.type == ValueType.Null) yield ErrorOr.Success();
                 yield ErrorOr.Fail(String.format("O valor '%s' informado não é um nulo válido.", value));
             }
+            case ReservedKeys.Empty -> {
+                if (value.type == ValueType.Empty) yield ErrorOr.Success();
+                yield ErrorOr.Fail(String.format("O valor '%s' informado não é um vazio válido.", value));
+            }
             default -> ErrorOr.Fail("Tipo " + symbol + " desconhecido.");
         };
     }

@@ -18,6 +18,7 @@ import Entities.Metadata.ArgumentMetadata;
 import Runtime.Environment;
 import Runtime.Interpreter;
 import Runtime.Values.ClassMemberValue;
+import Runtime.Values.EmptyValue;
 import Runtime.Values.FlowControl.ReturnFlow;
 import Runtime.Values.FunctionValue;
 import Runtime.Values.NullValue;
@@ -56,7 +57,7 @@ public class ClassMemberCallStrategy implements CallExprStrategy
             ArgumentMetadata param = function.parameters.get(i);
             String name = param.getName();
 
-            ErrorOr<Void> equality = TypeChecker.check(environment, ClassMemberValue.mapToValue(args.get(i)), param.getType());
+            ErrorOr<Void> equality = TypeChecker.check(environment, args.get(i), param.getType());
             if (equality.isError())
                 throw new RuntimeException(String.format(
                     "Tipo incorreto informado para o argumento '%s'. %s",
@@ -65,7 +66,7 @@ public class ClassMemberCallStrategy implements CallExprStrategy
 
             RuntimeValue value = args.get(i);
 
-            scope.declareVariable(name, value, param.getType(), false, ClassMemberValue::mapToValue);
+            scope.declareVariable(name, value, param.getType(), false);
         }
 
         Environment typeEnv = environment.resolveType(member.owner.className);
@@ -93,9 +94,8 @@ public class ClassMemberCallStrategy implements CallExprStrategy
 
         RuntimeValue ret = result.type == ValueType.Return
                 ? ((ReturnFlow) result).value
-                : NullValue.create();
+                : EmptyValue.create();
 
-        ret = ClassMemberValue.mapToValue(ret);
         ErrorOr<Void> equality = TypeChecker.check(environment, ret, function.returnType);
 
         if (equality.isError())

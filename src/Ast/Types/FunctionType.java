@@ -4,7 +4,6 @@ import Entities.Common.Result.ErrorOr;
 import Entities.Enums.TypeKind;
 import Entities.Abstractions.Type;
 import Entities.Enums.Lexer.TokenType;
-import Lexer.Tokens.Token;
 import Parser.Parser;
 import Runtime.Environment;
 
@@ -41,18 +40,13 @@ public class FunctionType extends Type
             return ErrorOr.Fail("A quantidade dos parâmetros da função com seu tipo diferem.");
         }
 
-        if (Type.equals(function1.returnType, function2.returnType).isError())
-        {
-            return ErrorOr.Fail("A o tipo de retorno da função com seu tipo diferem.");
-        }
+        ErrorOr<Void> result = Type.equals(function1.returnType, function2.returnType);
+        if (result.isError()) return result;
 
         for (int i = 0; i < function1.parameters.size(); i++)
         {
-            ErrorOr<Void> result = Type.equals(function1.parameters.get(i), function2.parameters.get(i));
-            if (result.isError())
-            {
-                return result;
-            }
+            result = Type.equals(function1.parameters.get(i), function2.parameters.get(i));
+            if (result.isError()) return result;
         }
 
         return ErrorOr.Success();
@@ -76,7 +70,7 @@ public class FunctionType extends Type
         return FunctionType.create(params, Type.reduce(env, functionType.returnType));
     }
 
-    public static ErrorOr<Type> parse(Parser parser)
+    public static Type parse(Parser parser)
     {
         if (!parser.peekIs(TokenType.OPEN_PARENTHESIS))
         {
@@ -88,14 +82,11 @@ public class FunctionType extends Type
 
         while (parser.notEof() && !parser.peekIs(TokenType.CLOSE_PARENTHESIS))
         {
-            ErrorOr<Type> typeOr = Type.parse(parser);
-            if (typeOr.isError()) return typeOr.propagateError();
-            Type type = typeOr.value;
+            Type type = Type.parse(parser);
 
             if (!parser.peekIs(TokenType.CLOSE_PARENTHESIS))
             {
-                ErrorOr<Token> commaOr = parser.expect(TokenType.COMMA, "Símbolo inválido %s na declaração de uma função. Esperávamos ':' ou ')'");
-                if (commaOr.isError()) return commaOr.propagateError();
+                parser.expect(TokenType.COMMA, "Símbolo inválido %s na declaração de uma função. Esperávamos ':' ou ')'");
             }
 
             if (parser.peekIs(TokenType.COMMA))
@@ -106,14 +97,11 @@ public class FunctionType extends Type
             parameters.add(type);
         }
 
-        ErrorOr<Token> closeParenOr = parser.expect(TokenType.CLOSE_PARENTHESIS, "Esperávamos ')' depois da declaração dos tipos dos " +
+        parser.expect(TokenType.CLOSE_PARENTHESIS, "Esperávamos ')' depois da declaração dos tipos dos " +
                 "argumentos da função.");
-        if (closeParenOr.isError()) return closeParenOr.propagateError();
-        ErrorOr<Token> colonOr = parser.expect(TokenType.COLON, "Esperávamos ':' para declarar o tipo de retorno da função.");
-        if (colonOr.isError()) return colonOr.propagateError();
-        ErrorOr<Type> returnTypeOr = Type.parse(parser);
-        if (returnTypeOr.isError()) return returnTypeOr.propagateError();
-        return ErrorOr.Success(FunctionType.create(parameters, returnTypeOr.value));
+        parser.expect(TokenType.COLON, "Esperávamos ':' para declarar o tipo de retorno da função.");
+        Type returnType = Type.parse(parser);
+        return FunctionType.create(parameters, returnType);
     }
 
     private String printProps(int level)

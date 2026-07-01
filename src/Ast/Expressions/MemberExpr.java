@@ -1,11 +1,10 @@
 package Ast.Expressions;
 
-import Entities.Common.Result.ErrorOr;
 import Entities.Common.Result.ErrorType;
 import Entities.Enums.Ast.NodeType;
 import Entities.Abstractions.Ast.Expr;
+import Entities.Exceptions.Parser.ParsingException;
 import Entities.Enums.Lexer.TokenType;
-import Lexer.Tokens.Token;
 import Parser.Parser;
 
 public class MemberExpr extends Expr
@@ -33,32 +32,24 @@ public class MemberExpr extends Expr
         return new MemberExpr(object, property, computed);
     }
 
-    public static ErrorOr<Expr> parse(Parser parser)
+    public static Expr parse(Parser parser)
     {
-        ErrorOr<Expr> objectOr = PrimaryExpr.parse(parser);
-
-        if (objectOr.isError()) return objectOr.propagateError();
-        Expr object = objectOr.value;
+        Expr object = PrimaryExpr.parse(parser);
 
         while (true)
         {
             if (parser.peekIs(TokenType.OPEN_PARENTHESIS))
             {
-                ErrorOr<Expr> callOr = CallExpr.parse(parser, object);
-                if (callOr.isError()) return callOr.propagateError();
-
-                object = callOr.value;
+                object = CallExpr.parse(parser, object);
             }
             else if (parser.peekIs(TokenType.DOT))
             {
                 parser.consume();
 
-                ErrorOr<Expr> propertyOr = PrimaryExpr.parse(parser);
-                if (propertyOr.isError()) return propertyOr.propagateError();
-                Expr property = propertyOr.value;
+                Expr property = PrimaryExpr.parse(parser);
 
                 if (property.type != NodeType.Identifier)
-                    return ErrorOr.Fail(
+                    throw new ParsingException(
                         "Esperávamos um nome para a chave de nosso objeto após um ponto - .",
                         ErrorType.ParsingError);
 
@@ -68,16 +59,14 @@ public class MemberExpr extends Expr
             {
                 parser.consume();
 
-                ErrorOr<Expr> propertyOr = Expr.parse(parser);
-                if (propertyOr.isError()) return propertyOr.propagateError();
+                Expr property = Expr.parse(parser);
 
-                ErrorOr<Token> closeOr = parser.expect(
+                parser.expect(
                     TokenType.CLOSE_BRACKETS,
                     "Esperávamos um fechamento de colchetes - ] - após acesso a uma computado de um objeto"
                 );
-                if (closeOr.isError()) return closeOr.propagateError();
 
-                object = MemberExpr.create(object, propertyOr.value, true);
+                object = MemberExpr.create(object, property, true);
             }
             else
             {
@@ -85,18 +74,17 @@ public class MemberExpr extends Expr
             }
         }
 
-        return ErrorOr.Success(object);
+        return object;
     }
 
-    public static ErrorOr<Expr> parseCall(Parser parser)
+    public static Expr parseCall(Parser parser)
     {
-        ErrorOr<Expr> memberOr = MemberExpr.parse(parser);
-        if (memberOr.isError()) return memberOr.propagateError();
+        Expr member = MemberExpr.parse(parser);
 
         if (parser.peekIs(TokenType.OPEN_PARENTHESIS))
-            return CallExpr.parse(parser, memberOr.value);
+            return CallExpr.parse(parser, member);
 
-        return memberOr;
+        return member;
     }
 
     @Override

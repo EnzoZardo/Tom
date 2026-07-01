@@ -1,9 +1,8 @@
 package Ast.Statements;
 
 import Entities.Abstractions.Ast.Statement;
-import Entities.Common.Result.ErrorOr;
-import Entities.Common.Result.ErrorType;
 import Entities.Enums.Ast.NodeType;
+import Entities.Exceptions.Parser.ParsingException;
 import Parser.Parser;
 
 public class Continue extends Statement
@@ -18,18 +17,15 @@ public class Continue extends Statement
         return new Continue();
     }
 
-    public static ErrorOr<Continue> parse(Parser parser)
+    public static Continue parse(Parser parser)
     {
         if (parser.context.inLoop())
         {
             parser.consume();
-            return ErrorOr.Success(Continue.create());
+            return Continue.create();
         }
 
-        return ErrorOr.Fail(
-            "Só é possível usar um continue dentro de um loop.",
-            ErrorType.ParsingError,
-            parser.peek().location);
+        throw new ParsingException("Só é possível usar um continue dentro de um loop.");
     }
 
     @Override

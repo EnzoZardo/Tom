@@ -2,7 +2,6 @@ package Ast.Statements;
 
 import Entities.Abstractions.Ast.Expr;
 import Entities.Abstractions.Ast.Statement;
-import Entities.Common.Result.ErrorOr;
 import Entities.Enums.Ast.NodeType;
 import Entities.Enums.Lexer.TokenType;
 import Parser.Parser;
@@ -24,11 +23,11 @@ public class ScopeDeclaration extends Statement
         return new ScopeDeclaration(body);
     }
 
-    public static ErrorOr<Statement> parse(Parser parser)
+    public static Statement parse(Parser parser)
     {
         if (parser.peekIs(1, TokenType.IDENTIFIER) && parser.peekIs(2, TokenType.COLON))
         {
-            return Expr.parse(parser).propagateError();
+            return Expr.parse(parser);
         }
 
         parser.consume();
@@ -36,13 +35,11 @@ public class ScopeDeclaration extends Statement
 
         while (parser.notEof() && !parser.peekIs(TokenType.CLOSE_BRACE))
         {
-            var stmtOr = Statement.parse(parser);
-            if (stmtOr.isError()) return stmtOr.propagateError();
-            body.add(stmtOr.value);
+            body.add(Statement.parse(parser));
         }
 
         parser.consume();
-        return ErrorOr.Success(ScopeDeclaration.create(body));
+        return ScopeDeclaration.create(body);
     }
 
     private String printBody(int level)

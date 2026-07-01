@@ -2,7 +2,6 @@ package Ast.Statements;
 
 import Entities.Abstractions.Ast.Expr;
 import Entities.Abstractions.Ast.Statement;
-import Entities.Common.Result.ErrorOr;
 import Entities.Enums.Ast.NodeType;
 import Parser.Parser;
 
@@ -21,12 +20,11 @@ public class Import extends Statement
         return new Import(path);
     }
 
-    public static ErrorOr<Import> parse(Parser parser)
+    public static Import parse(Parser parser)
     {
         parser.consume();
-        ErrorOr<Expr> pathOr = Expr.parse(parser);
-        if (pathOr.isError()) return pathOr.propagateError();
-        return ErrorOr.Success(Import.create(pathOr.value));
+        Expr path = Expr.parse(parser);
+        return Import.create(path);
     }
 
     @Override
@@ -39,4 +37,3 @@ public class Import extends Statement
                 "\t".repeat(level) + "}";
     }
 }
-

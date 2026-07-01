@@ -30,8 +30,9 @@ import java.util.function.Function;
 
 public class Environment
 {
-    private final Environment parent;
     public final ClassValue currentClass;
+
+    private final Environment parent;
     private final HashMap<String, ValueMetadata> variables;
     private final HashMap<String, ValueMetadata> constants;
     private final HashMap<String, Type> types;
@@ -339,12 +340,14 @@ public class Environment
         Type stringType = declareType(ReservedKeys.String, StringType.create());
         Type boolType = declareType(ReservedKeys.Boolean, BooleanType.create());
         Type intType = declareType(ReservedKeys.Integer, IntegerType.create());
+        Type emptyType = declareType(ReservedKeys.Empty, EmptyType.create());
         Type nullType = declareType(ReservedKeys.Null, NullType.create());
 
         declareConstant(ReservedKeys.Integer, IntegerObject.create(), IntegerObject.type());
         declareConstant(ReservedKeys.String, StringObject.create(), StringObject.type());
         declareConstant(ReservedKeys.False, BooleanValue.create(false), boolType);
         declareConstant(ReservedKeys.True, BooleanValue.create(true), boolType);
+        declareConstant(ReservedKeys.Empty, EmptyValue.create(), emptyType);
         declareConstant(ReservedKeys.Null, NullValue.create(), nullType);
 
         declareConstant(ReservedKeys.Print,

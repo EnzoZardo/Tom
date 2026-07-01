@@ -11,11 +11,13 @@ import Entities.Common.Result.ErrorOr;
 import Entities.Constants.ReservedKeys;
 import Entities.Enums.Ast.NodeType;
 import Entities.Enums.Runtime.ValueType;
+import Entities.Enums.TypeKind;
 import Entities.Exceptions.AlreadyDeclaredVariableException;
 import Entities.Exceptions.Evaluate.IncorrectNumberOfArgumentsException;
 import Entities.Exceptions.Evaluate.InvalidBinaryOperation;
 import Entities.Exceptions.ExpectedTypeNotMatch;
 import Entities.Exceptions.InvalidArgumentException;
+import Entities.Exceptions.Parser.ConstructorNeededException;
 import Entities.Exceptions.Parser.InvalidNodeException;
 import Parser.Parser;
 import Runtime.Environment;
@@ -73,21 +75,14 @@ public abstract class Statements
             }
         }
 
-        ErrorOr<Program> initialization = Program.initialize(content, path.value);
-
-        if (initialization.isError())
-        {
-            //return error
-        }
-
-        Program program = initialization.value;
+        Program program = Program.initialize(content, path.value);
         return Interpreter.evaluate(program, env);
     }
 
     public static RuntimeValue evaluateVariableDeclaration(
         VariableDeclaration declaration, Environment env) throws AlreadyDeclaredVariableException {
         RuntimeValue value = declaration.value == null
-                ? NullValue.create()
+                ? EmptyValue.create()
                 : Interpreter.evaluate(declaration.value, env);
 
         ErrorOr<Void> equality = TypeChecker.check(env, value, declaration.expectedType);
@@ -110,10 +105,7 @@ public abstract class Statements
             Environment parentEnv = env.resolve(declaration.parentClass);
             RuntimeValue value = parentEnv.lookupVariable(declaration.parentClass);
             if (value.type != ValueType.Class)
-            {
-                // TODO: refactor
-                throw new InvalidNodeException("Só pode estender classe");
-            }
+                throw new ExpectedTypeNotMatch("Classes somente podem estender de outras classes");
 
             classValue = ClassValue.create(declaration.name, ((ClassValue) value).copy(), members, true);
         } else { 
@@ -135,6 +127,14 @@ public abstract class Statements
                     member.isStatic)
             );
         }
+
+        if (members.containsKey(declaration.name)
+            && members.get(declaration.name).type.type != TypeKind.FunctionType)
+            throw new ExpectedTypeNotMatch("Propriedade com o nome da classe inválido.");
+
+        if (declaration.parentClass != null && !members.containsKey(declaration.name))
+            throw new ConstructorNeededException("É necessário um construtor que chame a " +
+                "classe pai em classes com heranças");
 
         Type type = ClassType.create(declaration.name);
 
@@ -158,6 +158,7 @@ public abstract class Statements
     public static RuntimeException evaluateReturnStatement(
             Return returnStatement, Environment env) throws AlreadyDeclaredVariableException
     {
+        if (returnStatement.value == null) return ReturnFlow.create(EmptyValue.create());
         return ReturnFlow.create(Interpreter.evaluate(returnStatement.value, env));
     }
 
@@ -217,7 +218,7 @@ public abstract class Statements
 
             if (ret.type == ValueType.Break)
             {
-                return NullValue.create();
+                return EmptyValue.create();
             }
 
             value = Interpreter.evaluate(whileStatement.test, env);

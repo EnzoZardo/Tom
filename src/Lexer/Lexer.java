@@ -1,10 +1,10 @@
 package Lexer;
 
-import Entities.Common.Result.ErrorOr;
-import Entities.Common.Result.Errors;
+import Entities.Common.Result.ErrorType;
 import Entities.Constants.ReservedComments;
 import Entities.Constants.ReservedOperators;
 import Entities.Enums.Lexer.TokenType;
+import Entities.Exceptions.Parser.LexingException;
 import Lexer.Readers.NumericReader;
 import Lexer.Readers.OperatorReader;
 import Lexer.Readers.StringLiteralReader;
@@ -44,9 +44,9 @@ public class Lexer
         return new Lexer(content, file);
     }
 
-    public ErrorOr<ArrayList<Token>> tokenize()
+    public ArrayList<Token> tokenize()
     {
-        if (tokenized) return Errors.alreadyTokenized();
+        if (tokenized) throw new LexingException("Conteúdo já foi transformado em símbolo.", ErrorType.AlreadyTokenized);
         tokenized = true;
 
         while (cursor.peek() != null)
@@ -136,12 +136,19 @@ public class Lexer
             }
             else
             {
-                return Errors.unexpectedSymbol(cursor.consume());
+                FileLocation loc = cursor.currentLocation();
+                char symbol = cursor.consume();
+                LocationPoint point = LocationPoint.create(loc, loc, file);
+                throw new LexingException(
+                    String.format("Símbolo inesperado %s.", symbol),
+                    ErrorType.UnexpectedSymbol,
+                    point
+                );
             }
         }
 
         addEof();
-        return ErrorOr.Success(buffer.toList());
+        return buffer.toList();
     }
 
     private void consumeInlineComment()

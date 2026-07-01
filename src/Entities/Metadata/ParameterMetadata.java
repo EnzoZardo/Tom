@@ -4,7 +4,6 @@ import Entities.Common.Pair;
 import Entities.Abstractions.Runtime.RuntimeValue;
 import Entities.Enums.Runtime.ValueType;
 import Runtime.Environment;
-import Runtime.Values.ClassMemberValue;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,12 +17,7 @@ public class ParameterMetadata extends Pair<List<RuntimeValue>, Environment>
 
     public static ParameterMetadata create(ArrayList<RuntimeValue> values, Environment expr)
     {
-        return new ParameterMetadata(
-            values
-                .stream()
-                .map(ClassMemberValue::mapToValue)
-                .toList(),
-            expr);
+        return new ParameterMetadata(values.stream().toList(), expr);
     }
 
     public List<RuntimeValue> getValues()

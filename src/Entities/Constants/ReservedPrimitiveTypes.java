@@ -13,6 +13,7 @@ public record ReservedPrimitiveTypes()
         put(ReservedKeys.Object, ValueType.Object);
         put(ReservedKeys.String, ValueType.String);
         put(ReservedKeys.Float, ValueType.Numeric);
+        put(ReservedKeys.Empty, ValueType.Empty);
         put(ReservedKeys.Null, ValueType.Null);
     }};
 

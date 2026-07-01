@@ -1,10 +1,10 @@
 package Ast.Expressions;
 
-import Entities.Common.Result.ErrorOr;
 import Entities.Constants.ReservedKeys;
 import Entities.Constants.ReservedOperators;
 import Entities.Enums.Ast.NodeType;
 import Entities.Abstractions.Ast.Expr;
+import Entities.Exceptions.Parser.ParsingException;
 import Parser.Parser;
 
 public class BinaryExpr extends Expr
@@ -24,63 +24,52 @@ public class BinaryExpr extends Expr
         this.operator = operator;
     }
 
-    public static ErrorOr<Expr> parseBoolean(Parser parser)
+    public static Expr parseBoolean(Parser parser)
     {
-        ErrorOr<Expr> leftOr = BinaryExpr.parseAdditive(parser);
-        if (leftOr.isError()) return leftOr.propagateError();
-        Expr left = leftOr.value;
+        Expr left = BinaryExpr.parseAdditive(parser);
 
         while (ReservedOperators.isBooleanOperator(parser.peekValue()))
         {
             String operator = parser.consume().value;
 
-            ErrorOr<Expr> rightOr = BinaryExpr.parseAdditive(parser);
-            if (rightOr.isError()) return rightOr.propagateError();
+            Expr right = BinaryExpr.parseAdditive(parser);
 
-            left = BinaryExpr.create(left, rightOr.value, operator);
+            left = BinaryExpr.create(left, right, operator);
         }
 
-        return ErrorOr.Success(left);
+        return left;
     }
 
-    public static ErrorOr<Expr> parseMultiplicative(Parser parser)
+    public static Expr parseMultiplicative(Parser parser)
     {
-        ErrorOr<Expr> leftOr = UnaryExpr.parse(parser);
-        if (leftOr.isError()) return leftOr.propagateError();
-
-        Expr left = leftOr.value;
+        Expr left = UnaryExpr.parse(parser);
 
         while (BinaryExpr.isMultiplicativeOperator(parser.peekValue()))
         {
             String operator = parser.consume().value;
 
-            ErrorOr<Expr> rightOr = UnaryExpr.parse(parser);
-            if (rightOr.isError()) return rightOr.propagateError();
+            Expr right = UnaryExpr.parse(parser);
 
-            left = BinaryExpr.create(left, rightOr.value, operator);
+            left = BinaryExpr.create(left, right, operator);
         }
 
-        return ErrorOr.Success(left);
+        return left;
     }
 
-    public static ErrorOr<Expr> parseAdditive(Parser parser)
+    public static Expr parseAdditive(Parser parser)
     {
-        ErrorOr<Expr> leftOr = BinaryExpr.parseMultiplicative(parser);
-        if (leftOr.isError()) return leftOr.propagateError();
-
-        Expr left = leftOr.value;
+        Expr left = BinaryExpr.parseMultiplicative(parser);
 
         while (ReservedOperators.isAdditiveOperator(parser.peekValue()))
         {
             String operator = parser.consume().value;
 
-            ErrorOr<Expr> rightOr = BinaryExpr.parseMultiplicative(parser);
-            if (rightOr.isError()) return rightOr.propagateError();
+            Expr right = BinaryExpr.parseMultiplicative(parser);
 
-            left = BinaryExpr.create(left, rightOr.value, operator);
+            left = BinaryExpr.create(left, right, operator);
         }
 
-        return ErrorOr.Success(left);
+        return left;
     }
 
     private static boolean isMultiplicativeOperator(String operator)

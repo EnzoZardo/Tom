@@ -1,6 +1,5 @@
 package Ast.Statements;
 
-import Entities.Common.Result.ErrorOr;
 import Entities.Enums.Ast.NodeType;
 import Entities.Abstractions.Type;
 import Entities.Abstractions.Ast.Statement;
@@ -29,18 +28,15 @@ public class TypeDeclaration extends Statement
         return new TypeDeclaration(value, identifier);
     }
 
-    public static ErrorOr<TypeDeclaration> parse(Parser parser)
+    public static TypeDeclaration parse(Parser parser)
     {
         parser.consume();
-        ErrorOr<Token> identifierTokenOr = parser.expect(TokenType.IDENTIFIER, "Esperávamos o nome do tipo em sua declaração.");
-        if (identifierTokenOr.isError()) return identifierTokenOr.propagateError();
-        String identifier = identifierTokenOr.value.value;
+        Token identifierToken = parser.expect(TokenType.IDENTIFIER, "Esperávamos o nome do tipo em sua declaração.");
+        String identifier = identifierToken.value;
 
-        ErrorOr<Token> equalsOr = parser.expect(TokenType.EQUALS, "Esperávamos '=' para declararmos o tipo " + identifier +".");
-        if (equalsOr.isError()) return equalsOr.propagateError();
-        ErrorOr<Type> typeOr = Type.parse(parser);
-        if (typeOr.isError()) return typeOr.propagateError();
-        return ErrorOr.Success(TypeDeclaration.create(typeOr.value, identifier));
+        parser.expect(TokenType.EQUALS, "Esperávamos '=' para declararmos o tipo " + identifier +".");
+        Type type = Type.parse(parser);
+        return TypeDeclaration.create(type, identifier);
     }
 
     @Override

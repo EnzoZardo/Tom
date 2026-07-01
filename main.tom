@@ -1,22 +1,44 @@
-classe {Pessoa 
-{
-    publ var idade: inteiro ?
+inclua "./ser.tom"
 
-    publ fun Pessoa(idade: inteiro): Pessoa 
+classe Humano herda Ser 
+{
+    publ var nome: texto ?
+
+    publ fun Humano(idade: inteiro, nome: texto): Ser
     {
-        isso.idade = idade
+        super(idade)
+        isso.nome = nome
+    }
+
+    publ fun verifica_entrada(): vazio 
+    {
+        enquanto (isso.nome <> "José")
+        {
+            isso.nome = leia("Nome: ")
+
+            se (isso.nome == "José") 
+            {
+                escreva("Você está proibido de se apresentar")
+                retorne ?
+            }
+
+            escreva("Olá!", isso.nome, "pode entrar")
+        }
     }
 }
 
-fun main(): inteiro 
+fun main(): vazio 
 {
     con input: texto = leia("Informe sua idade: ")
     con idade: inteiro = inteiro.converte(input)
+    
+    con nome: texto = leia("Agora, informe seu nome: ")
+    
+    con pessoa: Humano = novo Humano(idade, nome)
 
-    con pessoa: Pessoa = novo Pessoa(idade)
-    escreva(pessoa.idade)
+    pessoa.verifica_entrada()
 
-    retorne inteiro.zero
+    retorne vazio
 }
 
 main()

@@ -1,10 +1,9 @@
 package Ast.Expressions.Literals;
 
 import Entities.Abstractions.Ast.Expr;
-import Entities.Common.Result.ErrorOr;
+import Entities.Exceptions.Parser.ParsingException;
 import Entities.Enums.Ast.NodeType;
 import Entities.Enums.Lexer.TokenType;
-import Lexer.Tokens.Token;
 import Parser.Parser;
 
 import java.util.ArrayList;
@@ -24,22 +23,20 @@ public class ArrayLiteral extends Expr
         return new ArrayLiteral(items);
     }
 
-    public static ErrorOr<Expr> parse(Parser parser)
+    public static Expr parse(Parser parser)
     {
         parser.consume();
 
         ArrayList<Expr> items = new ArrayList<>();
         while (parser.notEof() && !parser.peekIs(TokenType.CLOSE_BRACKETS))
         {
-            ErrorOr<Expr> itemOr = Expr.parse(parser);
-            if (itemOr.isError()) return itemOr.propagateError();
-            items.add(itemOr.value);
+            Expr item = Expr.parse(parser);
+            items.add(item);
 
             if (!parser.peekIs(TokenType.CLOSE_BRACKETS))
             {
-                ErrorOr<Token> closeOr = parser.expect(TokenType.COMMA, "Na criação de uma lista, esperávamos " +
+                parser.expect(TokenType.COMMA, "Na criação de uma lista, esperávamos " +
                     "uma vírgula - , - ou um fechamento de colchetes - ] -, mas recebemos outro símbolo no código - %s");
-                if (closeOr.isError()) return closeOr.propagateError();
             }
 
             if (parser.peekIs(TokenType.COMMA))
@@ -48,10 +45,9 @@ public class ArrayLiteral extends Expr
             }
         }
 
-        ErrorOr<Token> closeOr = parser.expect(TokenType.CLOSE_BRACKETS, "Esperávamos ']' para fechar a lista, " +
+        parser.expect(TokenType.CLOSE_BRACKETS, "Esperávamos ']' para fechar a lista, " +
             "mas recebemos outro símbolo no código - %s");
-        if (closeOr.isError()) return closeOr.propagateError();
-        return ErrorOr.Success(ArrayLiteral.create(items));
+        return ArrayLiteral.create(items);
     }
 
     private String printItems(int level)
@@ -82,4 +78,3 @@ public class ArrayLiteral extends Expr
                 "\t".repeat(level) + "}";
     }
 }
-

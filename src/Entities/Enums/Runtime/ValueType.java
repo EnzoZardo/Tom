@@ -6,6 +6,7 @@ public enum ValueType
     Null,
     Array,
     Class,
+    Empty,
     Break,
     Object,
     String,

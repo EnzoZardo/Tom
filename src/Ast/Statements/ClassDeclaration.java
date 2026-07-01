@@ -1,7 +1,6 @@
 package Ast.Statements;
 
 import Entities.Abstractions.Ast.Statement;
-import Entities.Common.Result.ErrorOr;
 import Entities.Enums.Ast.NodeType;
 import Entities.Enums.Lexer.TokenType;
 import Lexer.Tokens.Token;
@@ -35,46 +34,39 @@ public class ClassDeclaration extends Statement
         return new ClassDeclaration(name, members, parentClass);
     }
 
-    public static ErrorOr<ClassDeclaration> parse(Parser parser)
+    public static ClassDeclaration parse(Parser parser)
     {
         parser.consume();
 
-        ErrorOr<Token> identifierOr = parser.expect(TokenType.IDENTIFIER, "Esperávamos um nome para a classe " +
+        Token identifier = parser.expect(TokenType.IDENTIFIER, "Esperávamos um nome para a classe " +
             "declarada, mas recebemos outro símbolo no código - %s");
-        if (identifierOr.isError()) return identifierOr.propagateError();
         Token parentClassToken = null;
 
         if (parser.peekIs(TokenType.EXTENDS))
         {
             parser.consume();
-            ErrorOr<Token> parentOr = parser.expect(TokenType.IDENTIFIER, "Esperávamos um nome para a classe que " +
+            parentClassToken = parser.expect(TokenType.IDENTIFIER, "Esperávamos um nome para a classe que " +
                 "será herdada, mas recebemos outro símbolo no código - %s");
-            if (parentOr.isError()) return parentOr.propagateError();
-            parentClassToken = parentOr.value;
         }
 
-        ErrorOr<Token> openBraceOr = parser.expect(TokenType.OPEN_BRACE, "Esperávamos uma abertura de chaves " +
-            "- { - para a abertura do corpo da nossa classe " + identifierOr.value.value + ", mas recebemos outro " +
+        parser.expect(TokenType.OPEN_BRACE, "Esperávamos uma abertura de chaves " +
+            "- { - para a abertura do corpo da nossa classe " + identifier.value + ", mas recebemos outro " +
             "símbolo no código - %s");
-        if (openBraceOr.isError()) return openBraceOr.propagateError();
 
         ArrayList<ClassMemberDeclaration> members = new ArrayList<>();
 
         parser.context.enterClass();
         while (parser.notEof() && !parser.peekIs(TokenType.CLOSE_BRACE))
         {
-            ErrorOr<ClassMemberDeclaration> memberOr = ClassMemberDeclaration.parse(parser);
-            if (memberOr.isError()) return memberOr.propagateError();
-
-            members.add(memberOr.value);
+            members.add(ClassMemberDeclaration.parse(parser));
         }
         parser.context.outClass();
 
         parser.consume();
-        return ErrorOr.Success(ClassDeclaration.create(
-            identifierOr.value.value,
+        return ClassDeclaration.create(
+            identifier.value,
             members,
-            parentClassToken == null ? null : parentClassToken.value));
+            parentClassToken == null ? null : parentClassToken.value);
     }
 
     private String printBody(int level)

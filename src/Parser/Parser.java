@@ -2,8 +2,8 @@ package Parser;
 
 import Ast.Statements.*;
 import Entities.Abstractions.Ast.Statement;
-import Entities.Common.Result.ErrorOr;
 import Entities.Common.Result.ErrorType;
+import Entities.Exceptions.Parser.ParsingException;
 import Entities.Parsing.ContextMemory;
 import Entities.Enums.Lexer.TokenType;
 import Lexer.Tokens.Token;
@@ -27,20 +27,18 @@ public class Parser
         return new Parser(tokens);
     }
 
-    public ErrorOr<Program> build()
+    public Program build()
     {
         Program program = Program.create();
         while (notEof())
         {
-            var stmtOr = Statement.parse(this);
-            if (stmtOr.isError()) return stmtOr.propagateError();
-            program.addStatement(stmtOr.value);
+            program.addStatement(Statement.parse(this));
         }
 
-        return ErrorOr.Success(program);
+        return program;
     }
 
-    public ErrorOr<Token> expect(TokenType token, String error)
+    public Token expect(TokenType token, String error)
     {
         Token prev = consume();
         if (prev.type != token)
@@ -50,9 +48,9 @@ public class Parser
             if (error.contains("%s"))
                 message = String.format((error) + "%n", prev.value);
 
-            return ErrorOr.Fail(message, ErrorType.ParsingError, prev.location);
+            throw new ParsingException(message, ErrorType.ParsingError, prev.location);
         }
-        return ErrorOr.Success(prev);
+        return prev;
     }
 
     public boolean notEof()
