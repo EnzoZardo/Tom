@@ -34,11 +34,11 @@ public record ReservedKeys()
     public static final String While = "enquanto";
     public static final String Return = "retorne";
     public static final String Protected = "prot";
+    public static final String Constant = "const";
     public static final String Extends = "herda";
     public static final String Import = "inclua";
     public static final String Function = "fun";
     public static final String Variable = "var";
-    public static final String Constant = "con";
     public static final String Class = "classe";
     public static final String Private = "priv";
     public static final String False = "falso";

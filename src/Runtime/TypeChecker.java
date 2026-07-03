@@ -20,31 +20,37 @@ public abstract class TypeChecker
     {
         return switch (expected.type)
         {
-            case TypeKind.SymbolType ->
+            case SymbolType ->
             {
                 SymbolType symbol = (SymbolType) expected;
                 yield checkSymbol(env, symbol, value);
             }
-            case TypeKind.ObjectType ->
+            case ObjectType ->
             {
                 ObjectType object = (ObjectType) expected;
                 yield checkObject(env, object, value);
             }
-            case TypeKind.ArrayType ->
+            case ArrayType ->
             {
                 ArrayType array = (ArrayType) expected;
                 yield checkArray(env, array, value);
             }
-            case TypeKind.FunctionType ->
+            case FunctionType ->
             {
                 FunctionType function = (FunctionType) expected;
                 yield checkFunction(env, function, value);
             }
-            case TypeKind.ClassType ->
+            case ClassType ->
             {
                 ClassType classType = (ClassType) expected;
                 yield checkClass(classType, value);
             }
+            case BinaryType ->
+            {
+                BinaryType binaryType = (BinaryType) expected;
+                yield checkBinary(env, binaryType, value);
+            }
+            case NeverType -> ErrorOr.Fail("O tipo informado é inalcançável");
             default -> ErrorOr.Fail("Tipo informado é desconhecido.");
         };
     }
@@ -138,6 +144,18 @@ public abstract class TypeChecker
         return ErrorOr.Success();
     }
 
+    private static ErrorOr<Void> checkBinary(Environment env, BinaryType type, RuntimeValue value)
+    {
+        ErrorOr<Void> left = check(env, value, type.left);
+        if (left.isSuccess())
+            return left;
+
+        ErrorOr<Void> right = check(env, value, type.right);
+        if (right.isSuccess())
+            return right;
+
+        return ErrorOr.Fail("O tipo do valor não condiz com nenhum dos tipos " + type.left + " ou " + type.right);
+    }
 
     private static ErrorOr<Void> checkArray(Environment env, ArrayType type, RuntimeValue value)
     {

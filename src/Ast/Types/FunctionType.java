@@ -1,6 +1,7 @@
 package Ast.Types;
 
 import Entities.Common.Result.ErrorOr;
+import Entities.Constants.ReservedKeys;
 import Entities.Enums.TypeKind;
 import Entities.Abstractions.Type;
 import Entities.Enums.Lexer.TokenType;
@@ -72,12 +73,13 @@ public class FunctionType extends Type
 
     public static Type parse(Parser parser)
     {
-        if (!parser.peekIs(TokenType.OPEN_PARENTHESIS))
+        if (!parser.peekIs(TokenType.FUNCTION))
         {
             return ObjectType.parse(parser);
         }
 
         parser.consume();
+        parser.expect(TokenType.OPEN_PARENTHESIS, "Esperávamos '(' depois da declaração do tipo da função.");
         ArrayList<Type> parameters = new ArrayList<>();
 
         while (parser.notEof() && !parser.peekIs(TokenType.CLOSE_PARENTHESIS))
@@ -143,10 +145,9 @@ public class FunctionType extends Type
         for (int i = 0; i < parameters.size(); i++)
         {
             params.append(parameters.get(i));
-            if (i < parameters.size() - 1) {
+            if (i < parameters.size() - 1)
                 params.append(", ");
-            }
         }
-        return "(" +  params + "): " + returnType;
+        return ReservedKeys.Function + " (" +  params + "): " + returnType;
     }
 }

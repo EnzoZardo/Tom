@@ -25,18 +25,28 @@ public class SymbolType extends Type
 
     public static Type reduce(Environment env, Type type)
     {
+        if (type.type == TypeKind.NeverType)
+            return type;
+
         SymbolType symbolType = (SymbolType) type;
 
         if (!ReservedPrimitiveTypes.isReserved(symbolType.value))
-        {
             return env.lookupType(symbolType.value);
-        }
 
         return symbolType;
     }
 
     public static Type parse(Parser parser)
     {
+        if (parser.peekIs(TokenType.OPEN_PARENTHESIS))
+        {
+            parser.consume();
+            Type currType = Type.parse(parser);
+            parser.expect(TokenType.CLOSE_PARENTHESIS, "Esperávamos um fechamento de parênteses na declaração " +
+                    "do tipo " + currType);
+            return currType;
+        }
+
         Token token = parser.expect(TokenType.IDENTIFIER, "Esperávamos o nome do tipo enquanto analisávamos.");
         return SymbolType.create(token.value);
     }

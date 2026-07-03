@@ -1,5 +1,6 @@
 package Entities.Abstractions;
 
+import Ast.Types.BinaryType;
 import Entities.Abstractions.Ast.Statement;
 import Entities.Common.Result.ErrorOr;
 import Entities.Enums.Ast.NodeType;
@@ -20,7 +21,7 @@ public abstract class Type extends Statement
 
     public static Type parse(Parser parser)
     {
-        return FunctionType.parse(parser);
+        return BinaryType.parse(parser);
     }
 
     public static Type reduce(Environment env, Type type)
@@ -30,7 +31,7 @@ public abstract class Type extends Statement
             return type;
         }
 
-        return FunctionType.reduce(env, type);
+        return BinaryType.reduce(env, type);
     }
 
     public static ErrorOr<Void> equals(Type type1, Type type2)
@@ -40,7 +41,7 @@ public abstract class Type extends Statement
             return ErrorOr.Fail("Os tipos são diferentes.");
         }
 
-        return FunctionType.equals(type1, type2);
+        return BinaryType.equals(type1, type2);
     }
 
     public abstract String print(int level);

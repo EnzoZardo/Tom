@@ -1,44 +1,13 @@
-inclua "./ser.tom"
+tipo ou_e = { a: inteiro } ou { b: inteiro } e { c: inteiro }
 
-classe Humano herda Ser 
-{
-    publ var nome: texto ?
+var b: ou_e = { a: 1, c: 2 }
+var c: ou_e = { b: 2, c: 3 }
 
-    publ fun Humano(idade: inteiro, nome: texto): Ser
-    {
-        super(idade)
-        isso.nome = nome
-    }
+escreva("A primeira é", b)
+escreva("A segunda é", c)
 
-    publ fun verifica_entrada(): vazio 
-    {
-        enquanto (isso.nome <> "José")
-        {
-            isso.nome = leia("Nome: ")
-
-            se (isso.nome == "José") 
-            {
-                escreva("Você está proibido de se apresentar")
-                retorne ?
-            }
-
-            escreva("Olá!", isso.nome, "pode entrar")
-        }
-    }
-}
-
-fun main(): vazio 
-{
-    con input: texto = leia("Informe sua idade: ")
-    con idade: inteiro = inteiro.converte(input)
-    
-    con nome: texto = leia("Agora, informe seu nome: ")
-    
-    con pessoa: Humano = novo Humano(idade, nome)
-
-    pessoa.verifica_entrada()
-
-    retorne vazio
-}
-
-main()
+# var a: ou_e = { a: 1, b: 2, c: 3 }
+# var a: ou_e = { c: 2 }
+# var a: ou_e = { a: 1 }
+# var a: ou_e = { b: 2 }
+# var a: ou_e = {}

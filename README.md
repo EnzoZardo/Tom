@@ -91,3 +91,11 @@ Agora é necessário:
 - Adição de parse de herança, falta apenas evaluar
 - Adição de classes e herança e validações. 
 - Agora precisamos criar funções undefined
+
+### Atualizações 30.6.26
+- Adição de tipo "vazio" e funções sem return
+- Obrigatoriedade da chamada de super como primeiro statement de um construtor de classe filha
+
+### Atualizações 2.7.26
+- Adição de or e and types
+- Adição de tipo never

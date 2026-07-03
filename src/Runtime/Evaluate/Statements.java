@@ -212,14 +212,10 @@ public abstract class Statements
             ret = Interpreter.evaluate(whileStatement.consequent, env);
 
             if (ret.type == ValueType.Return)
-            {
                 return ret;
-            }
 
             if (ret.type == ValueType.Break)
-            {
                 return EmptyValue.create();
-            }
 
             value = Interpreter.evaluate(whileStatement.test, env);
         }
@@ -238,9 +234,7 @@ public abstract class Statements
         RuntimeValue value;
 
         if (!ReservedKeys.In.equals(forEach.operator))
-        {
             throw new InvalidBinaryOperation("Esperávamos o token 'em' para nosso loop para-cada.");
-        }
 
         if (forEach.iterators.stream().anyMatch(x -> x.type != NodeType.Identifier))
         {
