@@ -137,11 +137,16 @@ public abstract class TypeChecker
     {
         if (value.type != ValueType.Class) return ErrorOr.Fail("O valor informado não é uma classe.");
 
-        ClassValue classValue = (ClassValue) value;
+        ClassValue current = (ClassValue) value;
 
-        if (!classValue.className.equals(type.name)) return ErrorOr.Fail("Classes diferentes.");
+        while (current != null)
+        {
+            if (current.className.equals(type.name)) return ErrorOr.Success();
 
-        return ErrorOr.Success();
+            current = current.parent;
+        }
+
+        return ErrorOr.Fail("Classes diferentes.");
     }
 
     private static ErrorOr<Void> checkBinary(Environment env, BinaryType type, RuntimeValue value)

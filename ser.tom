@@ -1,9 +1,0 @@
-classe Ser
-{
-    publ var idade: inteiro ?
-
-    publ fun Ser(idade: inteiro): Ser
-    {
-        isso.idade = idade
-    }
-}

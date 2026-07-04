@@ -1,13 +1,8 @@
-tipo ou_e = { a: inteiro } ou { b: inteiro } e { c: inteiro }
+inclua "gato"
 
-var b: ou_e = { a: 1, c: 2 }
-var c: ou_e = { b: 2, c: 3 }
-
-escreva("A primeira é", b)
-escreva("A segunda é", c)
-
-# var a: ou_e = { a: 1, b: 2, c: 3 }
-# var a: ou_e = { c: 2 }
-# var a: ou_e = { a: 1 }
-# var a: ou_e = { b: 2 }
-# var a: ou_e = {}
+classe Tom herda Gato {
+    publico fun Tom(
+        pelagem: texto, 
+        idade: inteiro
+    ): Gato { super(pelagem, idade, "Tom") }
+}

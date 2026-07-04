@@ -12,35 +12,40 @@ public class ClassValue extends RuntimeValue
     public HashMap<String, ClassMemberValue> members;
     public ClassValue parent;
     public final boolean isInstance;
+    public final boolean isAbstract;
 
     protected ClassValue(
         ClassValue parent,
         HashMap<String, ClassMemberValue> members,
         String className,
-        boolean isInstance)
+        boolean isInstance,
+        boolean isAbstract)
     {
         super(ValueType.Class);
         this.parent = parent;
         this.members = members;
         this.className = className;
         this.isInstance = isInstance;
+        this.isAbstract = isAbstract;
     }
 
     public static ClassValue create(
         String className,
         ClassValue parent,
         HashMap<String, ClassMemberValue> members,
-        boolean isInstance)
+        boolean isInstance,
+        boolean isAbstract)
     {
-        return new ClassValue(parent, members, className, isInstance);
+        return new ClassValue(parent, members, className, isInstance, isAbstract);
     }
 
     public static ClassValue create(
         String className,
         HashMap<String, ClassMemberValue> members,
-        boolean isInstance)
+        boolean isInstance,
+        boolean isAbstract)
     {
-        return new ClassValue(null, members, className, isInstance);
+        return new ClassValue(null, members, className, isInstance, isAbstract);
     }
 
     private String printProps(int level)

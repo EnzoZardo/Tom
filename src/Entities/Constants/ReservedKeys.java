@@ -29,22 +29,23 @@ public record ReservedKeys()
     /* #endregion */
 
     /* #region Reserved Keys */
+    public static final String Protected = "protegido";
     public static final String Continue = "continue";
+    public static final String Abstract = "abstrata";
+    public static final String Private = "privado";
+    public static final String Static = "estatico";
     public static final String True = "verdadeiro";
     public static final String While = "enquanto";
     public static final String Return = "retorne";
-    public static final String Protected = "prot";
     public static final String Constant = "const";
     public static final String Extends = "herda";
     public static final String Import = "inclua";
     public static final String Function = "fun";
     public static final String Variable = "var";
     public static final String Class = "classe";
-    public static final String Private = "priv";
     public static final String False = "falso";
     public static final String Super = "super";
-    public static final String Public = "publ";
-    public static final String Static = "est";
+    public static final String Public = "publico";
     public static final String Else = "senao";
     public static final String Break = "pare";
     public static final String Each = "cada";

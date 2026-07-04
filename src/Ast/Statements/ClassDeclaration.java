@@ -12,6 +12,7 @@ public class ClassDeclaration extends Statement
 {
     public String name;
     public String parentClass;
+    public boolean isAbstract;
     public ArrayList<ClassMemberDeclaration> members;
 
     protected ClassDeclaration(

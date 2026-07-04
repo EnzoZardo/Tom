@@ -21,6 +21,7 @@ public enum TokenType
     EXTENDS,
     DECLARE,
     CONSTANT,
+    ABSTRACT,
     CONTINUE,
     FUNCTION,
     SEMICOLON,

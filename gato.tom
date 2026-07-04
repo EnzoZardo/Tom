@@ -1,0 +1,19 @@
+classe Gato {
+    protegido var pelagem: texto?
+    protegido var idade: inteiro?
+    protegido var nome: texto?
+
+    protegido fun Gato(
+        pelagem: texto,
+        idade: inteiro,
+        nome: texto
+    ): Gato {
+        isso.pelagem = pelagem
+        isso.idade = idade
+        isso.nome = nome
+    }
+
+    publico fun miar(): vazio {
+        escreva("Miau")
+    }
+}

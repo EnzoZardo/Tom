@@ -13,6 +13,7 @@ import Entities.Enums.TypeKind;
 import Entities.Exceptions.*;
 import Entities.Exceptions.Evaluate.InvalidAssignmentExpression;
 import Entities.Exceptions.Evaluate.InvalidMemberAssignException;
+import Entities.Exceptions.Parser.InvalidNodeException;
 import Entities.Metadata.ParameterMetadata;
 import Runtime.NativeFunctions.Interval;
 import Runtime.NativeFunctions.Print;
@@ -25,7 +26,10 @@ import Entities.Metadata.ValueMetadata;
 import Runtime.Values.ClassValue;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.function.Function;
 
 public class Environment
@@ -33,6 +37,7 @@ public class Environment
     public final ClassValue currentClass;
 
     private final Environment parent;
+    private final Set<String> imports;
     private final HashMap<String, ValueMetadata> variables;
     private final HashMap<String, ValueMetadata> constants;
     private final HashMap<String, Type> types;
@@ -43,6 +48,7 @@ public class Environment
         types = new HashMap<>();
         variables = new HashMap<>();
         constants = new HashMap<>();
+        imports = new HashSet<>();
         currentClass = null;
         setupScope();
     }
@@ -54,6 +60,7 @@ public class Environment
         types = new HashMap<>();
         variables = new HashMap<>();
         constants = new HashMap<>();
+        imports = new HashSet<>();
     }
 
     public static Environment create() throws AlreadyDeclaredVariableException
@@ -253,24 +260,26 @@ public class Environment
 
         ClassValue classValue = (ClassValue) valueMetadata.getValue();
 
-        if (classValue.members.containsKey(keyName))
-        {
-            ClassMemberValue val = classValue.members.get(keyName);
-            ErrorOr<Void> accessResult = AccessChecker.canAccess(val, caller, keyName);
+        if (!classValue.members.containsKey(keyName)
+                && (classValue.parent == null || !classValue.parent.members.containsKey(keyName)))
+            throw new InvalidMemberAssignException("Não foi encontrada nenhuma chave com o nome " +
+                    keyName + " para este objeto.");
 
-            if (accessResult.isError()) throw new InvalidMemberAssignException(accessResult.error.getMessage());
+        ClassMemberValue member = classValue.members.get(keyName);
+        if (member == null) member = classValue.parent.members.get(keyName);
 
-            Type expectedType = val.type;
-            ErrorOr<Void> equality = TypeChecker.check(this, value, expectedType);
-            if (equality.isError()) throw new ExpectedTypeNotMatch(equality.error.getMessage());
+        ErrorOr<Void> accessResult = AccessChecker.canAccess(member, caller, keyName);
 
-            val.value = value;
-            classValue.members.put(keyName, val);
-            return classValue;
-        }
+        if (accessResult.isError()) throw new InvalidMemberAssignException(accessResult.error.getMessage());
 
-        throw new InvalidMemberAssignException("Não foi encontrada nenhuma chave com o nome " +
-                keyName + " para este objeto.");
+        Type expectedType = member.type;
+        ErrorOr<Void> equality = TypeChecker.check(this, value, expectedType);
+        if (equality.isError()) throw new ExpectedTypeNotMatch(equality.error.getMessage());
+
+        member.value = value;
+        classValue.members.put(keyName, member);
+        return classValue;
+
     }
 
     public RuntimeValue lookupVariable(String name)
@@ -333,6 +342,26 @@ public class Environment
         }
 
         return this.parent.resolve(name);
+    }
+
+    public boolean canImport(String path)
+    {
+        if (this.imports.contains(path))
+        {
+            return false;
+        }
+
+        if (this.parent == null)
+        {
+            return true;
+        }
+
+        return this.parent.canImport(path);
+    }
+
+    public void addImport(String path)
+    {
+        this.imports.add(path);
     }
 
     private void setupScope() throws AlreadyDeclaredVariableException

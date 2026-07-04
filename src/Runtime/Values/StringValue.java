@@ -10,7 +10,7 @@ import java.util.Map;
 public class StringValue extends RuntimeValue
 {
     private static final String EMPTY = "";
-    public final String value;
+    public String value;
 
     protected StringValue(String value)
     {

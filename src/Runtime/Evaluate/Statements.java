@@ -16,10 +16,11 @@ import Entities.Exceptions.AlreadyDeclaredVariableException;
 import Entities.Exceptions.Evaluate.IncorrectNumberOfArgumentsException;
 import Entities.Exceptions.Evaluate.InvalidBinaryOperation;
 import Entities.Exceptions.ExpectedTypeNotMatch;
-import Entities.Exceptions.InvalidArgumentException;
+import Entities.Exceptions.FileNotExistsException;
+import Entities.Exceptions.ImportInvalidExtension;
+import Entities.Exceptions.Parser.AlreadyImportedModuleException;
 import Entities.Exceptions.Parser.ConstructorNeededException;
 import Entities.Exceptions.Parser.InvalidNodeException;
-import Parser.Parser;
 import Runtime.Environment;
 import Runtime.Interpreter;
 import Entities.Abstractions.Runtime.RuntimeValue;
@@ -39,6 +40,7 @@ import java.util.List;
 
 public abstract class Statements
 {
+    private static final String EXTENSION = "tom";
     public static RuntimeValue evaluateProgram(Program program, Environment env)
         throws AlreadyDeclaredVariableException
     {
@@ -49,32 +51,51 @@ public abstract class Statements
         return lastEvaluated;
     }
 
-    //TODO: melhorar todo esse método, validar extensões, etc
+    private static String getExtension(String fileName) {
+        if (fileName == null || fileName.lastIndexOf('.') == -1) {
+            return "";
+        }
+        return fileName.substring(fileName.lastIndexOf('.') + 1);
+    }
+
     public static RuntimeValue evaluateImport(Import importStatement, Environment env)
             throws AlreadyDeclaredVariableException
     {
-        //TODO: CHECK THIS METHOD WHEN ALL IS RESULT
         RuntimeValue value = Interpreter.evaluate(importStatement.path, env);
 
-        if (value.type != ValueType.String) throw new InvalidNodeException("Queriamos uma string aqui");
+        if (value.type != ValueType.String)
+            throw new InvalidNodeException("Só podemos importar valores textuais.");
 
         StringValue path = (StringValue) value;
         String content;
 
-        {
-            File file = new File(path.value);
-            if (!file.exists()) return NullValue.create();
 
-            try (FileReader reader = new FileReader(file))
-            {
-                content = reader.readAllAsString();
-            }
-            catch (IOException e)
-            {
-                return NullValue.create();
-            }
+        File tmp = new File(path.value);
+        String extension = getExtension(tmp.getName());
+
+        if (!extension.isBlank() && !extension.equals(EXTENSION))
+            throw new ImportInvalidExtension("Extensão - " + extension + " - inválida para ser importada");
+
+        if (extension.isBlank())
+            path.value += '.' + EXTENSION;
+
+        File file = new File(path.value);
+
+        if (!file.exists()) throw new FileNotExistsException("Arquivo - " + file.getName() + " - para a importação inexistente");
+
+        try (FileReader reader = new FileReader(file))
+        {
+            content = reader.readAllAsString();
+        }
+        catch (IOException e)
+        {
+            return NullValue.create();
         }
 
+        if (!env.canImport(file.getAbsolutePath()))
+            throw new AlreadyImportedModuleException("Módulo - " + path.value + " - já importado neste escopo.");
+
+        env.addImport(file.getAbsolutePath());
         Program program = Program.initialize(content, path.value);
         return Interpreter.evaluate(program, env);
     }
@@ -107,9 +128,10 @@ public abstract class Statements
             if (value.type != ValueType.Class)
                 throw new ExpectedTypeNotMatch("Classes somente podem estender de outras classes");
 
-            classValue = ClassValue.create(declaration.name, ((ClassValue) value).copy(), members, true);
+            classValue = ClassValue.create(
+                declaration.name, ((ClassValue) value).copy(), members, true, declaration.isAbstract);
         } else { 
-            classValue = ClassValue.create(declaration.name, members, true);
+            classValue = ClassValue.create(declaration.name, members, true, declaration.isAbstract);
         }
 
         Environment classEnv = Environment.create(env);
