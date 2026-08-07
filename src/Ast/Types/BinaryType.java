@@ -50,7 +50,9 @@ public class BinaryType extends Type
     {
         Type left = FunctionType.parse(parser);
 
-        if (parser.peekIs(TokenType.BINARY_OPERATOR))
+        if (parser.peekIs(TokenType.BINARY_OPERATOR)
+            && !ReservedKeys.Minor.equals(parser.peekValue())
+            && !ReservedKeys.Greater.equals(parser.peekValue()))
         {
             Token token = parser.consume();
             if (ReservedKeys.Or.equals(token.value))

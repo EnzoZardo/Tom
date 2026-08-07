@@ -1,21 +1,42 @@
 package Ast.Types;
 
 import Entities.Common.Result.ErrorOr;
+import Entities.Common.Result.ErrorType;
+import Entities.Constants.ReservedKeys;
 import Entities.Constants.ReservedPrimitiveTypes;
 import Entities.Enums.TypeKind;
 import Entities.Abstractions.Type;
 import Entities.Enums.Lexer.TokenType;
+import Entities.Exceptions.Parser.ParsingException;
 import Lexer.Tokens.Token;
 import Parser.Parser;
 import Runtime.Environment;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+
 public class SymbolType extends Type
 {
     public String value;
+    public ArrayList<Type> parameters;
+
+    protected SymbolType(String value, ArrayList<Type> parameters)
+    {
+        super(TypeKind.SymbolType);
+        this.value = value;
+        this.parameters = parameters;
+    }
+
     protected SymbolType(String value)
     {
         super(TypeKind.SymbolType);
         this.value = value;
+        this.parameters = new ArrayList<>();
+    }
+
+    public static SymbolType create(String value, ArrayList<Type> parameters)
+    {
+        return new SymbolType(value, parameters);
     }
 
     public static SymbolType create(String value)
@@ -31,9 +52,78 @@ public class SymbolType extends Type
         SymbolType symbolType = (SymbolType) type;
 
         if (!ReservedPrimitiveTypes.isReserved(symbolType.value))
-            return env.lookupType(symbolType.value);
+        {
+            Type resolved = env.lookupType(symbolType.value);
+            ArrayList<String> typeParams = env.lookupTypeParameters(symbolType.value);
+
+            if (!typeParams.isEmpty() && !symbolType.parameters.isEmpty())
+            {
+                return reduceParameters(env, typeParams, symbolType, resolved);
+            }
+
+            return resolved;
+        }
 
         return symbolType;
+    }
+
+    private static Type reduceParameters(Environment env, ArrayList<String> typeParams, SymbolType symbolType, Type resolved)
+    {
+        HashMap<String, Type> mapping = new HashMap<>();
+        for (int i = 0; i < typeParams.size() && i < symbolType.parameters.size(); i++)
+        {
+            mapping.put(typeParams.get(i), symbolType.parameters.get(i));
+        }
+        resolved = substitute(resolved, mapping);
+        return Type.reduce(env, resolved);
+    }
+
+    public static Type substitute(Type type, HashMap<String, Type> mapping)
+    {
+        switch (type.type)
+        {
+            case SymbolType ->
+            {
+                SymbolType symbol = (SymbolType) type;
+                if (mapping.containsKey(symbol.value) && symbol.parameters.isEmpty())
+                    return mapping.get(symbol.value);
+                if (!symbol.parameters.isEmpty())
+                {
+                    ArrayList<Type> newParams = new ArrayList<>();
+                    for (Type param : symbol.parameters)
+                        newParams.add(substitute(param, mapping));
+                    return SymbolType.create(symbol.value, newParams);
+                }
+                return symbol;
+            }
+            case ObjectType ->
+            {
+                ObjectType obj = (ObjectType) type;
+                ArrayList<ObjectTypeProperty> newProps = new ArrayList<>();
+                for (ObjectTypeProperty prop : obj.properties)
+                    newProps.add(ObjectTypeProperty.create(prop.key, substitute(prop.type, mapping)));
+                return ObjectType.create(newProps);
+            }
+            case ArrayType ->
+            {
+                ArrayType arr = (ArrayType) type;
+                return ArrayType.create(substitute(arr.underlying, mapping));
+            }
+            case FunctionType ->
+            {
+                FunctionType func = (FunctionType) type;
+                ArrayList<Type> newParams = new ArrayList<>();
+                for (Type p : func.parameters)
+                    newParams.add(substitute(p, mapping));
+                return FunctionType.create(newParams, substitute(func.returnType, mapping));
+            }
+            case BinaryType ->
+            {
+                BinaryType bin = (BinaryType) type;
+                return BinaryType.create(substitute(bin.left, mapping), substitute(bin.right, mapping));
+            }
+            default -> { return type; }
+        }
     }
 
     public static Type parse(Parser parser)
@@ -48,7 +138,60 @@ public class SymbolType extends Type
         }
 
         Token token = parser.expect(TokenType.IDENTIFIER, "Esperávamos o nome do tipo enquanto analisávamos.");
+
+        if (parser.peekIs(TokenType.BINARY_OPERATOR) && ReservedKeys.Minor.equals(parser.peekValue()))
+            return SymbolType.create(token.value, parseArgs(parser));
+
         return SymbolType.create(token.value);
+    }
+
+    public static ArrayList<Type> parseArgumentsList(Parser parser)
+    {
+        ArrayList<Type> args = new ArrayList<>();
+
+        Type first = Type.parse(parser);
+
+        args.add(first);
+
+        while (parser.notEof() && parser.peekIs(TokenType.COMMA))
+        {
+            parser.consume();
+
+            Type arg = Type.parse(parser);
+
+            args.add(arg);
+        }
+
+        return args;
+    }
+
+    public static ArrayList<Type> parseArgs(Parser parser)
+    {
+        String message = "Esperávamos um 'menor que' - < - para " +
+                "abrir a lista de argumentos de um tipo, mas recebemos outro símbolo no código - %s";
+        Token open = parser.expect(TokenType.BINARY_OPERATOR, message);
+
+        if (!ReservedKeys.Minor.equals(open.value))
+            throw new ParsingException(String.format(message, open.value), ErrorType.ParsingError, open.location);
+
+        if (parser.peekIs(TokenType.CLOSE_PARENTHESIS))
+        {
+            parser.consume();
+            return new ArrayList<>();
+        }
+
+        ArrayList<Type> args = SymbolType.parseArgumentsList(parser);
+
+        message = "Esperávamos um 'maior que' " +
+                " - > - para fechar a lista de argumentos de uma função, mas recebemos outro " +
+                "símbolo no código - %s";
+
+        Token close = parser.expect(TokenType.BINARY_OPERATOR, message);
+
+        if (!ReservedKeys.Greater.equals(close.value))
+            throw new ParsingException(String.format(message, close.value), ErrorType.ParsingError, open.location);
+
+        return args;
     }
 
     public static ErrorOr<Void> equals(Type type1, Type type2)

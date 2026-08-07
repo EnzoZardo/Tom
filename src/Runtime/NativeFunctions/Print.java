@@ -2,6 +2,7 @@ package Runtime.NativeFunctions;
 
 import Entities.Metadata.ParameterMetadata;
 import Entities.Abstractions.Runtime.RuntimeValue;
+import Runtime.Values.EmptyValue;
 import Runtime.Values.NullValue;
 
 import java.util.ArrayList;
@@ -9,7 +10,7 @@ import java.util.List;
 
 public abstract class Print
 {
-    public static NullValue call(ParameterMetadata args) {
+    public static EmptyValue call(ParameterMetadata args) {
         List<RuntimeValue> values = args.getValues();
         for (int i = 0; i < values.size(); i++)
         {
@@ -20,6 +21,6 @@ public abstract class Print
             }
         }
         IO.println();
-        return NullValue.create();
+        return EmptyValue.create();
     }
 }

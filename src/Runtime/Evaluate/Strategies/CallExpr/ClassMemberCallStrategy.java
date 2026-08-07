@@ -43,7 +43,12 @@ public class ClassMemberCallStrategy implements CallExprStrategy
 
         if (accessResult.isError()) throw new InvalidCallException(accessResult.error.getMessage());
 
-        Environment scope = Environment.create(function.declarationEnv, member.owner);
+        Environment scope;
+        if (member.isStatic) {
+            scope = Environment.create(environment, member.owner);
+        } else {
+            scope = Environment.create(function.declarationEnv, member.owner);
+        }
 
         if (function.parameters.size() != expr.arguments.size())
             throw new IncorrectNumberOfArgumentsException(String.format(

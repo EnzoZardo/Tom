@@ -1,6 +1,8 @@
 package Runtime;
 
+import Ast.Statements.ClassDeclaration;
 import Ast.Types.ArrayType;
+import Ast.Types.ClassType;
 import Ast.Types.ObjectType;
 import Ast.Types.Primitive.*;
 import Ast.Types.SymbolType;
@@ -13,6 +15,7 @@ import Entities.Enums.TypeKind;
 import Entities.Exceptions.*;
 import Entities.Exceptions.Evaluate.InvalidAssignmentExpression;
 import Entities.Exceptions.Evaluate.InvalidMemberAssignException;
+import Entities.Exceptions.Evaluate.InvalidTypeException;
 import Entities.Exceptions.Parser.InvalidNodeException;
 import Entities.Metadata.ParameterMetadata;
 import Runtime.NativeFunctions.Interval;
@@ -41,26 +44,29 @@ public class Environment
     private final HashMap<String, ValueMetadata> variables;
     private final HashMap<String, ValueMetadata> constants;
     private final HashMap<String, Type> types;
+    private final HashMap<String, ArrayList<String>> genericParameters;
 
     private Environment() throws AlreadyDeclaredVariableException
     {
         parent = null;
+        currentClass = null;
         types = new HashMap<>();
+        imports = new HashSet<>();
         variables = new HashMap<>();
         constants = new HashMap<>();
-        imports = new HashSet<>();
-        currentClass = null;
+        genericParameters = new HashMap<>();
         setupScope();
     }
 
-    private Environment(Environment parent, ClassValue classValue)
+    private Environment(Environment parentEnvironment, ClassValue classValue)
     {
-        this.parent = parent;
-        this.currentClass = classValue;
         types = new HashMap<>();
+        currentClass = classValue;
+        imports = new HashSet<>();
+        parent = parentEnvironment;
         variables = new HashMap<>();
         constants = new HashMap<>();
-        imports = new HashSet<>();
+        genericParameters = new HashMap<>();
     }
 
     public static Environment create() throws AlreadyDeclaredVariableException
@@ -78,22 +84,20 @@ public class Environment
         return new Environment(parentEnv, currentClass);
     }
 
-    public RuntimeValue declareClass(String name, RuntimeValue classValue, Type classType)
+    public RuntimeValue declareClass(ClassDeclaration declaration, RuntimeValue classValue, ClassType classType)
         throws AlreadyDeclaredVariableException
     {
-        declareType(name, classType);
-        declareConstant(name, classValue, classType);
-        return classValue;
-    }
+        if (classType.parameters.isEmpty())
+        {
+            declareType(declaration.name, classType);
+        }
+        else
+        {
+            declareType(declaration.name, classType, declaration.typeParameters);
+        }
 
-    public RuntimeValue declareVariable(
-        String name,
-        RuntimeValue value,
-        Type type,
-        boolean constant,
-        Function<RuntimeValue, RuntimeValue> mapper) throws AlreadyDeclaredVariableException
-    {
-        return declareVariable(name, mapper.apply(value), type, constant);
+        declareConstant(declaration.name, classValue, classType);
+        return classValue;
     }
 
     public RuntimeValue declareVariable(
@@ -114,15 +118,6 @@ public class Environment
 
         variables.put(name, ValueMetadata.create(type, value));
         return value;
-    }
-
-    public RuntimeValue declareConstant(
-        String name,
-        RuntimeValue value,
-        Type type,
-        Function<RuntimeValue, RuntimeValue> mapper) throws AlreadyDeclaredVariableException
-    {
-        return declareConstant(name, mapper.apply(value), type);
     }
 
     public RuntimeValue declareConstant(String name, RuntimeValue value, Type type)
@@ -296,6 +291,11 @@ public class Environment
 
     public Type declareType(String name, Type type)
     {
+        return declareType(name, type, new ArrayList<>());
+    }
+
+    public Type declareType(String name, Type type, ArrayList<String> typeParameters)
+    {
         if (types.containsKey(name))
         {
             throw new TypeReassignmentException(String.format(
@@ -303,6 +303,7 @@ public class Environment
                 name));
         }
 
+        genericParameters.put(name, typeParameters);
         return types.put(name, type);
     }
 
@@ -311,6 +312,13 @@ public class Environment
         Environment typeEnvironment = resolveType(name);
 
         return typeEnvironment.types.get(name);
+    }
+
+    public ArrayList<String> lookupTypeParameters(String name)
+    {
+        Environment typeEnvironment = resolveType(name);
+
+        return typeEnvironment.genericParameters.getOrDefault(name, new ArrayList<>());
     }
 
     public Environment resolveType(String name)
@@ -322,8 +330,7 @@ public class Environment
 
         if (this.parent == null)
         {
-            // TODO: change this
-            throw new InvalidVariableException(name);
+            throw new InvalidTypeException(name);
         }
 
         return this.parent.resolveType(name);

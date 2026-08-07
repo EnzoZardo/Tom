@@ -43,7 +43,7 @@ public abstract class TypeChecker
             case ClassType ->
             {
                 ClassType classType = (ClassType) expected;
-                yield checkClass(classType, value);
+                yield checkClass(env, classType, value);
             }
             case BinaryType ->
             {
@@ -58,6 +58,12 @@ public abstract class TypeChecker
     private static ErrorOr<Void> checkSymbol(Environment env, SymbolType symbol, RuntimeValue value)
     {
         if (ReservedPrimitiveTypes.isReserved(symbol.value)) return checkPrimitive(symbol.value, value);
+
+        if (!symbol.parameters.isEmpty())
+        {
+            Type reduced = Type.reduce(env, symbol);
+            return check(env, value, reduced);
+        }
 
         Environment environment = env.resolveType(symbol.value);
         Type type = environment.lookupType(symbol.value);
@@ -133,11 +139,17 @@ public abstract class TypeChecker
         return ErrorOr.Success();
     }
 
-    private static ErrorOr<Void> checkClass(ClassType type, RuntimeValue value)
+    private static ErrorOr<Void> checkClass(Environment env, ClassType type, RuntimeValue value)
     {
         if (value.type != ValueType.Class) return ErrorOr.Fail("O valor informado não é uma classe.");
 
         ClassValue current = (ClassValue) value;
+
+        if (!type.parameters.isEmpty())
+        {
+            Type reduced = ClassType.reduce(env, type);
+            return check(env, value, reduced);
+        }
 
         while (current != null)
         {

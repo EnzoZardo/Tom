@@ -152,12 +152,12 @@ public abstract class Expressions
     }
 
     public static RuntimeValue evaluateInstantiationExpression(ClassLiteral classLiteral, Environment env)
-            throws AlreadyDeclaredVariableException
+        throws AlreadyDeclaredVariableException
     {
         Environment declarationEnv = env.resolve(classLiteral.className);
         RuntimeValue declarationValue = declarationEnv.lookupVariable(classLiteral.className);
         if (declarationValue.type != ValueType.Class)
-            throw new InvalidNodeException("Esperávamos um o nome de uma classe para instanciar.");
+            throw new InvalidNodeException("Esperávamos o nome de uma classe para instanciar.");
 
         ClassValue value = ((ClassValue) declarationValue).copy();
 

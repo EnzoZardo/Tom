@@ -1,8 +1,6 @@
-inclua "gato"
-
-classe Tom herda Gato {
-    publico fun Tom(
-        pelagem: texto, 
-        idade: inteiro
-    ): Gato { super(pelagem, idade, "Tom") }
+classe Valor<T> {
+    publico var valor: T?
 }
+
+const v: Valor<inteiro> = novo Valor()
+v.valor = "a"

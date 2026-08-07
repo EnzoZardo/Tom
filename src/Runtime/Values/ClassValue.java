@@ -98,7 +98,8 @@ public class ClassValue extends RuntimeValue
                 parent == null ? null : parent.copy(),
                 new HashMap<>(),
                 className,
-                false
+                false,
+                isAbstract
         );
 
         HashMap<String, ClassMemberValue> copiedMembers = new HashMap<>();

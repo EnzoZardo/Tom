@@ -32,7 +32,6 @@ import Runtime.Values.FlowControl.ContinueFlow;
 import Runtime.Values.FlowControl.ReturnFlow;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
@@ -125,11 +124,13 @@ public abstract class Statements
         {
             Environment parentEnv = env.resolve(declaration.parentClass);
             RuntimeValue value = parentEnv.lookupVariable(declaration.parentClass);
+
             if (value.type != ValueType.Class)
                 throw new ExpectedTypeNotMatch("Classes somente podem estender de outras classes");
 
+            ClassValue parent = ((ClassValue) value).copy();
             classValue = ClassValue.create(
-                declaration.name, ((ClassValue) value).copy(), members, true, declaration.isAbstract);
+                declaration.name, parent, members, true, declaration.isAbstract);
         } else { 
             classValue = ClassValue.create(declaration.name, members, true, declaration.isAbstract);
         }
@@ -158,15 +159,22 @@ public abstract class Statements
             throw new ConstructorNeededException("É necessário um construtor que chame a " +
                 "classe pai em classes com heranças");
 
-        Type type = ClassType.create(declaration.name);
+        ClassType type = ClassType.create(declaration.name);
 
-        return env.declareClass(declaration.name, classValue, type);
+        return env.declareClass(declaration, classValue, type);
     }
 
     public static RuntimeValue evaluateTypeDeclaration(
         TypeDeclaration declaration, Environment env)
     {
-        env.declareType(declaration.identifier, Type.reduce(env, declaration.value));
+        if (declaration.typeParameters.isEmpty())
+        {
+            env.declareType(declaration.identifier, Type.reduce(env, declaration.value));
+        }
+        else
+        {
+            env.declareType(declaration.identifier, declaration.value, declaration.typeParameters);
+        }
         return NullValue.create();
     }
 

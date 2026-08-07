@@ -28,12 +28,20 @@ public class ClassMemberStrategy implements MemberExprStrategy
         if (expr.property.type == NodeType.Identifier) {
             Identifier identifier = (Identifier) expr.property;
 
-            if (!value.members.containsKey(identifier.value)
-                && (value.parent == null || !value.parent.members.containsKey(identifier.value)))
-                throw new InvalidNodeException("Classe não possui membro com esse nome");
+            ClassValue current = value;
+            ClassMemberValue member = null;
 
-            ClassMemberValue member = value.members.get(identifier.value);;
-            if (member == null) member = value.parent.members.get(identifier.value);
+            while (current != null)
+            {
+                if (value.members.containsKey(identifier.value)) {
+                    member = value.members.get(identifier.value);
+                    break;
+                }
+
+                current = current.parent;
+            }
+
+            if (member == null) throw new InvalidNodeException("Classe não possui membro com esse nome");
 
             ClassMemberValue bound = (ClassMemberValue) member.copy();
 
