@@ -24,6 +24,32 @@
         "scopeName": "source.tom",
         "path": "./syntaxes/tom.tmLanguage.json"
       }
-    ]
+    ],
+    "commands": [
+      {
+        "command": "tomRunner.executar",
+        "title": "Executar Tom",
+        "icon": "$(play)"
+      }
+    ],
+    "menus": {
+      "editor/title": [
+        {
+          "command": "tomRunner.executar",
+          "when": "resourceExtname == .tom",
+          "group": "navigation"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "Tom Runner",
+      "properties": {
+        "tomRunner.jarPath": {
+          "type": "string",
+          "default": "",
+          "description": "Caminho para o tom.jar"
+        }
+      }
+    }
   }
 }

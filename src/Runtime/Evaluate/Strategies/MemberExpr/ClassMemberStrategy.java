@@ -33,8 +33,8 @@ public class ClassMemberStrategy implements MemberExprStrategy
 
             while (current != null)
             {
-                if (value.members.containsKey(identifier.value)) {
-                    member = value.members.get(identifier.value);
+                if (current.members.containsKey(identifier.value)) {
+                    member = current.members.get(identifier.value);
                     break;
                 }
 

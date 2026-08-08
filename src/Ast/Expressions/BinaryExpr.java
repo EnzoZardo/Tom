@@ -5,6 +5,7 @@ import Entities.Constants.ReservedOperators;
 import Entities.Enums.Ast.NodeType;
 import Entities.Abstractions.Ast.Expr;
 import Entities.Exceptions.Parser.ParsingException;
+import Entities.Enums.Lexer.TokenType;
 import Parser.Parser;
 
 public class BinaryExpr extends Expr
@@ -28,7 +29,7 @@ public class BinaryExpr extends Expr
     {
         Expr left = BinaryExpr.parseAdditive(parser);
 
-        while (ReservedOperators.isBooleanOperator(parser.peekValue()))
+        while (parser.peekIs(TokenType.BINARY_OPERATOR) && ReservedOperators.isBooleanOperator(parser.peekValue()))
         {
             String operator = parser.consume().value;
 
@@ -44,7 +45,7 @@ public class BinaryExpr extends Expr
     {
         Expr left = UnaryExpr.parse(parser);
 
-        while (BinaryExpr.isMultiplicativeOperator(parser.peekValue()))
+        while (parser.peekIs(TokenType.BINARY_OPERATOR) && BinaryExpr.isMultiplicativeOperator(parser.peekValue()))
         {
             String operator = parser.consume().value;
 
@@ -60,7 +61,7 @@ public class BinaryExpr extends Expr
     {
         Expr left = BinaryExpr.parseMultiplicative(parser);
 
-        while (ReservedOperators.isAdditiveOperator(parser.peekValue()))
+        while (parser.peekIs(TokenType.BINARY_OPERATOR) && ReservedOperators.isAdditiveOperator(parser.peekValue()))
         {
             String operator = parser.consume().value;
 

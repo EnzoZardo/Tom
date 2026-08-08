@@ -99,3 +99,7 @@ Agora é necessário:
 ### Atualizações 2.7.26
 - Adição de or e and types
 - Adição de tipo never
+
+### Atualizações 8.8.26
+- Adição de genérics
+- Falta adicionar isso em funções

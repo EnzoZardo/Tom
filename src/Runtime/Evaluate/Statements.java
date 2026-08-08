@@ -1,10 +1,14 @@
 package Runtime.Evaluate;
 
 import Ast.Expressions.Identifier;
+import Ast.Expressions.Literals.ClassLiteral;
 import Ast.Statements.*;
 import Ast.Types.ClassType;
+import Ast.Types.GenericType;
 import Ast.Types.Primitive.IntegerType;
+import Ast.Types.SymbolType;
 import Entities.Abstractions.Runtime.RuntimeException;
+import Entities.Abstractions.Ast.Expr;
 import Entities.Abstractions.Type;
 import Entities.Abstractions.Ast.Statement;
 import Entities.Common.Result.ErrorOr;
@@ -34,6 +38,7 @@ import Runtime.Values.FlowControl.ReturnFlow;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -101,9 +106,10 @@ public abstract class Statements
 
     public static RuntimeValue evaluateVariableDeclaration(
         VariableDeclaration declaration, Environment env) throws AlreadyDeclaredVariableException {
+        ClassType hint = extractClassType(env, declaration.expectedType);
         RuntimeValue value = declaration.value == null
                 ? EmptyValue.create()
-                : Interpreter.evaluate(declaration.value, env);
+                : evaluateValue(declaration.value, env, hint);
 
         ErrorOr<Void> equality = TypeChecker.check(env, value, declaration.expectedType);
         if (equality.isError() && declaration.value != null)
@@ -112,6 +118,41 @@ public abstract class Statements
                 equality.error.getMessage()));
 
         return env.declareVariable(declaration.identifier, value, declaration.expectedType, declaration.constant);
+    }
+
+    private static ClassType extractClassType(Environment env, Type expectedType)
+    {
+        if (expectedType == null || expectedType.type != TypeKind.SymbolType)
+            return null;
+
+        SymbolType symbol = (SymbolType) expectedType;
+        if (symbol.parameters.isEmpty())
+            return null;
+
+        try
+        {
+            Type reduced = Type.reduce(env, expectedType);
+            if (reduced.type == TypeKind.ClassType)
+                return (ClassType) reduced;
+        }
+        catch (Exception ignored)
+        {
+        }
+
+        return null;
+    }
+
+    private static RuntimeValue evaluateValue(Expr value, Environment env, ClassType hint)
+        throws AlreadyDeclaredVariableException
+    {
+        if (hint != null && value.type == NodeType.ClassLiteral)
+        {
+            ClassLiteral literal = (ClassLiteral) value;
+            if (literal.typeArguments.isEmpty())
+                return Expressions.evaluateInstantiationExpression(literal, env, hint);
+        }
+
+        return Interpreter.evaluate(value, env);
     }
 
     public static RuntimeValue evaluateClassDeclaration(
@@ -130,12 +171,23 @@ public abstract class Statements
 
             ClassValue parent = ((ClassValue) value).copy();
             classValue = ClassValue.create(
-                declaration.name, parent, members, true, declaration.isAbstract);
+                declaration.name, parent, members, true, declaration.isAbstract,
+                new ArrayList<>(declaration.typeParameters));
+
+            if (declaration.parentType != null)
+                classValue.setParentTypeArguments(new ArrayList<>(((SymbolType) declaration.parentType).parameters));
         } else { 
-            classValue = ClassValue.create(declaration.name, members, true, declaration.isAbstract);
+            classValue = ClassValue.create(
+                declaration.name, members, true, declaration.isAbstract,
+                new ArrayList<>(declaration.typeParameters));
         }
 
         Environment classEnv = Environment.create(env);
+
+        for (String typeParameter : declaration.typeParameters)
+        {
+            classEnv.declareType(typeParameter, GenericType.create(typeParameter));
+        }
 
         for (ClassMemberDeclaration member : declaration.members)
         {

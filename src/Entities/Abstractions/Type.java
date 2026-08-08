@@ -1,6 +1,8 @@
 package Entities.Abstractions;
 
 import Ast.Types.BinaryType;
+import Ast.Types.ClassType;
+import Ast.Types.GenericType;
 import Entities.Abstractions.Ast.Statement;
 import Entities.Common.Result.ErrorOr;
 import Entities.Enums.Ast.NodeType;
@@ -29,6 +31,16 @@ public abstract class Type extends Statement
         if (type.type == TypeKind.NativeFunction)
         {
             return type;
+        }
+
+        if (type.type == TypeKind.GenericType)
+        {
+            return GenericType.reduce(env, type);
+        }
+
+        if (type.type == TypeKind.ClassType)
+        {
+            return ClassType.reduce(env, type);
         }
 
         return BinaryType.reduce(env, type);

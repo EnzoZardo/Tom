@@ -4,6 +4,7 @@ import Entities.Constants.ReservedOperators;
 import Entities.Enums.Ast.NodeType;
 import Entities.Abstractions.Ast.Expr;
 import Entities.Exceptions.Parser.ParsingException;
+import Entities.Enums.Lexer.TokenType;
 import Parser.Parser;
 
 public class UnaryExpr extends Expr
@@ -25,7 +26,7 @@ public class UnaryExpr extends Expr
 
     public static Expr parse(Parser parser)
     {
-        if (ReservedOperators.isUnary(parser.peekValue()))
+        if (parser.peekIs(TokenType.BINARY_OPERATOR) && ReservedOperators.isUnary(parser.peekValue()))
         {
             String operator = parser.consume().value;
 

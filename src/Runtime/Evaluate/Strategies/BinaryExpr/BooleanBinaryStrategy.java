@@ -32,8 +32,8 @@ public class BooleanBinaryStrategy implements BinaryExprStrategy
             }
             case ReservedKeys.Equality -> BooleanValue.create(left.equals(right));
             case ReservedKeys.Difference -> BooleanValue.create(!left.equals(right));
-            case ReservedKeys.Or -> BooleanValue.create(left.bool() || right.bool());
-            case ReservedKeys.And -> BooleanValue.create(left.bool() && right.bool());
+            case ReservedKeys.Or, ReservedKeys.Pipe -> BooleanValue.create(left.bool() || right.bool());
+            case ReservedKeys.And, ReservedKeys.Ampersand -> BooleanValue.create(left.bool() && right.bool());
             case ReservedKeys.Minor,
                  ReservedKeys.Greater,
                  ReservedKeys.MinorOrEqual,

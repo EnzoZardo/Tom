@@ -24,6 +24,7 @@ public class ObjectType extends Type
 
     public static ObjectType create(ArrayList<ObjectTypeProperty> properties)
     {
+        properties.sort(Comparator.comparing(p -> p.key));
         return new ObjectType(properties);
     }
 

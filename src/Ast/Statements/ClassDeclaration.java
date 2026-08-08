@@ -2,10 +2,12 @@ package Ast.Statements;
 
 import Ast.Types.SymbolType;
 import Entities.Abstractions.Ast.Statement;
+import Entities.Abstractions.Type;
 import Entities.Common.Result.ErrorType;
 import Entities.Constants.ReservedKeys;
 import Entities.Enums.Ast.NodeType;
 import Entities.Enums.Lexer.TokenType;
+import Entities.Enums.TypeKind;
 import Entities.Exceptions.Parser.ParsingException;
 import Lexer.Tokens.Token;
 import Parser.Parser;
@@ -16,6 +18,7 @@ public class ClassDeclaration extends Statement
 {
     public String name;
     public String parentClass;
+    public Type parentType;
     public boolean isAbstract;
     public ArrayList<String> typeParameters;
     public ArrayList<ClassMemberDeclaration> members;
@@ -24,12 +27,14 @@ public class ClassDeclaration extends Statement
         String name,
         ArrayList<ClassMemberDeclaration> members,
         String parentClass,
+        Type parentType,
         ArrayList<String> typeParameters
     )
     {
         this.name = name;
         this.members = members;
         this.parentClass = parentClass;
+        this.parentType = parentType;
         this.typeParameters = typeParameters;
         super(NodeType.ClassDeclaration);
     }
@@ -40,7 +45,17 @@ public class ClassDeclaration extends Statement
         String parentClass,
         ArrayList<String> typeParameters)
     {
-        return new ClassDeclaration(name, members, parentClass, typeParameters);
+        return new ClassDeclaration(name, members, parentClass, null, typeParameters);
+    }
+
+    public static ClassDeclaration create(
+        String name,
+        ArrayList<ClassMemberDeclaration> members,
+        String parentClass,
+        Type parentType,
+        ArrayList<String> typeParameters)
+    {
+        return new ClassDeclaration(name, members, parentClass, parentType, typeParameters);
     }
 
     public static ClassDeclaration parse(Parser parser)
@@ -50,7 +65,7 @@ public class ClassDeclaration extends Statement
         ArrayList<String> parameters = new ArrayList<>();
         Token identifier = parser.expect(TokenType.IDENTIFIER, "Esperávamos um nome para a classe " +
             "declarada, mas recebemos outro símbolo no código - %s");
-        Token parentClassToken = null;
+        Type parentType = null;
 
         if (parser.peekIs(TokenType.BINARY_OPERATOR) && ReservedKeys.Minor.equals(parser.peekValue()))
         {
@@ -73,10 +88,12 @@ public class ClassDeclaration extends Statement
 
         if (parser.peekIs(TokenType.EXTENDS))
         {
-            //TODO: aqui precisa de parse de tipo depois
             parser.consume();
-            parentClassToken = parser.expect(TokenType.IDENTIFIER, "Esperávamos um nome para a classe que " +
-                "será herdada, mas recebemos outro símbolo no código - %s");
+            parentType = SymbolType.parse(parser);
+
+            if (parentType.type != TypeKind.SymbolType)
+                throw new ParsingException("Esperávamos o nome de uma classe para a herança, " +
+                    "mas recebemos outro símbolo no código.");
         }
 
         parser.expect(TokenType.OPEN_BRACE, "Esperávamos uma abertura de chaves " +
@@ -96,7 +113,8 @@ public class ClassDeclaration extends Statement
         return ClassDeclaration.create(
             identifier.value,
             members,
-            parentClassToken == null ? null : parentClassToken.value,
+            parentType == null ? null : ((SymbolType) parentType).value,
+            parentType,
             parameters);
     }
 

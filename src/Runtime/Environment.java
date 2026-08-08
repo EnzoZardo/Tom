@@ -87,7 +87,7 @@ public class Environment
     public RuntimeValue declareClass(ClassDeclaration declaration, RuntimeValue classValue, ClassType classType)
         throws AlreadyDeclaredVariableException
     {
-        if (classType.parameters.isEmpty())
+        if (declaration.typeParameters.isEmpty())
         {
             declareType(declaration.name, classType);
         }

@@ -23,7 +23,11 @@ public record ReservedOperators()
         ReservedKeys.MinorOrEqual,
         ReservedKeys.GreaterOrEqual,
         ReservedKeys.Multiplication,
-        ReservedKeys.IntegerDivision
+        ReservedKeys.IntegerDivision,
+        ReservedKeys.And,
+        ReservedKeys.Or,
+        ReservedKeys.Pipe,
+        ReservedKeys.Ampersand
     );
 
     public static boolean isReserved(String value)
@@ -57,8 +61,10 @@ public record ReservedOperators()
     public static boolean isBooleanOperator(String operator)
     {
         return ReservedKeys.Or.equals(operator)
+            || ReservedKeys.Pipe.equals(operator)
             || ReservedKeys.In.equals(operator)
             || ReservedKeys.And.equals(operator)
+            || ReservedKeys.Ampersand.equals(operator)
             || ReservedKeys.Minor.equals(operator)
             || ReservedKeys.Greater.equals(operator)
             || ReservedKeys.Equality.equals(operator)

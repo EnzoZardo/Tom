@@ -14,6 +14,8 @@ import Runtime.Environment;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 
 public class SymbolType extends Type
 {
@@ -44,6 +46,8 @@ public class SymbolType extends Type
         return new SymbolType(value);
     }
 
+    private static final ThreadLocal<Set<String>> resolving = ThreadLocal.withInitial(HashSet::new);
+
     public static Type reduce(Environment env, Type type)
     {
         if (type.type == TypeKind.NeverType)
@@ -51,31 +55,67 @@ public class SymbolType extends Type
 
         SymbolType symbolType = (SymbolType) type;
 
-        if (!ReservedPrimitiveTypes.isReserved(symbolType.value))
+        if (ReservedPrimitiveTypes.isReserved(symbolType.value))
         {
-            Type resolved = env.lookupType(symbolType.value);
-            ArrayList<String> typeParams = env.lookupTypeParameters(symbolType.value);
-
-            if (!typeParams.isEmpty() && !symbolType.parameters.isEmpty())
+            if (!symbolType.parameters.isEmpty())
             {
-                return reduceParameters(env, typeParams, symbolType, resolved);
+                throw new ParsingException("O tipo primitivo " + symbolType.value + " não aceita argumentos de tipo.");
             }
-
-            return resolved;
+            return symbolType;
         }
 
-        return symbolType;
+        Type resolved = env.lookupType(symbolType.value);
+        ArrayList<String> typeParams = env.lookupTypeParameters(symbolType.value);
+
+        if (!typeParams.isEmpty() || !symbolType.parameters.isEmpty())
+        {
+            return reduceParameters(env, typeParams, symbolType, resolved);
+        }
+
+        return resolved;
     }
 
     private static Type reduceParameters(Environment env, ArrayList<String> typeParams, SymbolType symbolType, Type resolved)
     {
+        if (symbolType.parameters.size() != typeParams.size())
+        {
+            throw new ParsingException(String.format(
+                "O tipo %s esperava %d argumento(s) de tipo, mas recebeu %d.",
+                symbolType.value,
+                typeParams.size(),
+                symbolType.parameters.size()));
+        }
+
         HashMap<String, Type> mapping = new HashMap<>();
-        for (int i = 0; i < typeParams.size() && i < symbolType.parameters.size(); i++)
+        for (int i = 0; i < typeParams.size(); i++)
         {
             mapping.put(typeParams.get(i), symbolType.parameters.get(i));
         }
-        resolved = substitute(resolved, mapping);
-        return Type.reduce(env, resolved);
+
+        if (resolved.type == TypeKind.ClassType)
+        {
+            ClassType clazz = (ClassType) resolved;
+            ArrayList<Type> newParams = new ArrayList<>();
+            for (Type param : symbolType.parameters)
+                newParams.add(substitute(param, mapping));
+            return Type.reduce(env, ClassType.create(clazz.name, clazz.parent, newParams));
+        }
+
+        String key = symbolType.value + ":" + symbolType.parameters;
+        if (!resolving.get().add(key))
+        {
+            throw new ParsingException("Detectamos recursão infinita na definição do tipo genérico " + symbolType.value + ".");
+        }
+
+        try
+        {
+            resolved = substitute(resolved, mapping);
+            return Type.reduce(env, resolved);
+        }
+        finally
+        {
+            resolving.get().remove(key);
+        }
     }
 
     public static Type substitute(Type type, HashMap<String, Type> mapping)
@@ -121,6 +161,21 @@ public class SymbolType extends Type
             {
                 BinaryType bin = (BinaryType) type;
                 return BinaryType.create(substitute(bin.left, mapping), substitute(bin.right, mapping));
+            }
+            case GenericType ->
+            {
+                GenericType generic = (GenericType) type;
+                if (mapping.containsKey(generic.name))
+                    return mapping.get(generic.name);
+                return generic;
+            }
+            case ClassType ->
+            {
+                ClassType clazz = (ClassType) type;
+                ArrayList<Type> newParams = new ArrayList<>();
+                for (Type param : clazz.parameters)
+                    newParams.add(substitute(param, mapping));
+                return ClassType.create(clazz.name, clazz.parent, newParams);
             }
             default -> { return type; }
         }
@@ -198,12 +253,23 @@ public class SymbolType extends Type
     {
         SymbolType symbol1 = (SymbolType) type1;
         SymbolType symbol2 = (SymbolType) type2;
-        if (symbol1.value.equals(symbol2.value))
+        if (!symbol1.value.equals(symbol2.value))
         {
-            return ErrorOr.Success();
+            return ErrorOr.Fail("Os símbolos dos tipos diferem.");
         }
 
-        return ErrorOr.Fail("Os símbolos dos tipos diferem.");
+        if (symbol1.parameters.size() != symbol2.parameters.size())
+        {
+            return ErrorOr.Fail("A quantidade de argumentos de tipo do símbolo " + symbol1.value + " difere.");
+        }
+
+        for (int i = 0; i < symbol1.parameters.size(); i++)
+        {
+            ErrorOr<Void> result = Type.equals(symbol1.parameters.get(i), symbol2.parameters.get(i));
+            if (result.isError()) return result;
+        }
+
+        return ErrorOr.Success();
     }
 
     @Override

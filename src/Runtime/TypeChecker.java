@@ -51,23 +51,18 @@ public abstract class TypeChecker
                 yield checkBinary(env, binaryType, value);
             }
             case NeverType -> ErrorOr.Fail("O tipo informado é inalcançável");
+            case GenericType -> ErrorOr.Success();
             default -> ErrorOr.Fail("Tipo informado é desconhecido.");
         };
     }
 
     private static ErrorOr<Void> checkSymbol(Environment env, SymbolType symbol, RuntimeValue value)
     {
-        if (ReservedPrimitiveTypes.isReserved(symbol.value)) return checkPrimitive(symbol.value, value);
+        if (ReservedPrimitiveTypes.isReserved(symbol.value) && symbol.parameters.isEmpty())
+            return checkPrimitive(symbol.value, value);
 
-        if (!symbol.parameters.isEmpty())
-        {
-            Type reduced = Type.reduce(env, symbol);
-            return check(env, value, reduced);
-        }
-
-        Environment environment = env.resolveType(symbol.value);
-        Type type = environment.lookupType(symbol.value);
-        return check(env, value, type);
+        Type reduced = Type.reduce(env, symbol);
+        return check(env, value, reduced);
     }
 
     //TODO: insert checks on each primitive type
@@ -145,15 +140,24 @@ public abstract class TypeChecker
 
         ClassValue current = (ClassValue) value;
 
-        if (!type.parameters.isEmpty())
-        {
-            Type reduced = ClassType.reduce(env, type);
-            return check(env, value, reduced);
-        }
-
         while (current != null)
         {
-            if (current.className.equals(type.name)) return ErrorOr.Success();
+            if (current.className.equals(type.name))
+            {
+                if (type.parameters.isEmpty())
+                    return ErrorOr.Success();
+
+                if (current.typeArguments.size() != type.parameters.size())
+                    return ErrorOr.Fail("A quantidade de argumentos de tipo da classe " + type.name + " difere.");
+
+                for (int i = 0; i < type.parameters.size(); i++)
+                {
+                    ErrorOr<Void> equality = Type.equals(type.parameters.get(i), current.typeArguments.get(i));
+                    if (equality.isError()) return equality;
+                }
+
+                return ErrorOr.Success();
+            }
 
             current = current.parent;
         }

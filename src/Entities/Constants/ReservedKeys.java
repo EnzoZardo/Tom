@@ -81,6 +81,8 @@ public record ReservedKeys()
     public static final String Mod = "%";
     public static final String And = "e";
     public static final String Or = "ou";
+    public static final String Pipe = "|";
+    public static final String Ampersand = "&";
     public static final String In = "em";
     /* #endregion */
 

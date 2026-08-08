@@ -49,7 +49,7 @@ public class ArrayType extends Type
     public static ErrorOr<Void> equals(Type type1, Type type2)
     {
         if (type1.type != TypeKind.ArrayType) {
-            return SymbolType.equals(type1, type2);
+            return ClassType.equals(type1, type2);
         }
 
         ArrayType array1 = (ArrayType) type1;

@@ -9,7 +9,7 @@ public class ClassMemberValue extends RuntimeValue
 {
     public final ProtectionLevel protectionLevel;
     public final boolean isStatic;
-    public final Type type;
+    public Type type;
 
     public ClassValue owner;
     public RuntimeValue value;

@@ -13,9 +13,7 @@ import Parser.Parser;
 import Runtime.Environment;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import java.util.LinkedHashMap;
 
 public class BinaryType extends Type
 {
@@ -55,16 +53,16 @@ public class BinaryType extends Type
             && !ReservedKeys.Greater.equals(parser.peekValue()))
         {
             Token token = parser.consume();
-            if (ReservedKeys.Or.equals(token.value))
+            if (ReservedKeys.Or.equals(token.value) || ReservedKeys.Pipe.equals(token.value))
             {
                 Type right = Type.parse(parser);
                 return BinaryType.create(left, right);
             }
 
-            if (ReservedKeys.And.equals(token.value))
+            if (ReservedKeys.And.equals(token.value) || ReservedKeys.Ampersand.equals(token.value))
             {
                 Type right = Type.parse(parser);
-                return handleIntersection(left, right);
+                return intersect(left, right);
             }
 
             throw new ParsingException("Tipos Binários somente aceitam os operadores \"ou\" e \"e\" mas recebemos "
@@ -99,47 +97,48 @@ public class BinaryType extends Type
         return ErrorOr.Fail("Os tipos binários são diferentes.");
     }
 
-    private static Type handleIntersection(Type left, Type right)
+    private static Type intersect(Type left, Type right)
     {
+        if (left.type == TypeKind.BinaryType)
+        {
+            BinaryType leftBin = (BinaryType) left;
+            return BinaryType.create(intersect(leftBin.left, right), intersect(leftBin.right, right));
+        }
+
+        if (right.type == TypeKind.BinaryType)
+        {
+            BinaryType rightBin = (BinaryType) right;
+            return BinaryType.create(intersect(left, rightBin.left), intersect(left, rightBin.right));
+        }
+
         if (left.type == TypeKind.ObjectType && right.type == TypeKind.ObjectType)
         {
             ObjectType obj1 = (ObjectType) left;
             ObjectType obj2 = (ObjectType) right;
 
-            ArrayList<ObjectTypeProperty> props = Stream
-                .of(obj1.properties, obj2.properties)
-                .flatMap(Collection::stream)
-                .collect(Collectors.toCollection(ArrayList::new));
+            LinkedHashMap<String, ObjectTypeProperty> merged = new LinkedHashMap<>();
+            for (ObjectTypeProperty prop : obj1.properties)
+                merged.put(prop.key, prop);
 
-            return ObjectType.create(props);
+            for (ObjectTypeProperty prop : obj2.properties)
+            {
+                ObjectTypeProperty existing = merged.get(prop.key);
+                if (existing == null)
+                {
+                    merged.put(prop.key, prop);
+                }
+                else
+                {
+                    merged.put(prop.key, ObjectTypeProperty.create(prop.key, intersect(existing.type, prop.type)));
+                }
+            }
+
+            return ObjectType.create(new ArrayList<>(merged.values()));
         }
 
-        if (left.type == TypeKind.ObjectType && right.type == TypeKind.BinaryType)
-        {
-            BinaryType binary = (BinaryType) right;
-            Type leftIntersection = handleIntersection(left, binary.left);
-            Type rightIntersection = handleIntersection(left, binary.right);
-            return BinaryType.create(leftIntersection, rightIntersection);
-        }
-
-        if (left.type == TypeKind.BinaryType && right.type == TypeKind.ObjectType)
-        {
-            BinaryType binary = (BinaryType) left;
-            Type leftIntersection = handleIntersection(binary.left, right);
-            Type rightIntersection = handleIntersection(binary.right, right);
-            return BinaryType.create(leftIntersection, rightIntersection);
-        }
-
-        if (left.type == TypeKind.BinaryType && right.type == TypeKind.BinaryType)
-        {
-            BinaryType leftBin = (BinaryType) left;
-            BinaryType rightBin = (BinaryType) right;
-            Type ll = handleIntersection(leftBin.left, rightBin.left);
-            Type lr = handleIntersection(leftBin.left, rightBin.right);
-            Type rl = handleIntersection(leftBin.right, rightBin.left);
-            Type rr = handleIntersection(leftBin.right, rightBin.right);
-            return BinaryType.create(BinaryType.create(ll, lr), BinaryType.create(rl, rr));
-        }
+        ErrorOr<Void> equality = Type.equals(left, right);
+        if (equality.isSuccess())
+            return left;
 
         return NeverType.create();
     }

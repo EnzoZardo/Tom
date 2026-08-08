@@ -3,6 +3,7 @@ package Runtime.Evaluate;
 import Ast.Expressions.*;
 import Ast.Expressions.Literals.ArrayLiteral;
 import Ast.Expressions.Literals.ClassLiteral;
+import Ast.Types.ClassType;
 import Entities.Abstractions.Evaluate.Strategies.*;
 import Entities.Abstractions.Type;
 import Entities.Common.Result.ErrorOr;
@@ -154,12 +155,32 @@ public abstract class Expressions
     public static RuntimeValue evaluateInstantiationExpression(ClassLiteral classLiteral, Environment env)
         throws AlreadyDeclaredVariableException
     {
+        return evaluateInstantiationExpression(classLiteral, env, null);
+    }
+
+    public static RuntimeValue evaluateInstantiationExpression(
+        ClassLiteral classLiteral, Environment env, ClassType hint)
+        throws AlreadyDeclaredVariableException
+    {
         Environment declarationEnv = env.resolve(classLiteral.className);
         RuntimeValue declarationValue = declarationEnv.lookupVariable(classLiteral.className);
         if (declarationValue.type != ValueType.Class)
             throw new InvalidNodeException("Esperávamos o nome de uma classe para instanciar.");
 
         ClassValue value = ((ClassValue) declarationValue).copy();
+
+        ArrayList<Type> typeArguments = new ArrayList<>(classLiteral.typeArguments);
+
+        if (typeArguments.isEmpty() && hint != null && hint.name.equals(classLiteral.className))
+            typeArguments = new ArrayList<>(hint.parameters);
+
+        if (!typeArguments.isEmpty())
+        {
+            ArrayList<Type> reducedArgs = new ArrayList<>();
+            for (Type argument : typeArguments)
+                reducedArgs.add(Type.reduce(env, argument));
+            value.bindTypeArguments(reducedArgs);
+        }
 
         CallExpr syntheticCall = CallExpr.create(null, classLiteral.arguments);
         ConstructorCallStrategy strategy = new ConstructorCallStrategy();
