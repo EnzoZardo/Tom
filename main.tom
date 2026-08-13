@@ -1,27 +1,6 @@
-classe Classe<T, J> 
-{
-    privado var valor: T ?
-    privado var substituto: J ?
-
-    publico fun Classe(s: J): Classe {
-        isso.substituto = s
-    }
-
-    publico fun pegaValor(): T ou J 
-    {
-        se (isso.valor == nulo) retorne isso.substituto
-        senao retorne isso.valor
-    }
-
-    publico fun definaValor(v: T): vazio 
-    {
-        isso.valor = v
-    }
+fun escrever<T>(param: T): vazio {
+    var a: T = param
+    escreva(a)
 }
 
-const b: Classe<texto, inteiro> = novo Classe<texto, inteiro>(1)
-
-escreva(b.pegaValor())
-
-b.definaValor("Agora foi definido")
-escreva(b.pegaValor())
+escrever<inteiro>("1")

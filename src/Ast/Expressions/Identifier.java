@@ -1,10 +1,11 @@
 package Ast.Expressions;
 
+import Entities.Constants.ReservedKeys;
 import Entities.Enums.Ast.NodeType;
 import Entities.Abstractions.Ast.Expr;
-import Entities.Exceptions.InvalidArgumentException;
 import Entities.Enums.Lexer.TokenType;
 import Lexer.Tokens.Token;
+import Parser.Parser;
 
 public class Identifier extends Expr
 {
@@ -16,9 +17,17 @@ public class Identifier extends Expr
         super(NodeType.Identifier);
     }
 
-    public static Identifier create(Token token)
+    public static Expr parse(Parser parser)
     {
-        return new Identifier(token.value);
+        Token token = parser.consume();
+        Identifier identifier = new Identifier(token.value);
+        if (parser.peekIs(TokenType.BINARY_OPERATOR)
+            && ReservedKeys.Minor.equals(parser.peekValue()))
+        {
+            return CallExpr.parse(parser, identifier);
+        }
+
+        return identifier;
     }
 
     @Override

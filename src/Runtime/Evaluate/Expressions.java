@@ -33,6 +33,7 @@ import Entities.Metadata.ArgumentMetadata;
 import Runtime.Values.ClassValue;
 
 import java.util.ArrayList;
+import java.util.function.Function;
 
 public abstract class Expressions
 {
@@ -116,6 +117,16 @@ public abstract class Expressions
 
         CallExprStrategy strategy = result.value;
 
+        ArrayList<Type> typeArguments = new ArrayList<>(call.typeArguments);
+
+        if (!typeArguments.isEmpty() && caller.type == ValueType.Function)
+        {
+            ArrayList<Type> reducedArgs = new ArrayList<>();
+            for (Type argument : typeArguments)
+                reducedArgs.add(Type.reduce(env, argument));
+            ((FunctionValue) caller).bindTypeArguments(reducedArgs);
+        }
+
         return strategy.evaluate(call, caller, env);
     }
 
@@ -182,7 +193,7 @@ public abstract class Expressions
             value.bindTypeArguments(reducedArgs);
         }
 
-        CallExpr syntheticCall = CallExpr.create(null, classLiteral.arguments);
+        CallExpr syntheticCall = CallExpr.create(null, classLiteral.arguments, typeArguments);
         ConstructorCallStrategy strategy = new ConstructorCallStrategy();
         strategy.evaluate(syntheticCall, value, env);
 

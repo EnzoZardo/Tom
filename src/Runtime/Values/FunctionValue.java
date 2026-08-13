@@ -2,6 +2,7 @@ package Runtime.Values;
 
 import Ast.Statements.FunctionDeclaration;
 import Ast.Types.FunctionType;
+import Ast.Types.SymbolType;
 import Entities.Abstractions.Ast.Statement;
 import Entities.Abstractions.Type;
 import Entities.Constants.ReservedKeys;
@@ -9,6 +10,7 @@ import Entities.Enums.Runtime.ValueType;
 import Entities.Abstractions.Runtime.RuntimeValue;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.stream.Collectors;
 
 import Runtime.Environment;
@@ -19,6 +21,8 @@ public class FunctionValue extends RuntimeValue
     public String name;
     public ArrayList<Statement> body;
     public ArrayList<ArgumentMetadata> parameters;
+    public final ArrayList<String> typeParameters;
+    public ArrayList<Type> typeArguments;
     public Type returnType;
     public Environment declarationEnv;
 
@@ -27,7 +31,8 @@ public class FunctionValue extends RuntimeValue
         ArrayList<Statement> body,
         ArrayList<ArgumentMetadata> parameters,
         Type returnType,
-        Environment declarationEnv)
+        Environment declarationEnv,
+        ArrayList<String> typeParameters)
     {
         super(ValueType.Function);
         this.name = name;
@@ -35,6 +40,7 @@ public class FunctionValue extends RuntimeValue
         this.parameters = parameters;
         this.returnType = returnType;
         this.declarationEnv = declarationEnv;
+        this.typeParameters = typeParameters;
     }
 
     public static FunctionValue create(
@@ -42,14 +48,58 @@ public class FunctionValue extends RuntimeValue
         ArrayList<Statement> body,
         ArrayList<ArgumentMetadata> parameters,
         Type returnType,
-        Environment declarationEnv)
+        Environment declarationEnv,
+        ArrayList<String> typeParameters)
     {
-        return new FunctionValue(name, body, parameters, returnType, declarationEnv);
+        return new FunctionValue(name, body, parameters, returnType, declarationEnv, typeParameters);
     }
 
-    public static FunctionValue createFromStatement(FunctionDeclaration statement, Environment env)
+    public static FunctionValue createFromStatement(
+            FunctionDeclaration statement,
+            Environment env,
+            ArrayList<String> typeParameters)
     {
-        return new FunctionValue(statement.identifier, statement.body, statement.parameters, statement.returnType, env);
+        return new FunctionValue(
+                statement.identifier,
+                statement.body,
+                statement.parameters,
+                statement.returnType,
+                env,
+                typeParameters);
+    }
+
+    public void bindTypeArguments(ArrayList<Type> arguments)
+    {
+        if (arguments.size() != typeArguments.size())
+        {
+            throw new RuntimeException(String.format(
+                    "A função %s esperava %d argumento(s) de tipo, mas recebeu %d.",
+                    name,
+                    typeArguments.size(),
+                    arguments.size()));
+        }
+
+        HashMap<String, Type> mapping = new HashMap<>();
+        for (int i = 0; i < typeArguments.size(); i++)
+        {
+            mapping.put(typeParameters.get(i), arguments.get(i));
+        }
+
+        ArrayList<ArgumentMetadata> newParameters = new ArrayList<>();
+        for (ArgumentMetadata param : parameters)
+        {
+            newParameters.add(ArgumentMetadata.create(
+                    param.getType() == null ? null : SymbolType.substitute(param.getType(), mapping),
+                    param.getName()));
+        }
+        parameters = newParameters;
+
+        if (returnType != null)
+        {
+            returnType = SymbolType.substitute(returnType, mapping);
+        }
+
+        typeArguments = new ArrayList<>(arguments);
     }
 
     public Type type() {
@@ -124,7 +174,8 @@ public class FunctionValue extends RuntimeValue
             body,
             parameters,
             returnType,
-            declarationEnv
+            declarationEnv,
+            typeParameters
         );
     }
 }

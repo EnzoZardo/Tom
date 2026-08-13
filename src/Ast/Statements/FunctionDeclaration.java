@@ -3,6 +3,8 @@ package Ast.Statements;
 import Ast.Expressions.CallExpr;
 import Entities.Abstractions.Ast.Expr;
 import Ast.Expressions.Identifier;
+import Entities.Common.Result.ErrorType;
+import Entities.Constants.ReservedKeys;
 import Entities.Enums.Ast.NodeType;
 import Entities.Abstractions.Type;
 import Entities.Abstractions.Ast.Statement;
@@ -21,14 +23,17 @@ public class FunctionDeclaration extends Statement
     public Type returnType;
     public ArrayList<ArgumentMetadata> parameters;
     public ArrayList<Statement> body;
+    public ArrayList<String> typeParameters;
 
     protected FunctionDeclaration(
         String identifier,
         ArrayList<ArgumentMetadata> parameters,
         ArrayList<Statement> body,
-        Type returnType)
+        Type returnType,
+        ArrayList<String> typeParameters)
     {
         super(NodeType.FunctionDeclaration);
+        this.typeParameters = typeParameters;
         this.identifier = identifier;
         this.parameters = parameters;
         this.returnType = returnType;
@@ -39,9 +44,10 @@ public class FunctionDeclaration extends Statement
         String identifier,
         ArrayList<ArgumentMetadata> parameters,
         ArrayList<Statement> body,
-        Type returnType)
+        Type returnType,
+        ArrayList<String> typeParameters)
     {
-        return new FunctionDeclaration(identifier, parameters, body, returnType);
+        return new FunctionDeclaration(identifier, parameters, body, returnType, typeParameters);
     }
 
     public static FunctionDeclaration parse(Parser parser)
@@ -51,9 +57,29 @@ public class FunctionDeclaration extends Statement
             "função declarada, mas recebemos outro símbolo no código - %s");
         String name = identifierToken.value;
 
-        ArrayList<ExprMetadata> parametersMetadata = CallExpr.parseArgsDeclaration(parser);
-
         ArrayList<ArgumentMetadata> parameters = new ArrayList<>();
+        ArrayList<String> typeParameters = new ArrayList<>();
+
+        if (parser.peekIs(TokenType.BINARY_OPERATOR) && ReservedKeys.Minor.equals(parser.peekValue()))
+        {
+            //TODO: modularizar esse cara
+            parser.consume();
+            Token paramToken = parser.expect(TokenType.IDENTIFIER, "Esperávamos o nome do parâmetro de tipo.");
+            typeParameters.add(paramToken.value);
+            while (parser.peekIs(TokenType.COMMA))
+            {
+                parser.consume();
+                paramToken = parser.expect(TokenType.IDENTIFIER, "Esperávamos o nome do parâmetro de tipo.");
+                typeParameters.add(paramToken.value);
+            }
+            Token close = parser.expect(TokenType.BINARY_OPERATOR, "Esperávamos '>' para fechar a lista de parâmetros de tipo.");
+
+            if (!ReservedKeys.Greater.equals(close.value))
+                throw new ParsingException("Esperávamos '>' para fechar a lista de parâmetros de tipo.",
+                        ErrorType.ParsingError, close.location);
+        }
+
+        ArrayList<ExprMetadata> parametersMetadata = CallExpr.parseArgsDeclaration(parser);
 
         for (ExprMetadata metadata : parametersMetadata)
         {
@@ -82,7 +108,7 @@ public class FunctionDeclaration extends Statement
         parser.context.outFunction();
 
         parser.expect(TokenType.CLOSE_BRACE, "Esperávamos '}' para fecharmos o corpo de uma função.");
-        return FunctionDeclaration.create(name, parameters, body, type);
+        return FunctionDeclaration.create(name, parameters, body, type, typeParameters);
     }
 
     private String printParams(int level)

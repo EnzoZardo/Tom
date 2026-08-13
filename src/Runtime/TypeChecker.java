@@ -131,6 +131,18 @@ public abstract class TypeChecker
             if (equality.isError()) return equality;
         }
 
+        if (type.parameters.isEmpty())
+            return ErrorOr.Success();
+
+        if (function.typeArguments.size() != type.parameters.size())
+            return ErrorOr.Fail("A quantidade de argumentos de tipo da função " + function.name + " difere.");
+
+        for (int i = 0; i < type.parameters.size(); i++)
+        {
+            equality = Type.equals(type.parameters.get(i), function.typeArguments.get(i));
+            if (equality.isError()) return equality;
+        }
+
         return ErrorOr.Success();
     }
 

@@ -1,5 +1,7 @@
 package Ast.Expressions;
 
+import Ast.Types.SymbolType;
+import Entities.Constants.ReservedKeys;
 import Entities.Enums.Ast.NodeType;
 import Entities.Abstractions.Ast.Expr;
 import Entities.Exceptions.Parser.ParsingException;
@@ -14,28 +16,36 @@ public class CallExpr extends Expr
 {
     public final Expr caller;
     public ArrayList<Expr> arguments;
+    public final ArrayList<Type> typeArguments;
 
     protected CallExpr(
         Expr caller,
-        ArrayList<Expr> arguments)
+        ArrayList<Expr> arguments,
+        ArrayList<Type> typeArguments)
     {
         super(NodeType.CallExpression);
         this.arguments = arguments;
         this.caller = caller;
+        this.typeArguments = new ArrayList<>();
     }
 
     public static CallExpr create(
         Expr caller,
-        ArrayList<Expr> arguments)
+        ArrayList<Expr> arguments,
+        ArrayList<Type> typeArguments)
     {
-        return new CallExpr(caller, arguments);
+        return new CallExpr(caller, arguments, typeArguments);
     }
 
     public static Expr parse(Parser parser, Expr caller)
     {
+        ArrayList<Type> typeArguments = new ArrayList<>();
+        if (parser.peekIs(TokenType.BINARY_OPERATOR) && ReservedKeys.Minor.equals(parser.peekValue()))
+            typeArguments = SymbolType.parseArgs(parser);
+
         ArrayList<Expr> args = CallExpr.parseArgs(parser);
 
-        Expr call = CallExpr.create(caller, args);
+        Expr call = CallExpr.create(caller, args, typeArguments);
 
         if (parser.peekIs(TokenType.OPEN_PARENTHESIS))
             return CallExpr.parse(parser, call);

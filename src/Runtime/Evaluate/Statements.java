@@ -233,7 +233,13 @@ public abstract class Statements
     public static RuntimeValue evaluateFunctionDeclaration(
         FunctionDeclaration declaration, Environment env) throws AlreadyDeclaredVariableException
     {
-        FunctionValue value = FunctionValue.createFromStatement(declaration, env);
+        for (String typeParameter : declaration.typeParameters)
+        {
+            env.declareType(typeParameter, GenericType.create(typeParameter));
+        }
+
+        FunctionValue value = FunctionValue.createFromStatement(declaration, env, declaration.typeParameters);
+
         return env.declareConstant(value.name, value, value.type());
     }
 

@@ -41,6 +41,7 @@ void main(String[] args)
     try
     {
         Program program = Program.initialize(content, fileName);
+        //IO.print(program);
         Interpreter.evaluate(program, Environment.create());
     }
     //TODO: fix

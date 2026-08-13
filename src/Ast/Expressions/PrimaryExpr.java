@@ -2,10 +2,8 @@ package Ast.Expressions;
 
 import Ast.Expressions.Literals.*;
 import Entities.Abstractions.Ast.Expr;
-import Entities.Common.Result.ErrorType;
 import Entities.Exceptions.Parser.ParsingException;
 import Entities.Enums.Lexer.TokenType;
-import Lexer.Tokens.Token;
 import Parser.Parser;
 
 public class PrimaryExpr
@@ -15,9 +13,9 @@ public class PrimaryExpr
         return switch (parser.peekType())
         {
             case NEW -> ClassLiteral.parse(parser);
+            case IDENTIFIER -> Identifier.parse(parser);
             case OPEN_BRACE -> ObjectLiteral.parse(parser);
             case OPEN_BRACKETS -> ArrayLiteral.parse(parser);
-            case IDENTIFIER -> Identifier.create(parser.consume());
             case FLOAT_LITERAL -> FloatLiteral.create(parser.consume());
             case STRING_LITERAL -> StringLiteral.create(parser.consume());
             case OPEN_PARENTHESIS -> PrimaryExpr.parseParenthesis(parser);
