@@ -1,6 +1,6 @@
-fun escrever<T>(param: T): vazio {
-    var a: T = param
+fun escrever<T>(): vazio {
+    var a: T = 1
     escreva(a)
 }
 
-escrever<inteiro>("1")
+escrever<texto>()

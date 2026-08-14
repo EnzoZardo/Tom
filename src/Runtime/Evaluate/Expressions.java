@@ -123,8 +123,11 @@ public abstract class Expressions
         {
             ArrayList<Type> reducedArgs = new ArrayList<>();
             for (Type argument : typeArguments)
+            {
                 reducedArgs.add(Type.reduce(env, argument));
-            ((FunctionValue) caller).bindTypeArguments(reducedArgs);
+            }
+            FunctionValue value = ((FunctionValue) caller);
+            value.bindTypeArguments(reducedArgs);
         }
 
         return strategy.evaluate(call, caller, env);

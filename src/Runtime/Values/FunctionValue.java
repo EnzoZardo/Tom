@@ -70,17 +70,17 @@ public class FunctionValue extends RuntimeValue
 
     public void bindTypeArguments(ArrayList<Type> arguments)
     {
-        if (arguments.size() != typeArguments.size())
+        if (arguments.size() != typeParameters.size())
         {
             throw new RuntimeException(String.format(
                     "A função %s esperava %d argumento(s) de tipo, mas recebeu %d.",
                     name,
-                    typeArguments.size(),
+                    typeParameters.size(),
                     arguments.size()));
         }
 
         HashMap<String, Type> mapping = new HashMap<>();
-        for (int i = 0; i < typeArguments.size(); i++)
+        for (int i = 0; i < typeParameters.size(); i++)
         {
             mapping.put(typeParameters.get(i), arguments.get(i));
         }

@@ -18,7 +18,7 @@ public abstract class TypeChecker
 {
     public static ErrorOr<Void> check(Environment env, RuntimeValue value, Type expected)
     {
-        return switch (expected.type)
+         return switch (expected.type)
         {
             case SymbolType ->
             {

@@ -26,7 +26,7 @@ public class CallExpr extends Expr
         super(NodeType.CallExpression);
         this.arguments = arguments;
         this.caller = caller;
-        this.typeArguments = new ArrayList<>();
+        this.typeArguments = typeArguments;
     }
 
     public static CallExpr create(
